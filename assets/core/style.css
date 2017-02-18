@@ -1,0 +1,104 @@
+/* panel style */
+.dt-media label {
+	line-height: 26px;
+	margin-right: 5px;
+}
+select.button {
+	-webkit-appearance: caret;
+}
+.button .dashicons {
+	color: #82878c;
+	line-height: 26px;
+}
+.button[disabled] .dashicons {
+	color: #ccc;
+}
+
+.dt-media .wp-media-buttons { float:right; }
+.dt-media .wp-media-buttons-icon { vertical-align: text-top; }
+.dt-media .wp-media-buttons-icon:before {
+	font: 400 18px/1 dashicons;
+	speak: none;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	content: "\f104";
+}
+
+/* attachments wrap */
+.dt-media .attachments {
+	background: #f9f9f9;
+	overflow: hidden;
+	padding: 8px 2px;
+	margin: 10px 0;
+	border: 1px solid #e5e5e5;
+}
+.attachment .item {
+	padding: 4px;
+	background: #eee;
+	-webkit-box-shadow: inset 0 0 15px rgba(0,0,0,.1), inset 0 0 0 1px rgba(0,0,0,.05);
+	box-shadow: inset 0 0 15px rgba(0,0,0,.1), inset 0 0 0 1px rgba(0,0,0,.05);
+}
+.attachment .remove {
+	padding: 4px;
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	z-index: 5;
+	cursor: pointer;
+	color: #fff;
+	opacity: 0;
+	height: 0;
+	text-shadow: 2px 2px 6px black;
+	transition: opacity ease 0.2s;
+}
+.attachment:hover .remove {
+	opacity: 1;
+	height: auto;
+}
+.attachment .crop {
+	height: 140px;
+	overflow: hidden;
+	position: relative;
+}
+.attachment img {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	height: 100%;
+	width: auto;
+	-webkit-transform: translate(-50%,-50%);
+	-ms-transform: translate(-50%,-50%);
+	transform: translate(-50%,-50%);
+}
+.attachment img.portrait {
+	width: 100%;
+	height: auto;
+}
+.attachment:hover input, input:focus {
+	box-shadow: none;
+	opacity: 1;
+}
+
+/* tile */
+.dt-media .attachments.tile > div {
+	box-sizing: border-box;
+	width: 24.8%;
+	padding: 8px;
+	margin: 0;
+}
+.dt-media .attachments.tile .attachment input {
+	width: 100%;
+	outline: none;
+	border: 0;
+	opacity: 0.6;
+	margin: -1px 0 0;
+}
+
+@media (max-width: 600px){
+	.attachments.tile > div {
+		width: 49.6%;
+	}
+	.dt-media label {
+		display: none;
+	}
+}
