@@ -3,14 +3,19 @@
  * DT_MultiMedia
  *
  * Plugin Name: MultiMedia
- * Version:     0.1
+ * Version:     0.3
  *
  */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
+function cpJsonStr($str){
+    $str = preg_replace_callback('/\\\\u([a-f0-9]{4})/i', create_function('$m', 'return chr(hexdec($m[1])-1072+224);'), $str);
+    return iconv('cp1251', 'utf-8', $str);
+}
+
 class DT_MultiMedia
 {
-	public $version = 0.2;
+	public $version = 0.3;
 	
 	function __construct()
 	{
@@ -79,42 +84,6 @@ class DT_MultiMedia
     /**
      * Media output
      */
-    // deprecated function
-    protected function get_meta_changes($id=false, $type=false){
-        if($id==false || $type==false)
-            return;
-
-        $result = array();
-        $settings = $this->get_settings($type);
-        $params = array_keys($settings);
-
-        foreach ($params as $param) {
-            $val = get_post_meta($id, DT_PREFIX.$param, true);
-            $default = isset($settings[$param]['default'])? $settings[$param]['default'] : '';
-
-            if($default != $val){
-                if($val == '') $val = 'false';
-                $result[$param] = $val;
-
-                print_r($param. ": ");
-                var_dump($val);
-                print_r('<hr>');
-            }
-
-
-            // if( $val ){
-            //     if( isset($settings[$param]['default']) ){
-            //         if( $settings[$param]['default'] != $val )
-            //             $result[$param] = $val;
-            //     }
-            //     else {
-            //         $result[$param] = $val;
-            //     }
-            // }
-        }
-        return $result;
-    }
-
     protected function get_media_type($media_id){
         return get_post_meta( $media_id, '_'.DT_PREFIX.'type', true );
     }  
@@ -155,17 +124,9 @@ class DT_MultiMedia
         $atts = shortcode_atts( array(
             'id' => false
             ), $atts );
-        extract($atts);
-        // todo: id validation
-        
-
-        // $options = get_post_meta( $id, '_'.DT_PREFIX.'options', false );
+        $id = intval($atts['id']);
         $type = $this->get_media_type($id);
-       _d( $this->get_options($id, $this->get_media_type($id), false ) );
 
-        print_r('<hr>');
-        
-        
         $attachments = get_post_meta( $id, DT_PREFIX.'media_imgs', true );
         $attachments = explode(',', $attachments);
         if( $attachments[0] == '' )
@@ -180,31 +141,10 @@ class DT_MultiMedia
                 wp_enqueue_style( 'owl-carousel-core', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.carousel.css', array(), $this->version );
                 wp_enqueue_style( 'owl-carousel-theme', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.theme.css', array(), $this->version );
 
-                function cpJsonStr($str){
-                    $str = preg_replace_callback('/\\\\u([a-f0-9]{4})/i', create_function('$m', 'return chr(hexdec($m[1])-1072+224);'), $str);
-                    return iconv('cp1251', 'utf-8', $str);
-                }
-
                 $metas_arr = $this->get_options($id, $type, false );
-                var_dump($metas_arr);
-                if(isset($metas_arr['navigationTextNext']) || isset($metas_arr['navigationTextPrev'])){
-                    if(isset($metas_arr['navigationTextPrev'])){
-                        $prev = $metas_arr['navigationTextPrev'];
-                        unset($metas_arr['navigationTextPrev']);
-                    }
-                    else {
-                        $prev = 'prev';
-                    }
-                    if(isset($metas_arr['navigationTextNext'])){
-                        $next = $metas_arr['navigationTextNext'];
-                        unset($metas_arr['navigationTextNext']);
-                    }
-                    else {
-                        $next = 'next';
-                    }
 
-                    $metas_arr['navigationText'] = array($prev, $next);
-                }
+                $metas_arr = apply_filters( 'array_options_from_view', $metas_arr );
+                var_dump($metas_arr);
 
                 $metas = cpJsonStr( json_encode($metas_arr) );
                 $metas = str_replace('"on"', 'true', $metas);
@@ -260,6 +200,29 @@ class DT_MultiMedia
     }
 }
 new DT_MultiMedia();
+
+function owl_nextprev( $metas_arr ){
+    if(isset($metas_arr['navigationTextNext']) || isset($metas_arr['navigationTextPrev'])){
+        if(isset($metas_arr['navigationTextPrev'])){
+            $prev = $metas_arr['navigationTextPrev'];
+            unset($metas_arr['navigationTextPrev']);
+        }
+        else {
+            $prev = 'prev';
+        }
+        if(isset($metas_arr['navigationTextNext'])){
+            $next = $metas_arr['navigationTextNext'];
+            unset($metas_arr['navigationTextNext']);
+        }
+        else {
+            $next = 'next';
+        }
+
+        $metas_arr['navigationText'] = array($prev, $next);
+    }
+    return $metas_arr;
+}
+add_filter( 'array_options_from_view', 'owl_nextprev', 10 );
 
 // function rewrite_flush() {
 //     DT_MultiMedia::register_post_types();

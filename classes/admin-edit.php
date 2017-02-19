@@ -109,9 +109,6 @@ class isAdminView extends DT_MultiMedia
 	}
 
 	protected function render_input($name, $type, $value, $placeholder, $options, $target, $is_show){
-		//if( isset($_GET['post']) && $val = get_post_meta( $_GET['post'], DT_PREFIX.$name, true ) )
-			//$value = $val;
-
 		$name = ( $name ) ? "name='".$name."'": '';
 		$target = ( $target ) ? "data-target='".$target."'" : '';
 		if($target != '')
@@ -169,20 +166,11 @@ class isAdminView extends DT_MultiMedia
 		_d($settings);
 	}
 	function preview_media_main_settings_callback( $post ) {
-		$path = DT_MULTIMEDIA_PATH . '/settings/owl-carousel.php';
-		if ( is_readable( $path ) )
-			require_once( $path );
-
-		if( function_exists('get_dt_multimedia_settings') ){
-			$this->render_settings( get_dt_multimedia_settings() );
-		}
-		else {
-			echo "Файл настроек поврежден!";
-		}
+		$type = 'owl-carousel';
+		$this->render_settings( $this->get_settings($type) );
 	}
-
-	function validate( $post_id ) {
-		// if ( ! isset( $_POST['wp_developer_page_nonce'] ) )
+	private function check_security( $post_id ){
+				// if ( ! isset( $_POST['wp_developer_page_nonce'] ) )
 			// return $post_id;
 		// $nonce = $_POST['wp_developer_page_nonce'];
 		// if ( ! wp_verify_nonce( $nonce, 'dp_addImages_nonce' ) )
@@ -191,7 +179,8 @@ class isAdminView extends DT_MultiMedia
 		// Если это автосохранение ничего не делаем.
 		// if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
 		// 	return $post_id;
-
+	}
+	private function validate_media_attachments($post_id){
 		if( !isset($_POST['attachment_id']) || !is_array($_POST['attachment_id']))
 			return $post_id;
 
@@ -205,6 +194,14 @@ class isAdminView extends DT_MultiMedia
 				wp_update_post( array('ID' => $id, 'post_excerpt' => $meta ) );
 			}
 		}
+	}
+	function validate( $post_id ) {
+		if( FALSE === check_security($post_id) )
+			return $post_id;
+
+		validate_media_attachments($post_id);
+		
+		
 		if(!isset($_POST['type']))
 			return $post_id;
 
