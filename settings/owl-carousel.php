@@ -2,7 +2,7 @@
 defined( 'ABSPATH' ) or die();
  
 // $id, $name, $type, $value - required
-function get_dt_multimedia_settings(){
+function get_dt_settings(){
 $settings = array(
 // Responsive
     'responsive' => array(
@@ -149,6 +149,17 @@ if( get_theme_mod( 'site-format' ) )
     $settings['responsive']['default'] = 'on';
 
 return $settings;
+}
+
+function get_dt_side_settings(){
+    $settings = array(
+     'lightbox_links' => array(
+         'name' => 'Use lightbox',
+         'desc' => 'Add links w/ class "zoomin" for lightbox',
+         'type' => 'checkbox',
+         )
+     );
+    return $settings;
 }
 
 // todo:

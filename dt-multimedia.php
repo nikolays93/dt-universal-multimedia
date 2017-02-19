@@ -71,13 +71,19 @@ class DT_MultiMedia
             }
 		}
 	}
-    function get_settings($type=false){
+    function get_settings($type=false, $side=false){
         if($type === false)
             return;
 
         require_once(DT_MULTIMEDIA_PATH.'/settings/'.$type.'.php');
-        if(function_exists('get_dt_multimedia_settings'))
-            return get_dt_multimedia_settings();
+        if(false === $side){
+            if(function_exists('get_dt_settings'))
+                return get_dt_settings();
+        }
+        else {
+            if(function_exists('get_dt_side_settings'))
+                return get_dt_side_settings();
+        }
 
         return array();
     }

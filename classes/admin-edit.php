@@ -14,7 +14,7 @@ class isAdminView extends DT_MultiMedia
 
 	function preview_hooks(){
 		add_action( 'add_meta_boxes', array( $this, 'preview_boxes' ) );
-		add_action( 'save_post', array( $this, 'validate' ) );
+		add_action( 'save_post', array( $this, 'validate_main_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'preview_assets' ) );
 		add_action( 'admin_menu' , array( $this, 'remove_default_divs' ) );
 	}
@@ -34,6 +34,13 @@ class isAdminView extends DT_MultiMedia
 			array( $this, 'preview_media_main_settings_callback' ),
 			DT_MULTIMEDIA_MAIN_TYPE,
 			'normal'
+		);
+		add_meta_box(
+			'preview_media_side_settings',
+			'Настройки',
+			array( $this, 'preview_media_side_settings_callback' ),
+			DT_MULTIMEDIA_MAIN_TYPE,
+			'side'
 		);
 	}
 
@@ -96,10 +103,15 @@ class isAdminView extends DT_MultiMedia
 				</button>
 			</div>
 			<label>Тип мультимедия: </label>
-			<select name="type" class="button">
+			<select class="button">
 				<option value="owl-carousel">Карусель</option>
-				<option value="#">Слайдер</option>
-				<option value="#">Галерея</option>
+				<!-- <option value="slider">Слайдер</option> -->
+				<!-- <option value="gallery">Галерея</option> -->
+				<!-- <option value="query">Запрос</option> -->
+			</select>
+			<select name="type" class="button">
+				<option value="owl-carousel">Совинная карусель</option>
+				<!-- <option value="slick-slider">Скользкий слайдер</option> -->
 			</select>
 			
 			<?php $this->get_attachments($post); ?>
@@ -158,20 +170,29 @@ class isAdminView extends DT_MultiMedia
 			if( isset($values[$id]) )
 				$default = $values[$id];
 
-			echo "\n<tr id='{$id}'><td>".$value['name']."</td><td>";
+			echo "\n<tr id='{$id}'>";
+			echo "<td class='name'>".$value['name']."</td>";
+			echo "<td>";
 			echo $this->render_input($id, $value['type'], $default, $placeholder, $options, $target, $is_show);
-			echo "<div class='description'>{$value['desc']}</div></td></tr>";
+			if(isset($value['desc']))
+				echo "<div class='description'>{$value['desc']}</div>";
+			echo "</td></tr>";
 		}
 		echo '</tbody></table>';
-		_d($settings);
+		//_d($settings);
 	}
 	function preview_media_main_settings_callback( $post ) {
 		$type = 'owl-carousel';
 		$this->render_settings( $this->get_settings($type) );
 	}
+	function preview_media_side_settings_callback( $post ){
+		$type = 'owl-carousel';
+		$this->render_settings( $this->get_settings($type, 'side') );
+	}
+
 	private function check_security( $post_id ){
-				// if ( ! isset( $_POST['wp_developer_page_nonce'] ) )
-			// return $post_id;
+		// if ( ! isset( $_POST['wp_developer_page_nonce'] ) )
+		// return $post_id;
 		// $nonce = $_POST['wp_developer_page_nonce'];
 		// if ( ! wp_verify_nonce( $nonce, 'dp_addImages_nonce' ) )
 		// 	return $post_id;
@@ -195,12 +216,12 @@ class isAdminView extends DT_MultiMedia
 			}
 		}
 	}
-	function validate( $post_id ) {
+	function validate_main_settings( $post_id ) {
 		if( FALSE === check_security($post_id) )
 			return $post_id;
 
 		validate_media_attachments($post_id);
-		
+
 		
 		if(!isset($_POST['type']))
 			return $post_id;

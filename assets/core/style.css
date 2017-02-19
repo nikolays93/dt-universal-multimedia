@@ -124,3 +124,15 @@ select.button {
 	float:left;
 	margin-right: 15px;
 }
+
+/* side metabox */
+#preview_media_side_settings input[type="checkbox"] {
+	float: left;
+}
+#preview_media_side_settings .name {
+	min-width: 80px;
+}
+#preview_media_side_settings .description {
+	float: left;
+	display: none;
+}
