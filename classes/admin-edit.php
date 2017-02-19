@@ -40,6 +40,9 @@
 */
 class isAdminView extends DT_MultiMedia
 {
+	protected $settings;
+	protected $post_id;
+
 	function __construct()
 	{	
 		$this->preview_hooks();
@@ -86,15 +89,15 @@ class isAdminView extends DT_MultiMedia
 	 */
 	function remove_default_divs() {
 		remove_meta_box( 'slugdiv',		DT_MULTIMEDIA_MAIN_TYPE, 'normal' ); // ярлык записи,
-		remove_meta_box( 'postcustom',	DT_MULTIMEDIA_MAIN_TYPE, 'normal' ); // Произвольные поля
+		// remove_meta_box( 'postcustom',	DT_MULTIMEDIA_MAIN_TYPE, 'normal' ); // Произвольные поля
 	}
 
 	protected function get_attachments($post){
-		$ids = get_post_meta( $post->ID, 'dt-media-imgs', true );
+		$ids = get_post_meta( $post->ID, DT_PREFIX.'media_imgs', true );
 		$ids = explode(',', esc_attr($ids));
 
+		echo '<div class="attachments tile" id="dt-media">';
 		if($ids[0] != ''){
-			echo '<div class="attachments tile" id="dt-media">';
 			foreach ($ids as $id) { ?>
 			<div class="attachment" data-id="<?php echo $id; ?>">
 				<?php
@@ -114,37 +117,101 @@ class isAdminView extends DT_MultiMedia
 			</div>
 			<?php
 			} // foreach
-			echo '</div>';
 		} // if
+		echo '</div>';
 	}
 	function preview_media_edit_callback( $post ) {
 		wp_enqueue_media();
 		//wp_nonce_field( 'dp_addImages_nonce', 'wp_developer_page_nonce' );
-	?>
-	<div class="dt-media">
-		<div class="hide-if-no-js wp-media-buttons">
-			<button class="button" disabled="true">
-				<!-- <span class="dashicons dashicons-screenoptions"></span> -->
-				<span class="dashicons dashicons-list-view" title="Will be future"></span>
-			</button>
-			<button id="upload-images" class="button add_media">
-				<span class="wp-media-buttons-icon"></span> Добавить медиафайл
-			</button>
+		?>
+		<div class="dt-media">
+			<div class="hide-if-no-js wp-media-buttons">
+				<button class="button" disabled="true">
+					<!-- <span class="dashicons dashicons-screenoptions"></span> -->
+					<span class="dashicons dashicons-list-view" title="Will be future"></span>
+				</button>
+				<button id="upload-images" class="button add_media">
+					<span class="wp-media-buttons-icon"></span> Добавить медиафайл
+				</button>
+			</div>
+			<label>Тип мультимедия: </label>
+			<select name="<?=DT_PREFIX.'type';?>" class="button">
+				<option value="owl-carousel">Карусель</option>
+				<option value="#">Слайдер</option>
+				<option value="#">Галерея</option>
+			</select>
+			
+			<?php $this->get_attachments($post); ?>
+			<div class="clear"></div>
 		</div>
-		<label>Тип мультимедия: </label>
-		<select class="button">
-			<option value="#">Карусель</option>
-			<option value="#">Слайдер</option>
-			<option value="#">Галерея</option>
-		</select>
-		
-		<?php $this->get_attachments($post); ?>
-		<div class="clear"></div>
-	</div>
-<?php
+		<?php
 	}
 
-	function preview_media_main_settings_callback( $post ) {}
+	protected function render_input($name, $type, $value, $placeholder, $options, $target, $is_show){
+		if( isset($_GET['post']) && $val = get_post_meta( $_GET['post'], DT_PREFIX.$name, true ) )
+			$value = $val;
+
+		$name = ( $name ) ? "name='".DT_PREFIX.$name."'": '';
+		$target = ( $target ) ? "data-target='".$target."'" : '';
+		if($target != '')
+			$target .= ($is_show) ? " data-action='show'" : " data-action='hide'";
+
+		$placeholder = ( $placeholder ) ? "placeholder='".$placeholder."'" : '';
+
+		switch ($type) {
+			case 'select':
+				echo "<select {$name} {$target}>";
+				foreach ($options as $id => $option) {
+					echo "<option value='{$id}'>{$option}</option>";
+				}
+				echo "</select>";
+				break;
+
+			case 'checkbox':
+				$checked = ($value) ? 'checked ' : '';
+				echo "<input {$name} {$target} type='{$type}' {$checked}value='on'>";
+				break;
+
+			default:
+				echo "<input {$name} {$target} type='{$type}' {$placeholder} value='".$value."'>";
+				break;
+		}
+	}
+	protected function render_settings($settings){
+		echo '<table valign="top" class="table"><tbody>';
+		foreach ($settings as $id => $value){
+			$is_show = false;
+			$target = false;
+			if(isset($value['show'])){
+				$target = $value['show'];
+				$is_show = true;
+			}
+			if(isset($value['hide']))
+				$target = $value['hide'];
+
+			$placeholder = isset($value['placeholder']) ? $value['placeholder'] : false;
+			$options     = isset($value['options']) ? $value['options'] : false;
+			$default     = isset($value['default']) ? $value['default'] : false;
+
+			echo "\n<tr id='{$id}'><td>".$value['name']."</td><td>";
+			echo $this->render_input($id, $value['type'], $default, $placeholder, $options, $target, $is_show);
+			echo "<div class='description'>{$value['desc']}</div></td></tr>";
+		}
+		echo '</tbody></table>';
+		_d($settings);
+	}
+	function preview_media_main_settings_callback( $post ) {
+		$path = DT_MULTIMEDIA_PATH . '/settings/owl-carousel.php';
+		if ( is_readable( $path ) )
+			require_once( $path );
+
+		if( function_exists('get_dt_multimedia_settings') ){
+			$this->render_settings( get_dt_multimedia_settings() );
+		}
+		else {
+			echo "Файл настроек поврежден!";
+		}
+	}
 
 	function validate( $post_id ) {
 		// if ( ! isset( $_POST['wp_developer_page_nonce'] ) )
@@ -159,6 +226,10 @@ class isAdminView extends DT_MultiMedia
 		if( !isset($_POST['attachment_id']) || !is_array($_POST['attachment_id']))
 			return $post_id;
 
+		$attachment_ids = $_POST['attachment_id'];
+		$attachment_ids = implode(',', $attachment_ids);
+		update_post_meta( $post_id, DT_PREFIX.'media_imgs', $attachment_ids );
+
 		if(isset($_POST['attachment_text']) && is_array($_POST['attachment_text'])){
 			$metas = $_POST['attachment_text'];
 			foreach ($metas as $id => $meta) {
@@ -166,8 +237,29 @@ class isAdminView extends DT_MultiMedia
 			}
 		}
 
-		$attachment_ids = $_POST['attachment_id'];
-		$attachment_ids = implode(',', $attachment_ids);
-		update_post_meta( $post_id, 'dt-media-imgs', $attachment_ids );
+		file_put_contents(DT_MULTIMEDIA_PATH.'/debug.log', print_r($_POST, 1) );
+		foreach ($_POST as $key => $value) {
+			if( strpos($key, DT_PREFIX) !== false && !empty($value) )
+				update_post_meta( $post_id, $key, $value );
+			else
+				delete_post_meta( $post_id, $key );
+		}
+
+		// $changes =  parent::get_meta_changes($post_id, $_POST[DT_PREFIX.'type'], true);
+		// $changes[DT_PREFIX.'type'] = $_POST[DT_PREFIX.'type'];
+		// foreach ($changes as $key => $value) {
+		// 		update_post_meta( $post_id, DT_PREFIX.$key, $value );
+		// }
+		// foreach ($_POST as $key => $value) {
+		// 	if( strpos($key, DT_PREFIX)!==false && $value == '' )
+		// 		delete_post_meta( $post_id, $key );
+		// }
+		// foreach ($_POST as $key => $value) {
+		// 	if( strpos($key, DT_PREFIX) !== false && $value != '' )
+		// 		update_post_meta( $post_id, $key, $value );
+		// 	else
+		// 		delete_post_meta( $post_id, $key );
+			
+		// }
 	}
 }

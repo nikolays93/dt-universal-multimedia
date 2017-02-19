@@ -1,11 +1,10 @@
 jQuery(function($){
-  // Set all variables to be used in scope
   var frame, media_ids = [],
       metaBox = $('#preview_media_edit.postbox'), // Your meta box id here
       addImgLink = metaBox.find('#upload-images'),
       imgsContainer = metaBox.find('#dt-media.tile');
   
-  	function setRemoveTrigger(){
+  function setRemoveTrigger(){
 		jQuery('.remove', imgsContainer).on('click', function(e){
 			jQuery(this).closest('.attachment').remove();
 		});
@@ -26,16 +25,10 @@ jQuery(function($){
 			+'</div>\n'
 			);
 		setRemoveTrigger();
-		
-
-
-
 	}
 
-	imgsContainer.sortable({
-      // placeholder: "sortable-placeholder"
-    });
-
+	imgsContainer.sortable();
+  // add atachments
   addImgLink.on( 'click', function( event ){
     event.preventDefault();
     // If the media frame already exists, reopen it.
@@ -87,7 +80,50 @@ jQuery(function($){
     // Finally, open the modal on click
     frame.open();
   });
-
   setRemoveTrigger();
+
+  // data-toggle
+  function setDataToggle(jq){
+    var toggle = jq.attr('data-target');
+    if(toggle != undefined){
+      toggle = toggle.split(', ');
+      toggle.forEach(function(item, i){ $('#'+item+' td').slideToggle(); });
+      // if( jq.is(':checked') ){
+      //   toggle.forEach(function(item, i){ $('#'+item+' td').slideUp(); });
+      // }
+      // else {
+      //   toggle.forEach(function(item, i){ $('#'+item+' td').slideDown(); });
+      // }
+    }
+  }
+  
+
+  $('form#post').on('submit', function(){
+    $('input[type="checkbox"]', this).each(function(i){
+      if( !$(this).is(':checked') )
+        $(this).val('').attr("checked", true);
+    });
+  });
+
+  jQuery(document).ready(function($) {
+    $('#preview_media_main_settings input[type="checkbox"]').on('change', function(){
+      setDataToggle($(this));
+    });
+    $('#preview_media_main_settings input[type="checkbox"]').each(function(i){
+      if( $(this).is(':checked') && $(this).attr('data-action') == 'hide')
+        setDataToggle($(this));
+        
+      if( ! $(this).is(':checked') && $(this).attr('data-action') == 'show' )
+        setDataToggle($(this));
+    });
+
+    $('input[type=\'text\'], input[type=\'number\'], textarea').on('focus', function(){
+      if($(this).val() == ''){
+        $(this).val($(this).attr('placeholder'));
+        $(this).select();
+      }
+    });
+
+  });
 
 });

@@ -74,7 +74,8 @@ select.button {
 	width: 100%;
 	height: auto;
 }
-.attachment:hover input, input:focus {
+.dt-media .attachments.tile .attachment:hover input,
+.dt-media .attachments.tile .attachment input:focus {
 	box-shadow: none;
 	opacity: 1;
 }
@@ -101,4 +102,25 @@ select.button {
 	.dt-media label {
 		display: none;
 	}
+}
+
+/* settings */
+#preview_media_main_settings table {
+	    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    border-collapse: collapse;
+    background-color: transparent;
+}
+#preview_media_main_settings table td {
+	padding: .75rem;
+    vertical-align: top;
+    vertical-align: top;
+}
+#preview_media_main_settings table tr + tr td {
+	border-top: 1px solid #eceeef;
+}
+#preview_media_main_settings input[type='checkbox']{
+	float:left;
+	margin-right: 15px;
 }
