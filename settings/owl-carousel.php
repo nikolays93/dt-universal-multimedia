@@ -55,12 +55,6 @@ $settings = array(
         'type' => 'checkbox',
         'default' => 'on'
     ),
-    'slideSpeed' => array(
-        'name' => 'Slide Speed',
-        'desc' => 'Slide speed in milliseconds.',
-        'placeholder' => 200,
-        'type' => 'number'
-    ),
     
 // Pagination
     'pagination' => array(

@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class DT_MultiMedia
 {
-	public $version = 0.1;
+	public $version = 0.2;
 	
 	function __construct()
 	{
@@ -26,7 +26,9 @@ class DT_MultiMedia
                 new isAdminView();
         }
 	}
-
+    /**
+     * SETUP global methods
+     */
     function is_debug(){
         if( WP_DEBUG ){
             if( defined(WP_DEBUG_DISPLAY) && WP_DEBUG_DISPLAY){
@@ -35,9 +37,6 @@ class DT_MultiMedia
         }
         return false;
     }
-    /**
-     * SETUP global Settings
-     */
 	private function define_constants() {
         define( 'DT_PREFIX', 'dtmm_');
         define( 'DT_MULTIMEDIA_MAIN_TYPE', 'multimedia-base');
@@ -67,7 +66,6 @@ class DT_MultiMedia
             }
 		}
 	}
-
     function get_settings($type=false){
         if($type === false)
             return;
@@ -81,7 +79,7 @@ class DT_MultiMedia
     /**
      * Media output
      */
-
+    // deprecated function
     protected function get_meta_changes($id=false, $type=false){
         if($id==false || $type==false)
             return;
@@ -117,21 +115,61 @@ class DT_MultiMedia
         return $result;
     }
 
+    protected function get_media_type($media_id){
+        return get_post_meta( $media_id, '_'.DT_PREFIX.'type', true );
+    }  
+    protected function get_options($post_id=false, $type=false, $update=false){
+        if(!$type || !$post_id)
+            return false;
+
+        $result = array();
+        $settings = $this->get_settings($type);
+        $params = array_keys($settings);
+
+        if($update){
+            update_post_meta( $post_id, '_'.DT_PREFIX.'type', $type );
+            $val = $_POST;
+        }
+        else {
+            $val = get_post_meta($post_id, '_'.DT_PREFIX.'options', true);
+        }
+
+        foreach ($params as $param){
+            $default = isset($settings[$param]['default']) ? $settings[$param]['default'] : '';
+
+            if(isset($val[$param]) && $val[$param] != $default){
+                if($val[$param] == '') $val[$param] = 'false';
+                $result[$param] = $val[$param];
+            }
+        }
+        
+        // file_put_contents(DT_MULTIMEDIA_PATH.'/debug.log', print_r($result, 1) );
+        if($update)
+            update_post_meta( $post_id, '_'.DT_PREFIX.'options', $result );
+        else
+            return $result;
+    }
+
+    // render shortcode
     function media_sc( $atts ) {
         $atts = shortcode_atts( array(
             'id' => false
             ), $atts );
         extract($atts);
-
-        $type = 'owl-carousel';
         // todo: id validation
+        
+
+        // $options = get_post_meta( $id, '_'.DT_PREFIX.'options', false );
+        $type = $this->get_media_type($id);
+       _d( $this->get_options($id, $this->get_media_type($id), false ) );
+
+        print_r('<hr>');
+        
         
         $attachments = get_post_meta( $id, DT_PREFIX.'media_imgs', true );
         $attachments = explode(',', $attachments);
-
         if( $attachments[0] == '' )
             if($this->is_debug()) return 'Файлов не найдено'; else return false; 
-
 
         switch ( $type ) {
             case 'owl-carousel':
@@ -147,15 +185,30 @@ class DT_MultiMedia
                     return iconv('cp1251', 'utf-8', $str);
                 }
 
-                $metas_arr = $this->get_meta_changes($id, $type);
+                $metas_arr = $this->get_options($id, $type, false );
+                var_dump($metas_arr);
                 if(isset($metas_arr['navigationTextNext']) || isset($metas_arr['navigationTextPrev'])){
-                    $prev = isset($metas_arr['navigationTextPrev']) ? $metas_arr['navigationTextPrev'] : 'prev';
-                    $next = isset($metas_arr['navigationTextNext']) ? $metas_arr['navigationTextNext'] : 'next';
+                    if(isset($metas_arr['navigationTextPrev'])){
+                        $prev = $metas_arr['navigationTextPrev'];
+                        unset($metas_arr['navigationTextPrev']);
+                    }
+                    else {
+                        $prev = 'prev';
+                    }
+                    if(isset($metas_arr['navigationTextNext'])){
+                        $next = $metas_arr['navigationTextNext'];
+                        unset($metas_arr['navigationTextNext']);
+                    }
+                    else {
+                        $next = 'next';
+                    }
+
                     $metas_arr['navigationText'] = array($prev, $next);
                 }
 
                 $metas = cpJsonStr( json_encode($metas_arr) );
                 $metas = str_replace('"on"', 'true', $metas);
+                $metas = str_replace('"false"', 'false', $metas);
 
                 $html = array("<div id='slider'>");
                 foreach ($attachments as $attachment) {
@@ -201,14 +254,12 @@ class DT_MultiMedia
             )
         );
 	}
-
     function setup_actions(){
+
         add_action('init', array($this, 'register_post_types'));
     }
-
-
 }
-$plugin = new DT_MultiMedia();
+new DT_MultiMedia();
 
 // function rewrite_flush() {
 //     DT_MultiMedia::register_post_types();

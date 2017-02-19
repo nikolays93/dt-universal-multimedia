@@ -1,43 +1,4 @@
 <?php
-// function dp_slider_updated_messages( $messages ) {
-// 	global $post, $post_ID;
-
-// 	$messages['review'] = array(
-// 	0 => '', // Не используется. Сообщения используются с индекса 1.
-// 	1 => sprintf( 'Отзыв обновлен. <a href="%s">Прочитать отзыв</a>', esc_url( get_permalink($post_ID) ) ),
-// 	2 => 'Произвольное поле обновлено.',
-// 	3 => 'Произвольное поле удалено.',
-// 	4 => 'Отзыв обновлен.',
-// 	/* %s: дата и время ревизии */
-// 	5 => isset($_GET['revision']) ? sprintf( 'Отзыв востановлен из ревизии %s', wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-// 	6 => sprintf( 'Отзыв опубликован. <a href="%s">Перейти к отзыву</a>', esc_url( get_permalink($post_ID) ) ),
-// 	7 => 'Отзыв сохранен.',
-// 	8 => sprintf( 'Отзыв сохранен. <a target="_blank" href="%s">Предпросмотр отзыва</a>', esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
-// 	9 => sprintf( 'Отзыв запланирован на: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Предпросмотр отзыва</a>',
-// 		date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), esc_url( get_permalink($post_ID) ) ),
-// 	10 => sprintf( 'Не утвержденный отзыв (Черновик) сохранен. <a target="_blank" href="%s">Предпросмотр отзыва</a>', esc_url( add_query_arg( 'preview', 'true', get_permalink($post_ID) ) ) ),
-// 	);
-// 	return $messages;
-// }
-// add_filter('post_updated_messages', 'dp_slider_updated_messages');
-// function add_review_help_text($contextual_help, $screen_id, $screen) {
-// 	if ('edit-review' == $screen->id || 'review' == $screen->id ) {
-// 		$contextual_help =
-// 		'<h4>Используйте ContactForm7</h4><p>Если добавить в форму [text] с именем dp_review и дать ему любое значение (При этом его можно скрыть при помощи css) помимо отправленного сообщения, система создаст "Запись" в категории "Отзывы".</p>
-
-// 		<p>Не работает если опция выключена. При выключении опции данные скрываются (НЕ Удаляются из базы).</p>
-
-// 		<label><strong>К примеру:</strong></label>
-// 		<p>[text* your-name][textarea your-message][text dp_review class:hide-me "text с именем dp_review"]</p>
-// 		';
-// 	}
-// 	return $contextual_help;
-// }
-// add_action( 'contextual_help', 'add_review_help_text', 10, 3 );
-
-/**
-* 
-*/
 class isAdminView extends DT_MultiMedia
 {
 	protected $settings;
@@ -89,7 +50,7 @@ class isAdminView extends DT_MultiMedia
 	 */
 	function remove_default_divs() {
 		remove_meta_box( 'slugdiv',		DT_MULTIMEDIA_MAIN_TYPE, 'normal' ); // ярлык записи,
-		// remove_meta_box( 'postcustom',	DT_MULTIMEDIA_MAIN_TYPE, 'normal' ); // Произвольные поля
+		remove_meta_box( 'postcustom',	DT_MULTIMEDIA_MAIN_TYPE, 'normal' ); // Произвольные поля
 	}
 
 	protected function get_attachments($post){
@@ -135,7 +96,7 @@ class isAdminView extends DT_MultiMedia
 				</button>
 			</div>
 			<label>Тип мультимедия: </label>
-			<select name="<?=DT_PREFIX.'type';?>" class="button">
+			<select name="type" class="button">
 				<option value="owl-carousel">Карусель</option>
 				<option value="#">Слайдер</option>
 				<option value="#">Галерея</option>
@@ -148,10 +109,10 @@ class isAdminView extends DT_MultiMedia
 	}
 
 	protected function render_input($name, $type, $value, $placeholder, $options, $target, $is_show){
-		if( isset($_GET['post']) && $val = get_post_meta( $_GET['post'], DT_PREFIX.$name, true ) )
-			$value = $val;
+		//if( isset($_GET['post']) && $val = get_post_meta( $_GET['post'], DT_PREFIX.$name, true ) )
+			//$value = $val;
 
-		$name = ( $name ) ? "name='".DT_PREFIX.$name."'": '';
+		$name = ( $name ) ? "name='".$name."'": '';
 		$target = ( $target ) ? "data-target='".$target."'" : '';
 		if($target != '')
 			$target .= ($is_show) ? " data-action='show'" : " data-action='hide'";
@@ -192,6 +153,13 @@ class isAdminView extends DT_MultiMedia
 			$placeholder = isset($value['placeholder']) ? $value['placeholder'] : false;
 			$options     = isset($value['options']) ? $value['options'] : false;
 			$default     = isset($value['default']) ? $value['default'] : false;
+			
+			if(isset($_GET['post']))
+				$post_id = intval($_GET['post']);
+
+			$values = $this->get_options($post_id, $this->get_media_type($post_id), false );
+			if( isset($values[$id]) )
+				$default = $values[$id];
 
 			echo "\n<tr id='{$id}'><td>".$value['name']."</td><td>";
 			echo $this->render_input($id, $value['type'], $default, $placeholder, $options, $target, $is_show);
@@ -223,6 +191,7 @@ class isAdminView extends DT_MultiMedia
 		// Если это автосохранение ничего не делаем.
 		// if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
 		// 	return $post_id;
+
 		if( !isset($_POST['attachment_id']) || !is_array($_POST['attachment_id']))
 			return $post_id;
 
@@ -236,30 +205,9 @@ class isAdminView extends DT_MultiMedia
 				wp_update_post( array('ID' => $id, 'post_excerpt' => $meta ) );
 			}
 		}
+		if(!isset($_POST['type']))
+			return $post_id;
 
-		file_put_contents(DT_MULTIMEDIA_PATH.'/debug.log', print_r($_POST, 1) );
-		foreach ($_POST as $key => $value) {
-			if( strpos($key, DT_PREFIX) !== false && !empty($value) )
-				update_post_meta( $post_id, $key, $value );
-			else
-				delete_post_meta( $post_id, $key );
-		}
-
-		// $changes =  parent::get_meta_changes($post_id, $_POST[DT_PREFIX.'type'], true);
-		// $changes[DT_PREFIX.'type'] = $_POST[DT_PREFIX.'type'];
-		// foreach ($changes as $key => $value) {
-		// 		update_post_meta( $post_id, DT_PREFIX.$key, $value );
-		// }
-		// foreach ($_POST as $key => $value) {
-		// 	if( strpos($key, DT_PREFIX)!==false && $value == '' )
-		// 		delete_post_meta( $post_id, $key );
-		// }
-		// foreach ($_POST as $key => $value) {
-		// 	if( strpos($key, DT_PREFIX) !== false && $value != '' )
-		// 		update_post_meta( $post_id, $key, $value );
-		// 	else
-		// 		delete_post_meta( $post_id, $key );
-			
-		// }
+		$this->get_options($post_id, $_POST['type'], $update=true );
 	}
 }
