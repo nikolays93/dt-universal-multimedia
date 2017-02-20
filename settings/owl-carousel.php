@@ -152,13 +152,25 @@ return $settings;
 }
 
 function get_dt_side_settings(){
-    $settings = array(
-     'lightbox_links' => array(
-         'name' => 'Use lightbox',
-         'desc' => 'Add links w/ class "zoomin" for lightbox',
-         'type' => 'checkbox',
-         )
-     );
+    $sizes = get_intermediate_image_sizes();
+    $view_sizes = array();
+    foreach ($sizes as $value) {
+        $view_sizes[$value] = $value;
+    }
+
+$settings = array(
+    'image_size' => array(
+       'name' => 'Image size',
+       'desc' => '',
+       'type' => 'select',
+       'options' => $view_sizes,
+       ),
+    'lightbox_links' => array(
+     'name' => 'Use lightbox',
+     'desc' => 'Add links w/ class "zoomin" for lightbox',
+     'type' => 'checkbox',
+     )
+    );
     return $settings;
 }
 

@@ -105,7 +105,8 @@ select.button {
 }
 
 /* settings */
-#preview_media_main_settings table {
+#preview_media_main_settings table,
+#preview_media_side_settings table {
 	    width: 100%;
     max-width: 100%;
     margin-bottom: 1rem;
@@ -114,7 +115,6 @@ select.button {
 }
 #preview_media_main_settings table td {
 	padding: .75rem;
-    vertical-align: top;
     vertical-align: top;
 }
 #preview_media_main_settings table tr + tr td {
@@ -126,13 +126,13 @@ select.button {
 }
 
 /* side metabox */
-#preview_media_side_settings input[type="checkbox"] {
+/*#preview_media_side_settings input[type="checkbox"] {
 	float: left;
-}
-#preview_media_side_settings .name {
-	min-width: 80px;
+}*/
+#preview_media_side_settings table td {
+	vertical-align: top;
+	padding: .25rem;
 }
 #preview_media_side_settings .description {
-	float: left;
 	display: none;
 }

@@ -129,17 +129,17 @@ class isAdminView extends DT_MultiMedia
 		$placeholder = ( $placeholder ) ? "placeholder='".$placeholder."'" : '';
 
 		switch ($type) {
-			case 'select':
-				echo "<select {$name} {$target}>";
-				foreach ($options as $id => $option) {
-					echo "<option value='{$id}'>{$option}</option>";
-				}
-				echo "</select>";
-				break;
-
 			case 'checkbox':
 				$checked = ($value) ? 'checked ' : '';
 				echo "<input {$name} {$target} type='{$type}' {$checked}value='on'>";
+				break;
+
+			case 'select':
+				echo "<select {$name} {$target}>";
+				foreach ($options as $id => $option){
+					echo "<option value='{$id}'>{$option}</option>";
+				}
+				echo "</select>";
 				break;
 
 			default:
@@ -217,10 +217,10 @@ class isAdminView extends DT_MultiMedia
 		}
 	}
 	function validate_main_settings( $post_id ) {
-		if( FALSE === check_security($post_id) )
+		if( FALSE === $this->check_security($post_id) )
 			return $post_id;
 
-		validate_media_attachments($post_id);
+		$this->validate_media_attachments($post_id);
 
 		
 		if(!isset($_POST['type']))
