@@ -159,16 +159,38 @@ function get_dt_side_settings(){
     }
 
 $settings = array(
+    'template' => array(
+       'name' => 'Template',
+       'desc' => 'include CSS template',
+       'type' => 'select',
+       'default' => 'default',
+       'options' => array(
+            ''=>'Не использовать',
+            'default'=>'default'
+            )
+       ),
     'image_size' => array(
        'name' => 'Image size',
        'desc' => '',
        'type' => 'select',
-       'options' => $view_sizes,
+       'options' => $view_sizes
+       ),
+    'image_captions' => array(
+       'name' => 'Show image captions',
+       'desc' => '',
+       'type' => 'checkbox',
        ),
     'lightbox_links' => array(
      'name' => 'Use lightbox',
      'desc' => 'Add links w/ class "zoomin" for lightbox',
      'type' => 'checkbox',
+     ),
+    'lightbox_class' => array(
+     'name' => 'Links class',
+     'desc' => 'Add classes for lightbox links',
+     'type' => 'text',
+     'placeholder' => 'fancybox',
+     // 'default' => 'fancybox',
      )
     );
     return $settings;

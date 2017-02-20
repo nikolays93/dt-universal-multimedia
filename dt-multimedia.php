@@ -3,7 +3,7 @@
  * DT_MultiMedia
  *
  * Plugin Name: MultiMedia
- * Version:     0.3
+ * Version:     0.4
  *
  */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -15,7 +15,7 @@ function cpJsonStr($str){
 
 class DT_MultiMedia
 {
-	public $version = 0.3;
+	public $version = 0.4;
 	
 	function __construct()
 	{
@@ -36,9 +36,10 @@ class DT_MultiMedia
      */
     function is_debug(){
         if( WP_DEBUG ){
-            if( defined(WP_DEBUG_DISPLAY) && WP_DEBUG_DISPLAY){
-                return true;
+            if( defined(WP_DEBUG_DISPLAY) && ! WP_DEBUG_DISPLAY){
+                return false;
             }
+            return true;
         }
         return false;
     }
@@ -93,20 +94,24 @@ class DT_MultiMedia
     protected function get_media_type($media_id){
         return get_post_meta( $media_id, '_'.DT_PREFIX.'type', true );
     }  
-    protected function get_options($post_id=false, $type=false, $update=false){
+    protected function get_options( $post_id=false, $type=false, $update=false, $side=false ){
         if(!$type || !$post_id)
             return false;
 
+        $suffix = ($side === true) ? 'side_' : '';
+
         $result = array();
-        $settings = $this->get_settings($type);
+        $settings = $this->get_settings($type, $side);
         $params = array_keys($settings);
 
         if($update){
-            update_post_meta( $post_id, '_'.DT_PREFIX.'type', $type );
+            if( $side === false )
+                update_post_meta( $post_id, '_'.DT_PREFIX.'type', $type );
+
             $val = $_POST;
         }
         else {
-            $val = get_post_meta($post_id, '_'.DT_PREFIX.'options', true);
+            $val = get_post_meta($post_id, '_'.DT_PREFIX.$suffix.'options', true);
         }
 
         foreach ($params as $param){
@@ -118,11 +123,15 @@ class DT_MultiMedia
             }
         }
         
-        // file_put_contents(DT_MULTIMEDIA_PATH.'/debug.log', print_r($result, 1) );
+        // debug validation
+        //file_put_contents(DT_MULTIMEDIA_PATH.'/debug.log', print_r($result, 1) );
         if($update)
-            update_post_meta( $post_id, '_'.DT_PREFIX.'options', $result );
+            update_post_meta( $post_id, '_'.DT_PREFIX.$suffix.'options', $result );
         else
             return $result;
+    }
+    function get_side_options($post_id=false, $type=false, $update=false){
+        return $this->get_options($post_id, $type, $update, true);
     }
 
     // render shortcode
@@ -131,40 +140,56 @@ class DT_MultiMedia
             'id' => false
             ), $atts );
         $id = intval($atts['id']);
+        
+        // $mblock = get_post($id);
+        // if($mblock->post_status !== 'publish')
+        //     return;
+        if('publish' !== get_post_status( $id )){
+            if($this->is_debug())
+                echo 'Блок не опубликован';
+            return;
+        }
+
         $type = $this->get_media_type($id);
 
         $attachments = get_post_meta( $id, DT_PREFIX.'media_imgs', true );
         $attachments = explode(',', $attachments);
         if( $attachments[0] == '' )
-            if($this->is_debug()) return 'Файлов не найдено'; else return false; 
+            if($this->is_debug()) return 'Файлов не найдено'; else return; 
 
         switch ( $type ) {
             case 'owl-carousel':
                 // load assets
                 $affix = (WP_DEBUG) ? '' : '.min';
                 wp_enqueue_script( 'owl-carousel', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.carousel'.$affix.'.js', array('jquery'), $this->version );
-
                 wp_enqueue_style( 'owl-carousel-core', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.carousel.css', array(), $this->version );
                 wp_enqueue_style( 'owl-carousel-theme', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.theme.css', array(), $this->version );
 
+                // get metas
                 $metas_arr = $this->get_options($id, $type, false );
-
-                $metas_arr = apply_filters( 'array_options_from_view', $metas_arr );
-                var_dump($metas_arr);
-
-                $metas = cpJsonStr( json_encode($metas_arr) );
-                $metas = str_replace('"on"', 'true', $metas);
-                $metas = str_replace('"false"', 'false', $metas);
+                $metas_arr = apply_filters( 'array_options_before_view', $metas_arr );
+                $metas_arr_side = $this->get_side_options($id, $type, false );
+                $metas_arr_side = apply_filters( 'array_side_options_before_view', $metas_arr_side );
+                
+                $script_options = cpJsonStr( json_encode($metas_arr) );
+                $script_options = str_replace('"on"', 'true', $script_options);
+                $script_options = str_replace('"false"', 'false', $script_options);
 
                 $html = array("<div id='slider'>");
                 foreach ($attachments as $attachment) {
-                    $html[] = '   <div>' . wp_get_attachment_image( $attachment ) . '</div>';
+                    $html[] = '  <div class="item">' . wp_get_attachment_image( $attachment );
+
+                    // $image_meta = wp_get_attachment_metadata( $attachment );
+                    if($metas_arr_side['image_captions'])
+                        $html[] = '    <p>'.get_the_excerpt( $attachment ).'</p>';
+
+                    $html[] = '</div>';
                 }
                 $html[] = "</div>";
 
                 $html[] = "<script type='text/javascript'>";
                 $html[] = " jQuery(function($){";
-                $html[] = "     $('#slider').owlCarousel(".$metas.");";
+                $html[] = "     $('#slider').owlCarousel(".$script_options.");";
                 $html[] = " });";
                 $html[] = "</script>";
                 break;
@@ -195,7 +220,7 @@ class DT_MultiMedia
                 'show_ui' => true,
                 'supports' => array('title', 'custom-fields'),
                 'labels' => array(
-                    'name' => 'МультиМедиа'
+                    'name' => 'Медиа блоки'
                 )
             )
         );
@@ -228,7 +253,7 @@ function owl_nextprev( $metas_arr ){
     }
     return $metas_arr;
 }
-add_filter( 'array_options_from_view', 'owl_nextprev', 10 );
+add_filter( 'array_options_before_view', 'owl_nextprev', 10 );
 
 // function rewrite_flush() {
 //     DT_MultiMedia::register_post_types();

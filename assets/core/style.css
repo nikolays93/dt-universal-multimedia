@@ -130,7 +130,7 @@ select.button {
 	float: left;
 }*/
 #preview_media_side_settings table td {
-	vertical-align: top;
+	vertical-align: middle;
 	padding: .25rem;
 }
 #preview_media_side_settings .description {

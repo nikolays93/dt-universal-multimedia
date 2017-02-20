@@ -137,7 +137,8 @@ class isAdminView extends DT_MultiMedia
 			case 'select':
 				echo "<select {$name} {$target}>";
 				foreach ($options as $id => $option){
-					echo "<option value='{$id}'>{$option}</option>";
+					$active = ($value = $id) ? ' selected' : '';
+					echo "<option value='{$id}'{$active}>{$option}</option>";
 				}
 				echo "</select>";
 				break;
@@ -147,7 +148,7 @@ class isAdminView extends DT_MultiMedia
 				break;
 		}
 	}
-	protected function render_settings($settings){
+	protected function render_settings($settings, $side=false){
 		echo '<table valign="top" class="table"><tbody>';
 		foreach ($settings as $id => $value){
 			$is_show = false;
@@ -163,10 +164,12 @@ class isAdminView extends DT_MultiMedia
 			$options     = isset($value['options']) ? $value['options'] : false;
 			$default     = isset($value['default']) ? $value['default'] : false;
 			
-			if(isset($_GET['post']))
+			if(isset($_GET['post'])){
 				$post_id = intval($_GET['post']);
+				$values = ($side) ? $this->get_side_options($post_id, $this->get_media_type($post_id), false )
+					: $this->get_options($post_id, $this->get_media_type($post_id), false );
+			}
 
-			$values = $this->get_options($post_id, $this->get_media_type($post_id), false );
 			if( isset($values[$id]) )
 				$default = $values[$id];
 
@@ -187,7 +190,7 @@ class isAdminView extends DT_MultiMedia
 	}
 	function preview_media_side_settings_callback( $post ){
 		$type = 'owl-carousel';
-		$this->render_settings( $this->get_settings($type, 'side') );
+		$this->render_settings( $this->get_settings($type, 'side'), true );
 	}
 
 	private function check_security( $post_id ){
@@ -222,10 +225,14 @@ class isAdminView extends DT_MultiMedia
 
 		$this->validate_media_attachments($post_id);
 
-		
+		//
+		// file_put_contents(DT_MULTIMEDIA_PATH.'/debug.log', print_r($_POST, 1) );
+		//
+
 		if(!isset($_POST['type']))
 			return $post_id;
 
 		$this->get_options($post_id, $_POST['type'], $update=true );
+		$this->get_side_options($post_id, $_POST['type'], $update=true );
 	}
 }
