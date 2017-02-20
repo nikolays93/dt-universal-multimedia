@@ -3,7 +3,7 @@
  * DT_MultiMedia
  *
  * Plugin Name: MultiMedia
- * Version:     0.4
+ * Version:     0.5
  *
  */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -15,7 +15,7 @@ function cpJsonStr($str){
 
 class DT_MultiMedia
 {
-	public $version = 0.4;
+	public $version = 0.5;
 	
 	function __construct()
 	{
