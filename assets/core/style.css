@@ -136,3 +136,26 @@ select.button {
 #preview_media_side_settings .description {
 	display: none;
 }
+
+#shortcode, #shortcode:hover, #shortcode:focus {
+	font-size: 13px;
+	outline: none;
+	box-shadow: none;
+	border: 0;
+	background: #fff;
+}
+.wrap-sc {
+	background: #fff;
+	padding: 4px 10px;
+	border: 1px solid #ddd;
+	border-left: 2px solid #5b9dd9;
+	padding-left: 10px;
+	margin: 5px 0 0;
+}
+.wrap-sc label {
+	line-height: 24px;
+	float: right;
+}
+.wrap-sc label input[type="checkbox"]{
+	margin-left: 6px;
+}

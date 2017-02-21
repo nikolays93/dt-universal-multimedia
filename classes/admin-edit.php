@@ -17,6 +17,12 @@ class isAdminView extends DT_MultiMedia
 		add_action( 'save_post', array( $this, 'validate_main_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'preview_assets' ) );
 		add_action( 'admin_menu' , array( $this, 'remove_default_divs' ) );
+
+		// add_action('edit_form_after_title', function() {
+		// 	global $post, $wp_meta_boxes;
+		// 	do_meta_boxes(get_current_screen(), 'advanced', $post);
+		// 	unset($wp_meta_boxes[get_post_type($post)]['advanced']);
+		// });
 	}
 
 	function preview_boxes( $post_type ){
@@ -42,6 +48,13 @@ class isAdminView extends DT_MultiMedia
 			DT_MULTIMEDIA_MAIN_TYPE,
 			'side'
 		);
+		add_meta_box(
+			'mb_postexcerpt',
+			__( 'Сообщение блока' ),
+			'custom_excerpt_meta_box',
+			DT_MULTIMEDIA_MAIN_TYPE,
+			'normal'
+		);
 	}
 
 	function preview_assets(){
@@ -58,7 +71,9 @@ class isAdminView extends DT_MultiMedia
 	function remove_default_divs() {
 		remove_meta_box( 'slugdiv',		DT_MULTIMEDIA_MAIN_TYPE, 'normal' ); // ярлык записи,
 		remove_meta_box( 'postcustom',	DT_MULTIMEDIA_MAIN_TYPE, 'normal' ); // Произвольные поля
+		remove_meta_box( 'postexcerpt' , DT_MULTIMEDIA_MAIN_TYPE, 'normal' );
 	}
+
 
 	protected function get_attachments($post){
 		$ids = get_post_meta( $post->ID, DT_PREFIX.'media_imgs', true );
@@ -117,6 +132,11 @@ class isAdminView extends DT_MultiMedia
 			<?php $this->get_attachments($post); ?>
 			<div class="clear"></div>
 		</div>
+		<script type="text/javascript">
+			jQuery(function($){
+				$('#shortcode').on('click', function(){ $(this).select(); });
+			});
+		</script>
 		<?php
 	}
 
@@ -137,7 +157,7 @@ class isAdminView extends DT_MultiMedia
 			case 'select':
 				echo "<select {$name} {$target}>";
 				foreach ($options as $id => $option){
-					$active = ($value = $id) ? ' selected' : '';
+					$active = ($value === $id) ? ' selected' : '';
 					echo "<option value='{$id}'{$active}>{$option}</option>";
 				}
 				echo "</select>";
@@ -232,7 +252,31 @@ class isAdminView extends DT_MultiMedia
 		if(!isset($_POST['type']))
 			return $post_id;
 
+		update_post_meta( $post_id, '_'.DT_PREFIX.'type', $_POST['type'] );
+		
+		if(isset($_POST['show_title']))
+			update_post_meta( $post_id, '_'.DT_PREFIX.'show_title', $_POST['show_title'] );
+
 		$this->get_options($post_id, $_POST['type'], $update=true );
 		$this->get_side_options($post_id, $_POST['type'], $update=true );
 	}
+}
+
+function wrap_shortcode() {
+	global $post, $wp_meta_boxes;
+
+	$is_show = get_post_meta( $post->ID, '_'.DT_PREFIX.'show_title', true ) ? ' checked': '';
+	echo "<div class='wrap-sc'>";
+	echo "<label> Show title <input type='checkbox' name='show_title' value='on'".$is_show."> </label>";
+	echo 'Вставьте шорткод в любую запись Вашего сайта';
+	echo '<input id="shortcode" readonly="readonly" type="text" value="[mblock id='.$post->ID.']">';
+	echo "</div>";
+}
+add_action( 'edit_form_after_title', 'wrap_shortcode' );
+
+function custom_excerpt_meta_box(){
+	global $post; ?>
+	<label class="screen-reader-text" for="excerpt"><?php _e('Excerpt') ?></label>
+	<textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt"><?php echo $post->post_excerpt; // textarea_escaped ?></textarea>
+	<?php
 }

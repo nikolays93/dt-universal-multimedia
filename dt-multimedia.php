@@ -3,7 +3,7 @@
  * DT_MultiMedia
  *
  * Plugin Name: MultiMedia
- * Version:     0.5
+ * Version:     0.6
  *
  */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -15,7 +15,7 @@ function cpJsonStr($str){
 
 class DT_MultiMedia
 {
-	public $version = 0.5;
+	public $version = 0.6;
 	
 	function __construct()
 	{
@@ -92,6 +92,7 @@ class DT_MultiMedia
      * Media output
      */
     protected function get_media_type($media_id){
+
         return get_post_meta( $media_id, '_'.DT_PREFIX.'type', true );
     }  
     protected function get_options( $post_id=false, $type=false, $update=false, $side=false ){
@@ -104,15 +105,7 @@ class DT_MultiMedia
         $settings = $this->get_settings($type, $side);
         $params = array_keys($settings);
 
-        if($update){
-            if( $side === false )
-                update_post_meta( $post_id, '_'.DT_PREFIX.'type', $type );
-
-            $val = $_POST;
-        }
-        else {
-            $val = get_post_meta($post_id, '_'.DT_PREFIX.$suffix.'options', true);
-        }
+        $val = ($update) ? $_POST : get_post_meta($post_id, '_'.DT_PREFIX.$suffix.'options', true);
 
         foreach ($params as $param){
             $default = isset($settings[$param]['default']) ? $settings[$param]['default'] : '';
@@ -131,6 +124,7 @@ class DT_MultiMedia
             return $result;
     }
     function get_side_options($post_id=false, $type=false, $update=false){
+
         return $this->get_options($post_id, $type, $update, true);
     }
 
@@ -140,11 +134,12 @@ class DT_MultiMedia
             'id' => false
             ), $atts );
         $id = intval($atts['id']);
+        $_post = get_post($id);
         
         // $mblock = get_post($id);
         // if($mblock->post_status !== 'publish')
         //     return;
-        if('publish' !== get_post_status( $id )){
+        if('publish' !== $_post->post_status){
             if($this->is_debug())
                 echo 'Блок не опубликован';
             return;
@@ -163,35 +158,59 @@ class DT_MultiMedia
                 $affix = (WP_DEBUG) ? '' : '.min';
                 wp_enqueue_script( 'owl-carousel', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.carousel'.$affix.'.js', array('jquery'), $this->version );
                 wp_enqueue_style( 'owl-carousel-core', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.carousel.css', array(), $this->version );
-                wp_enqueue_style( 'owl-carousel-theme', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.theme.css', array(), $this->version );
-
+                
                 // get metas
                 $metas_arr = $this->get_options($id, $type, false );
                 $metas_arr = apply_filters( 'array_options_before_view', $metas_arr );
                 $metas_arr_side = $this->get_side_options($id, $type, false );
                 $metas_arr_side = apply_filters( 'array_side_options_before_view', $metas_arr_side );
+                extract($metas_arr_side);
+
+                if( isset($template) && $template != 'false' ) {
+                    wp_enqueue_style( 'owl-carousel-theme', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/'.$template.'.theme.css', array(), $this->version );
+                }
+                else {
+                    wp_enqueue_style( 'owl-carousel-theme', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/default.theme.css', array(), $this->version );
+                }
                 
                 $script_options = cpJsonStr( json_encode($metas_arr) );
                 $script_options = str_replace('"on"', 'true', $script_options);
                 $script_options = str_replace('"false"', 'false', $script_options);
 
-                $html = array("<div id='slider'>");
+                $slider_wrap = array("<div id='mediablock-".$id."' class='media-block ".$type."'>", "</div>");
+                $item = array("<div class='item'>", "</div>");
+
+                $class = (isset($lightbox_class)) ? $lightbox_class : 'fancybox';
+
+                $result = array('<section id="mblock">');
+
+                if(get_post_meta( $id, '_'.DT_PREFIX.'show_title', true ))
+                    $result[] = '<h3>'.$_post->post_title . '</h3>';
+                $result[] = $_post->post_excerpt;
+                $result[] = $slider_wrap[0];
                 foreach ($attachments as $attachment) {
-                    $html[] = '  <div class="item">' . wp_get_attachment_image( $attachment );
+                    $href = wp_get_attachment_url( $attachment );
+                    $link =  (isset($lightbox_links)) ?
+                        array('<a href="'.$href.'" class="'.$class.'">', '</a>') : array('', '');
 
-                    // $image_meta = wp_get_attachment_metadata( $attachment );
-                    if($metas_arr_side['image_captions'])
-                        $html[] = '    <p>'.get_the_excerpt( $attachment ).'</p>';
+                    $caption = (isset($image_captions)) ? '<p id="caption">'.get_the_excerpt( $attachment ).'</p>' : '';
 
-                    $html[] = '</div>';
+                    $result[] = $item[0];
+                    $result[] = '   '.$link[0];
+                    $result[] = '       '.wp_get_attachment_image( $attachment, $image_size ); //,null,array(attrs)
+                    $result[] = '       '.$caption;
+                    $result[] = '   '.$link[1];
+                    $result[] = $item[1];
                 }
-                $html[] = "</div>";
+                $result[] = $slider_wrap[1];
+                $result[] = '</section>';
+                    // $image_meta = wp_get_attachment_metadata( $attachment );
 
-                $html[] = "<script type='text/javascript'>";
-                $html[] = " jQuery(function($){";
-                $html[] = "     $('#slider').owlCarousel(".$script_options.");";
-                $html[] = " });";
-                $html[] = "</script>";
+                $result[] = "<script type='text/javascript'>";
+                $result[] = " jQuery(function($){";
+                $result[] = "     $('#mediablock-".$id."').owlCarousel(".$script_options.");";
+                $result[] = " });";
+                $result[] = "</script>";
                 break;
             
             default:
@@ -199,11 +218,11 @@ class DT_MultiMedia
                 break;
         }
         
-        return implode("\n", $html);
+        return implode("\n", $result);
     }
     private function setup_shortcode(){
 
-        add_shortcode( 'media', array($this, 'media_sc') );
+        add_shortcode( 'mblock', array($this, 'media_sc') );
     }
 
     /**
@@ -218,7 +237,7 @@ class DT_MultiMedia
                 'publicly_queryable' => false,
                 'show_in_nav_menus' => false,
                 'show_ui' => true,
-                'supports' => array('title', 'custom-fields'),
+                'supports' => array('title', 'custom-fields', 'excerpt'),
                 'labels' => array(
                     'name' => 'Медиа блоки'
                 )
