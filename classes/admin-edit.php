@@ -264,6 +264,8 @@ class isAdminView extends DT_MultiMedia
 
 function wrap_shortcode() {
 	global $post, $wp_meta_boxes;
+	if($post->post_type !== DT_MULTIMEDIA_MAIN_TYPE)
+		return;
 
 	$is_show = get_post_meta( $post->ID, '_'.DT_PREFIX.'show_title', true ) ? ' checked': '';
 	echo "<div class='wrap-sc'>";

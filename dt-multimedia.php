@@ -3,7 +3,7 @@
  * DT_MultiMedia
  *
  * Plugin Name: MultiMedia
- * Version:     0.6
+ * Version:     1.0 alpha
  *
  */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -15,7 +15,7 @@ function cpJsonStr($str){
 
 class DT_MultiMedia
 {
-	public $version = 0.6;
+	public $version = 1.0;
 	
 	function __construct()
 	{
@@ -185,13 +185,13 @@ class DT_MultiMedia
                 $result = array('<section id="mblock">');
 
                 if(get_post_meta( $id, '_'.DT_PREFIX.'show_title', true ))
-                    $result[] = '<h3>'.$_post->post_title . '</h3>';
-                $result[] = $_post->post_excerpt;
+                    $result[] = '<h3>'. $_post->post_title .'</h3>';
+                $result[] = '<div class="excerpt">'.apply_filters('the_content', $_post->post_excerpt)."</div>";
                 $result[] = $slider_wrap[0];
                 foreach ($attachments as $attachment) {
                     $href = wp_get_attachment_url( $attachment );
                     $link =  (isset($lightbox_links)) ?
-                        array('<a href="'.$href.'" class="'.$class.'">', '</a>') : array('', '');
+                        array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$class.'">', '</a>') : array('', '');
 
                     $caption = (isset($image_captions)) ? '<p id="caption">'.get_the_excerpt( $attachment ).'</p>' : '';
 
