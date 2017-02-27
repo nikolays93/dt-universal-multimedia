@@ -1,11 +1,28 @@
 <?php
 /*
- * DT_MultiMedia
- *
- * Plugin Name: MultiMedia
- * Version:     1.0 alpha
- *
- */
+Plugin Name: Мультимедия блоки
+Plugin URI:
+Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
+Version: 1.0 beta
+Author: NikolayS93
+Author URI: https://vk.com/nikolays_93
+*/
+/*  Copyright 2017  NikolayS93  (email: NikolayS93@ya.ru)
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 function cpJsonStr($str){
@@ -13,7 +30,7 @@ function cpJsonStr($str){
     return iconv('cp1251', 'utf-8', $str);
 }
 
-class DT_MultiMedia
+class DT_MediaBlocks
 {
 	public $version = 1.0;
 	
@@ -249,7 +266,7 @@ class DT_MultiMedia
         add_action('init', array($this, 'register_post_types'));
     }
 }
-new DT_MultiMedia();
+new DT_MediaBlocks();
 
 function owl_nextprev( $metas_arr ){
     if(isset($metas_arr['navigationTextNext']) || isset($metas_arr['navigationTextPrev'])){
