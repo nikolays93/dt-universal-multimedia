@@ -1,5 +1,5 @@
 <?php
-class isAdminView extends DT_MultiMedia
+class isAdminView extends DT_MediaBlocks
 {
 	protected $settings;
 	protected $post_id;

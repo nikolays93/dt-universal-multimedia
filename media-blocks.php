@@ -3,7 +3,7 @@
 Plugin Name: Мультимедия блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.0 beta
+Version: 1.1 beta
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -32,7 +32,7 @@ function cpJsonStr($str){
 
 class DT_MediaBlocks
 {
-	public $version = 1.0;
+	public $version = 1.1;
 	
 	function __construct()
 	{
@@ -65,7 +65,7 @@ class DT_MediaBlocks
         define( 'DT_MULTIMEDIA_MAIN_TYPE', 'multimedia-base');
 
         // define( 'DT_MULTIMEDIA_VERSION',    $this->version );
-        define( 'DT_MULTIMEDIA_BASE_URL',   trailingslashit( plugins_url( 'DT-universal-multimedia' ) ) );
+        define( 'DT_MULTIMEDIA_BASE_URL',   trailingslashit( plugins_url( basename( __DIR__ ) ) ) );
         define( 'DT_MULTIMEDIA_ASSETS_URL', trailingslashit( DT_MULTIMEDIA_BASE_URL . 'assets' ) );
 		define( 'DT_MULTIMEDIA_PATH',       plugin_dir_path( __FILE__ ) );
 	}
