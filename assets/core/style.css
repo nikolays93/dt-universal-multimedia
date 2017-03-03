@@ -74,13 +74,13 @@ select.button {
 	width: 100%;
 	height: auto;
 }
+
+/* tile */
 .dt-media .attachments.tile .attachment:hover input,
 .dt-media .attachments.tile .attachment input:focus {
 	box-shadow: none;
 	opacity: 1;
 }
-
-/* tile */
 .dt-media .attachments.tile > div {
 	box-sizing: border-box;
 	width: 24.8%;
@@ -94,7 +94,9 @@ select.button {
 	opacity: 0.6;
 	margin: -1px 0 0;
 }
-
+.dt-media .attachments.tile .attachment textarea {
+	display: none;
+}
 @media (max-width: 600px){
 	.attachments.tile > div {
 		width: 49.6%;
@@ -102,6 +104,32 @@ select.button {
 	.dt-media label {
 		display: none;
 	}
+}
+
+/*list*/
+.dt-media .attachments.list > div {
+	width: 100%;
+}
+.dt-media .attachments.list .attachment .crop {
+	width: 25%;
+	float: left;
+}
+.dt-media .attachments.list .attachment .item {
+	position: relative;
+	overflow: hidden;
+}
+.dt-media .attachments.list .attachment input {
+	width: 74%;
+}
+.dt-media .attachments.list .attachment textarea {
+	width: 74%;
+    resize: none;
+    margin: 2px 0 -4px;
+}
+    
+.dt-media .attachments.list .attachment .remove {
+    right: auto;
+    left: 2%;
 }
 
 /* settings */

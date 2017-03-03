@@ -4,8 +4,7 @@ class isAdminView extends DT_MediaBlocks
 	protected $settings;
 	protected $post_id;
 
-	function __construct()
-	{	
+	function __construct(){	
 		$this->preview_hooks();
 
 		add_action( 'load-post.php', array( $this, 'preview_hooks' ) );
@@ -17,6 +16,7 @@ class isAdminView extends DT_MediaBlocks
 		add_action( 'save_post', array( $this, 'validate_main_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'preview_assets' ) );
 		add_action( 'admin_menu' , array( $this, 'remove_default_divs' ) );
+		add_action( 'edit_form_after_title', array( $this, 'wrap_shortcode' ) );
 
 		// add_action('edit_form_after_title', function() {
 		// 	global $post, $wp_meta_boxes;
@@ -65,6 +65,119 @@ class isAdminView extends DT_MediaBlocks
 		wp_enqueue_script('dt-preview', DT_MULTIMEDIA_ASSETS_URL.'/core/preview.js', array('jquery'), $this->version);
 	}
 
+	function get_admin_post_id(){
+		if(isset($_GET['post']))
+			return intval($_GET['post']);
+
+		global $post;
+		if(isset($post->ID))
+			return $post->ID;
+
+		return false;
+	}
+	/**
+	  * $active array name > value
+	  */ 
+	function form_render($render=false, $active=array()){
+		if(!$render){ // false or null
+			echo 'Настроек не обнаружено.';
+			return false;
+		}
+
+		if( isset($render['type']) )
+			$render = array($render);
+		
+		$is_table = ( isset($render[0]['label']) || isset($render[0]['desc']) ) ? true : false;
+		if($is_table)
+			echo '<table valign="top" class="table"><tbody>';
+		
+		foreach ($render as $input) {
+			$entry = '';
+			$label = (isset($input['label'])) ? _($input['label']) : false;
+			$desc = (isset($input['desc'])) ? _($input['desc']) : false;
+			unset($input['label']);
+			unset($input['desc']);
+
+			if( !isset($input['name']) )
+				$input['name'] = $input['id'];
+
+			$is_default = isset($input['default']) ? true : false;
+			switch ($input['type']) {
+				case 'checkbox':
+					$checked = ( $is_default || isset($active[$input['name']]) ) ? 'checked' : '';
+					unset($input['default']);
+
+					$input_html = "
+					<input {$input['name']} type='hidden' value=''>
+					<input ";
+					foreach ($input as $attr => $val) {
+						$attr = esc_attr($attr);
+						$val  = esc_attr($val);
+						$input_html .= " {$attr}='{$val}'";
+					}
+					$input_html .= "{$checked} value='on'>";
+					break;
+
+				case 'select':
+					$options = $input['options'];
+					if( isset($active[$input['name']]) ){
+						$entry = $active[$input['name']];
+					}
+					elseif($is_default){
+						$entry = $input['default'];
+						unset($input['default']);
+					}
+					unset($input['options']);
+
+					$input_html = "<select";
+					foreach ($input as $attr => $val) {
+						$attr = esc_attr($attr);
+						$val  = esc_attr($val);
+						$input_html .= " {$attr}='{$val}'";
+					}
+					$input_html .= ">";
+					foreach ($options as $value => $option) {
+						$active_str = ($entry == $value) ? " selected": "";
+						$input_html .= "<option value='{$value}'{$active_str}>{$option}</option>";
+					}
+					$input_html .= "</select>";
+					break;
+
+				default:
+					if( isset($active[$input['name']]) ){
+						$entry = $active[$input['name']];
+					}
+					elseif($is_default){
+						$input['placeholder'] = $input['default'];
+						unset($input['default']);
+					}
+
+					$input_html = "<input";
+					foreach ($input as $attr => $val) {
+						$attr = esc_attr($attr);
+						$val  = esc_attr($val);
+						$input_html .= " {$attr}='{$val}'";
+					}
+					$input_html .= " value='{$entry}'>";
+					break;
+			}
+
+			if(!$is_table){
+				echo $input_html;
+			}
+			else {
+				echo "\n<tr id='{$input['id']}'><td class='name'>{$label}</td>";
+				echo "<td>";
+				echo $input_html;
+				if($desc)
+					echo "<div class='description'>{$desc}</div>";
+				echo "</td></tr>";
+			}
+		} // endforeach
+		if($is_table)
+			echo '</tbody></table>';
+	}
+
 	/**
 	 * Удаляем стандартные блоки
 	 */
@@ -74,12 +187,11 @@ class isAdminView extends DT_MediaBlocks
 		remove_meta_box( 'postexcerpt' , DT_MULTIMEDIA_MAIN_TYPE, 'normal' );
 	}
 
-
 	protected function get_attachments($post){
-		$ids = get_post_meta( $post->ID, DT_PREFIX.'media_imgs', true );
+		$ids = get_post_meta( $post->ID, '_'.DTM_PREFIX.'media_imgs', true );
 		$ids = explode(',', esc_attr($ids));
-
-		echo '<div class="attachments tile" id="dt-media">';
+		$style = $this->get_post_meta($post->ID, 'detail_view') ? 'list' : 'tile';
+		echo '<div class="attachments '.$style.'" id="dt-media">';
 		if($ids[0] != ''){
 			foreach ($ids as $id) { ?>
 			<div class="attachment" data-id="<?php echo $id; ?>">
@@ -88,13 +200,19 @@ class isAdminView extends DT_MediaBlocks
 					$attrs = ( $meta['image_meta']['orientation'] == 1 ) ? array('class' => 'portrait') : array();
 				?>
 				<div class="item">
+				<?php
+					// wp_get_attachment_metadata( $id )
+					$attachment = get_post( $id );
+				?>
 					<span class="dashicons dashicons-no remove"></span>
 					<div class="crop">
 						<?php
 							echo wp_get_attachment_image($id, 'medium', null, $attrs);
 						?>
 					</div>
-					<input type="text" name="attachment_text[<?php echo $id; ?>]" value="<?php echo wp_get_attachment_caption($id); ?>">
+					<input type="text" name="attachment_text[<?php echo $id; ?>]" value="<?php echo $attachment->post_excerpt; ?>">
+					<textarea name="" id="" cols="90" rows="4"><?php echo $attachment->post_content; ?></textarea>
+					<!-- <input type="text"> -->
 					<input type="hidden" id="dt-ids" name="attachment_id[]" value="<?php echo $id; ?>">
 				</div>
 			</div>
@@ -103,116 +221,115 @@ class isAdminView extends DT_MediaBlocks
 		} // if
 		echo '</div>';
 	}
+
+	function wrap_shortcode() {
+		global $post, $wp_meta_boxes;
+		if($post->post_type !== DT_MULTIMEDIA_MAIN_TYPE)
+			return;
+
+		$show_input = array(
+			'id' => 'show_title',
+			'type' => 'checkbox',
+			);
+
+		echo "<div class='wrap-sc'>";
+		echo "<label> "._('Show title');
+		$value = array( $show_input['id'] => $this->get_post_meta($post->ID, $show_input['id']) );
+		$this->form_render($show_input, $value );
+		echo "</label>";
+
+		echo 'Вставьте шорткод в любую запись Вашего сайта';
+		echo '<input id="shortcode" readonly="readonly" type="text" value=\'[mblock id="'.$post->ID.'"]\'>';
+		echo "</div>";
+	}
+
 	function preview_media_edit_callback( $post ) {
 		wp_enqueue_media();
+
+		//_dump( get_post_meta( $post->ID ) );
 		//wp_nonce_field( 'dp_addImages_nonce', 'wp_developer_page_nonce' );
 		?>
 		<div class="dt-media">
 			<div class="hide-if-no-js wp-media-buttons">
-				<button class="button" disabled="true">
-					<!-- <span class="dashicons dashicons-screenoptions"></span> -->
-					<span class="dashicons dashicons-list-view" title="Will be future"></span>
+			<?php
+				//str
+				$is_detail_view = $this->get_post_meta($post->ID, 'detail_view');
+			?>
+				<input type="hidden" name="detail_view" value="<?=$is_detail_view;?>">
+				<button id="detail_view" class="button" type="button">
+					<span class="dashicons dashicons-screenoptions <?php
+						echo ($is_detail_view) ? '' : 'hidden'; ?>"></span>
+					<span class="dashicons dashicons-list-view <?php
+						echo ($is_detail_view) ? 'hidden' : ''; ?>"></span>
 				</button>
 				<button id="upload-images" class="button add_media">
 					<span class="wp-media-buttons-icon"></span> Добавить медиафайл
 				</button>
 			</div>
 			<label>Тип мультимедия: </label>
-			<select class="button">
-				<option value="owl-carousel">Карусель</option>
-				<!-- <option value="slider">Слайдер</option> -->
-				<!-- <option value="gallery">Галерея</option> -->
-				<!-- <option value="query">Запрос</option> -->
-			</select>
-			<select name="type" class="button">
-				<option value="owl-carousel">Совинная карусель</option>
-				<!-- <option value="slick-slider">Скользкий слайдер</option> -->
-			</select>
-			
+			<?php
+				$type = $this->get_media_type( $post->ID );
+				$this->form_render( $this->get_settings('general'), array(
+					'main_type' =>$type[0],
+					'type'      =>$type[1]
+					));
+			?>
 			<?php $this->get_attachments($post); ?>
 			<div class="clear"></div>
 		</div>
 		<script type="text/javascript">
 			jQuery(function($){
 				$('#shortcode').on('click', function(){ $(this).select(); });
+				
+				$('#main_type').on('change', function(){
+					var val = $(this).val();
+					$('[name=type]').each(function(){
+						if( $(this).hasClass(val) ){
+							$(this).slideDown();
+							$(this).removeAttr('disabled');
+						} else {
+							$(this).hide();
+							$(this).attr('disabled', 'disable');
+						}
+					});
+				});
+				$('#main_type').change();
+
+				$('#detail_view').on('click', function(e){
+					e.preventDefault();
+					// toggleValue
+					if($('[name="detail_view"]').val() == 'on')
+						$('[name="detail_view"]').val('')
+					else 
+						$('[name="detail_view"]').val('on')
+
+					$(this).find('span').each(function(){
+						$(this).toggleClass('hidden');
+					});
+					$('#dt-media').toggleClass('tile');
+					$('#dt-media').toggleClass('list');
+				});
 			});
 		</script>
 		<?php
 	}
 
-	protected function render_input($name, $type, $value, $placeholder, $options, $target, $is_show){
-		$name = ( $name ) ? "name='".$name."'": '';
-		$target = ( $target ) ? "data-target='".$target."'" : '';
-		if($target != '')
-			$target .= ($is_show) ? " data-action='show'" : " data-action='hide'";
-
-		$placeholder = ( $placeholder ) ? "placeholder='".$placeholder."'" : '';
-
-		switch ($type) {
-			case 'checkbox':
-				$checked = ($value) ? 'checked ' : '';
-				echo "<input {$name} {$target} type='{$type}' {$checked}value='on'>";
-				break;
-
-			case 'select':
-				echo "<select {$name} {$target}>";
-				foreach ($options as $id => $option){
-					$active = ($value === $id) ? ' selected' : '';
-					echo "<option value='{$id}'{$active}>{$option}</option>";
-				}
-				echo "</select>";
-				break;
-
-			default:
-				echo "<input {$name} {$target} type='{$type}' {$placeholder} value='".$value."'>";
-				break;
-		}
-	}
-	protected function render_settings($settings, $side=false){
-		echo '<table valign="top" class="table"><tbody>';
-		foreach ($settings as $id => $value){
-			$is_show = false;
-			$target = false;
-			if(isset($value['show'])){
-				$target = $value['show'];
-				$is_show = true;
-			}
-			if(isset($value['hide']))
-				$target = $value['hide'];
-
-			$placeholder = isset($value['placeholder']) ? $value['placeholder'] : false;
-			$options     = isset($value['options']) ? $value['options'] : false;
-			$default     = isset($value['default']) ? $value['default'] : false;
-			
-			if(isset($_GET['post'])){
-				$post_id = intval($_GET['post']);
-				$values = ($side) ? $this->get_side_options($post_id, $this->get_media_type($post_id), false )
-					: $this->get_options($post_id, $this->get_media_type($post_id), false );
-			}
-
-			if( isset($values[$id]) )
-				$default = $values[$id];
-
-			echo "\n<tr id='{$id}'>";
-			echo "<td class='name'>".$value['name']."</td>";
-			echo "<td>";
-			echo $this->render_input($id, $value['type'], $default, $placeholder, $options, $target, $is_show);
-			if(isset($value['desc']))
-				echo "<div class='description'>{$value['desc']}</div>";
-			echo "</td></tr>";
-		}
-		echo '</tbody></table>';
-		//_d($settings);
-	}
+	// main settings
 	function preview_media_main_settings_callback( $post ) {
-		$type = 'owl-carousel';
-		$this->render_settings( $this->get_settings($type) );
+		$type_name = 'type';
+		$type = $this->get_post_meta($post->ID, $type_name);
+		$this->form_render( $this->get_settings($type), $this->set_post_meta($post->ID, $type.'_opt') );
 	}
+	// side settings
 	function preview_media_side_settings_callback( $post ){
-		$type = 'owl-carousel';
-		$this->render_settings( $this->get_settings($type, 'side'), true );
+		$type_name = 'main_type';
+		$type = $this->get_post_meta($post->ID, $type_name); // carousel
+		$this->form_render( $this->get_settings($type), $this->set_post_meta($post->ID, $type.'_opt') );
 	}
 
+	/**
+	 * Block : Validation
+	 */
 	private function check_security( $post_id ){
 		// if ( ! isset( $_POST['wp_developer_page_nonce'] ) )
 		// return $post_id;
@@ -230,7 +347,7 @@ class isAdminView extends DT_MediaBlocks
 
 		$attachment_ids = $_POST['attachment_id'];
 		$attachment_ids = implode(',', $attachment_ids);
-		update_post_meta( $post_id, DT_PREFIX.'media_imgs', $attachment_ids );
+		update_post_meta( $post_id, '_'.DTM_PREFIX.'media_imgs', $attachment_ids );
 
 		if(isset($_POST['attachment_text']) && is_array($_POST['attachment_text'])){
 			$metas = $_POST['attachment_text'];
@@ -239,42 +356,27 @@ class isAdminView extends DT_MediaBlocks
 			}
 		}
 	}
+
 	function validate_main_settings( $post_id ) {
 		if( FALSE === $this->check_security($post_id) )
 			return $post_id;
 
+		// _dtm_media_imgs
 		$this->validate_media_attachments($post_id);
 
-		//
-		// file_put_contents(DT_MULTIMEDIA_PATH.'/debug.log', print_r($_POST, 1) );
-		//
+		$this->set_post_meta($post_id, 'show_title', true);
+		$this->set_post_meta($post_id, 'detail_view', true);
 
-		if(!isset($_POST['type']))
+		if(!isset($_POST['type']) || !isset($_POST['main_type']))
 			return $post_id;
 
-		update_post_meta( $post_id, '_'.DT_PREFIX.'type', $_POST['type'] );
+		$this->set_post_meta($post_id, 'main_type', true);
+		$this->set_post_meta($post_id, 'type', true);
 		
-		if(isset($_POST['show_title']))
-			update_post_meta( $post_id, '_'.DT_PREFIX.'show_title', $_POST['show_title'] );
-
-		$this->get_options($post_id, $_POST['type'], $update=true );
-		$this->get_side_options($post_id, $_POST['type'], $update=true );
+		$this->set_meta_settings($post_id, $_POST['main_type'], $_POST );
+		$this->set_meta_settings($post_id, $_POST['type'], $_POST );
 	}
 }
-
-function wrap_shortcode() {
-	global $post, $wp_meta_boxes;
-	if($post->post_type !== DT_MULTIMEDIA_MAIN_TYPE)
-		return;
-
-	$is_show = get_post_meta( $post->ID, '_'.DT_PREFIX.'show_title', true ) ? ' checked': '';
-	echo "<div class='wrap-sc'>";
-	echo "<label> Show title <input type='checkbox' name='show_title' value='on'".$is_show."> </label>";
-	echo 'Вставьте шорткод в любую запись Вашего сайта';
-	echo '<input id="shortcode" readonly="readonly" type="text" value="[mblock id='.$post->ID.']">';
-	echo "</div>";
-}
-add_action( 'edit_form_after_title', 'wrap_shortcode' );
 
 function custom_excerpt_meta_box(){
 	global $post; ?>

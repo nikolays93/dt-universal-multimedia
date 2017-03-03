@@ -2,7 +2,7 @@ jQuery(function($){
   var frame, media_ids = [],
       metaBox = $('#preview_media_edit.postbox'), // Your meta box id here
       addImgLink = metaBox.find('#upload-images'),
-      imgsContainer = metaBox.find('#dt-media.tile');
+      imgsContainer = metaBox.find('#dt-media');
   
   function setRemoveTrigger(){
 		jQuery('.remove', imgsContainer).on('click', function(e){
@@ -82,48 +82,54 @@ jQuery(function($){
   });
   setRemoveTrigger();
 
-  // data-toggle
-  function setDataToggle(jq){
-    var toggle = jq.attr('data-target');
-    if(toggle != undefined){
-      toggle = toggle.split(', ');
-      toggle.forEach(function(item, i){ $('#'+item+' td').slideToggle(); });
-      // if( jq.is(':checked') ){
-      //   toggle.forEach(function(item, i){ $('#'+item+' td').slideUp(); });
-      // }
-      // else {
-      //   toggle.forEach(function(item, i){ $('#'+item+' td').slideDown(); });
-      // }
+  function doDataAction(target, action='toggle'){
+    if(target != undefined){
+      target = target.split(', ');
+      target.forEach(function(item, i){
+        if(action == 'toggle' )
+          $('#'+item+' td').slideToggle();
+        else if(action == 'show')
+          $('#'+item+' td').slideDown();
+        else if(action == 'hide')
+          $('#'+item+' td').slideUp();
+      });
     }
   }
-  
 
-  $('form#post').on('submit', function(){
-    $('input[type="checkbox"]', this).each(function(i){
-      if( !$(this).is(':checked') )
-        $(this).val('').attr("checked", true);
+  var data = ["data-show", "data-hide"];
+  data.forEach(function(attr, i){
+    $('['+attr+']').on('change', function(){
+      doDataAction( $(this).attr(attr) );
     });
   });
 
-  jQuery(document).ready(function($) {
-    $('#preview_media_main_settings input[type="checkbox"]').on('change', function(){
-      setDataToggle($(this));
-    });
-    $('#preview_media_main_settings input[type="checkbox"]').each(function(i){
-      if( $(this).is(':checked') && $(this).attr('data-action') == 'hide')
-        setDataToggle($(this));
-        
-      if( ! $(this).is(':checked') && $(this).attr('data-action') == 'show' )
-        setDataToggle($(this));
-    });
+  $('[data-show]').each(function(){
+    if(! $(this).is(':checked') ){
+      doDataAction( $(this).attr('data-show') );
+    }
+  });
+  $('[data-hide]').each(function(){
+    if( $(this).is(':checked') ){
+      doDataAction( $(this).attr('data-hide') );
+    }
+  });
+  
+  // $('#preview_media_main_settings input[type="checkbox"]').on('change', function(){
+  //   setDataToggle($(this));
+  // });
+  // $('#preview_media_main_settings input[type="checkbox"]').each(function(i){
+  //   if( $(this).is(':checked') && $(this).attr('data-action') == 'hide')
+  //     setDataToggle($(this));
 
-    $('input[type=\'text\'], input[type=\'number\'], textarea').on('focus', function(){
-      if($(this).val() == ''){
-        $(this).val($(this).attr('placeholder'));
-        $(this).select();
-      }
-    });
+  //   if( ! $(this).is(':checked') && $(this).attr('data-action') == 'show' )
+  //     setDataToggle($(this));
+  // });
 
+  $('input[type=\'text\'], input[type=\'number\'], textarea').on('focus', function(){
+    if($(this).val() == ''){
+      $(this).val($(this).attr('placeholder'));
+      $(this).select();
+    }
   });
 
 });

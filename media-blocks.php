@@ -3,7 +3,7 @@
 Plugin Name: Мультимедия блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.1 beta
+Version: 1.2.2 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -25,124 +25,203 @@ Author URI: https://vk.com/nikolays_93
 */
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-function cpJsonStr($str){
+if(!function_exists('is_wp_debug')){
+  function is_wp_debug(){
+    if( WP_DEBUG ){
+      if( defined(WP_DEBUG_DISPLAY) && ! WP_DEBUG_DISPLAY){
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+}
+if(!function_exists('cpJsonStr')){
+  function cpJsonStr($str){
     $str = preg_replace_callback('/\\\\u([a-f0-9]{4})/i', create_function('$m', 'return chr(hexdec($m[1])-1072+224);'), $str);
     return iconv('cp1251', 'utf-8', $str);
+  }
 }
 
 class DT_MediaBlocks
 {
-	public $version = 1.1;
-	
-	function __construct()
-	{
-        $this->define_constants();
-        $this->add_required_classes();
-        $this->setup_actions();
-        // $this->setup_filters();
-        $this->setup_shortcode();
-        
+  public $version = 1.3;
+  
+  protected $errors = array();
 
-        if(is_admin()){
-            if(class_exists('isAdminView'))
-                new isAdminView();
-        }
-	}
+    function __construct(){
+      $this->define_constants();
+      $this->add_required_classes();
+      $this->setup_actions();
+          // $this->setup_filters();
+      $this->setup_shortcode();
+
+      if(is_admin())
+        new isAdminView();
+    }
+
     /**
      * SETUP global methods
      */
-    function is_debug(){
-        if( WP_DEBUG ){
-            if( defined(WP_DEBUG_DISPLAY) && ! WP_DEBUG_DISPLAY){
-                return false;
-            }
-            return true;
-        }
-        return false;
+    function show_admin_notice(){
+      if(sizeof($this->errors) == 0)
+        return;
+
+      foreach ($this->errors as $error) {
+        $type = (isset($error['type'])) ? $error['type'] . ' ' : ' ';
+        $msg = (isset($error['msg'])) ? apply_filters('the_content', $error['msg']) : false;
+        if($msg)
+          echo '
+        <div id="message" class="'.$type.'notice is-dismissible">
+          '.$msg.'
+        </div>';
+        else
+          echo '
+        <div id="message" class="'.$type.'notice is-dismissible">
+          <p>Обнаружена неизвестная ошибка!</p>
+        </div>';
+      }
     }
-	private function define_constants() {
-        define( 'DT_PREFIX', 'dtmm_');
-        define( 'DT_MULTIMEDIA_MAIN_TYPE', 'multimedia-base');
+    protected function set_notice($msg=false, $type='error'){
+      $this->errors[] = array('type' => $type, 'msg' => $msg);
+
+      add_action( 'admin_notices', array($this, 'show_admin_notice') );
+      return false;
+    }
+
+    private function define_constants() {
+      define( 'DTM_PREFIX', 'dtmm_');
+      define( 'DT_MULTIMEDIA_MAIN_TYPE', 'multimedia-base');
 
         // define( 'DT_MULTIMEDIA_VERSION',    $this->version );
-        define( 'DT_MULTIMEDIA_BASE_URL',   trailingslashit( plugins_url( basename( __DIR__ ) ) ) );
-        define( 'DT_MULTIMEDIA_ASSETS_URL', trailingslashit( DT_MULTIMEDIA_BASE_URL . 'assets' ) );
-		define( 'DT_MULTIMEDIA_PATH',       plugin_dir_path( __FILE__ ) );
-	}
-	private function required_classes(){
-		return array(
-            'isAdminView'             => DT_MULTIMEDIA_PATH . '/classes/admin-edit.php',
-        );
-	}
-	private function add_required_classes(){
-		foreach ( $this->required_classes() as $id => $path ) {
-			if ( is_readable( $path ) && ! class_exists( $id ) ) {
-				require_once( $path );
-			}
-            else {
-                add_action( 'admin_notices', function(){
-                    echo '
-                    <div id="message" class="error notice is-dismissible">
-                        <p>Обнаружен поврежденный класс!</p>
-                    </div>';
-                });
-            }
-		}
-	}
-    function get_settings($type=false, $side=false){
-        if($type === false)
-            return;
-
-        require_once(DT_MULTIMEDIA_PATH.'/settings/'.$type.'.php');
-        if(false === $side){
-            if(function_exists('get_dt_settings'))
-                return get_dt_settings();
-        }
-        else {
-            if(function_exists('get_dt_side_settings'))
-                return get_dt_side_settings();
-        }
-
-        return array();
+      define( 'DT_MULTIMEDIA_BASE_URL',   trailingslashit( plugins_url( basename( __DIR__ ) ) ) );
+      define( 'DT_MULTIMEDIA_ASSETS_URL', trailingslashit( DT_MULTIMEDIA_BASE_URL . 'assets' ) );
+      define( 'DT_MULTIMEDIA_PATH',       plugin_dir_path( __FILE__ ) );
     }
+
+    private function add_required_classes(){
+      if(is_admin())
+        $classes = array('isAdminView' => DT_MULTIMEDIA_PATH . '/classes/admin-edit.php');
+
+      if(!isset($classes))
+        return false;
+
+      foreach ( $classes as $id => $path ) {
+        if ( is_readable( $path ) && ! class_exists( $id ) ) 
+          require_once( $path );
+        else
+          $this->set_notice('Обнаружен поврежденный класс!');
+      }
+    }
+
+    /**
+     * Set global actions
+     */
+    function register_post_types(){
+      register_post_type( DT_MULTIMEDIA_MAIN_TYPE, array(
+        'query_var' => false,
+        'rewrite' => false,
+        'public' => false,
+        'exclude_from_search' => true,
+        'publicly_queryable' => false,
+        'show_in_nav_menus' => false,
+        'show_ui' => true,
+        'supports' => array('title', 'custom-fields', 'excerpt'),
+        'labels' => array(
+          'name' => 'Медиа блоки'
+          )
+        )
+      );
+    }
+    function setup_actions(){
+
+      add_action('init', array($this, 'register_post_types'));
+    }
+
+    protected function get_settings($file=false) {
+      if($file === false)
+        return false;
+
+      $path = DT_MULTIMEDIA_PATH.'/settings/'.$file.'.php';
+
+      if ( is_readable( $path ) ) 
+        return include( $path );
+      else
+        $this->set_notice('Обнаружен поврежденный файл настроек!');
+    }
+    protected function set_post_meta($post_id, $var, $is_record=false){
+      if( !isset($post_id) || !isset($var) )
+        return false;
+
+      if($is_record){
+        if(isset($_POST[$var]))
+          update_post_meta( $post_id, '_'.DTM_PREFIX.$var, $_POST[$var] );
+      }
+      else {
+        return get_post_meta( $post_id, '_'.DTM_PREFIX.$var, true );
+      }
+    }
+    protected function set_meta_settings($post_id, $settings_name, $post_values){
+      if(!$settings_name || !$post_id)
+        return false;
+
+      if($post_values){
+        $in_set = $post_values;
+        $is_record = true;
+      }
+      else {
+        $in_set = $this->get_post_meta($post_id,$settings_name.'_opt');
+        $is_record = false;
+      }
+
+      $settings = $this->get_settings($settings_name);
+
+      $result = array();
+      foreach ($settings as $param){
+        if( isset($param['id']) )
+          $param_name = $param['id'];
+        else
+          $param_name = (isset($param['name'])) ? $param['name'] : '';
+
+        if(isset($param['default']))
+          $default = $param['default'];
+        else
+          $default = isset($param['placeholder']) ? $param['placeholder'] : '';
+
+        if(isset($in_set[$param_name]) && $in_set[$param_name] != $default){
+          if($in_set[$param_name] == '' && $param['type'] == 'checkbox')
+              $in_set[$param_name] = 'false';
+
+          if( $in_set[$param_name] != '' )
+            $result[$param_name] = $in_set[$param_name];
+        }
+
+      }
+      
+      // file_put_contents(DT_MULTIMEDIA_PATH . 'debug2.log', print_r($result, 1) );
+
+      if($is_record)
+        update_post_meta( $post_id, '_'.DTM_PREFIX.$settings_name.'_opt', $result );
+      else
+        return $result;
+    }
+
     /**
      * Media output
      */
     protected function get_media_type($media_id){
-
-        return get_post_meta( $media_id, '_'.DT_PREFIX.'type', true );
-    }  
-    protected function get_options( $post_id=false, $type=false, $update=false, $side=false ){
-        if(!$type || !$post_id)
-            return false;
-
-        $suffix = ($side === true) ? 'side_' : '';
-
-        $result = array();
-        $settings = $this->get_settings($type, $side);
-        $params = array_keys($settings);
-
-        $val = ($update) ? $_POST : get_post_meta($post_id, '_'.DT_PREFIX.$suffix.'options', true);
-
-        foreach ($params as $param){
-            $default = isset($settings[$param]['default']) ? $settings[$param]['default'] : '';
-
-            if(isset($val[$param]) && $val[$param] != $default){
-                if($val[$param] == '') $val[$param] = 'false';
-                $result[$param] = $val[$param];
-            }
-        }
-        
-        // debug validation
-        //file_put_contents(DT_MULTIMEDIA_PATH.'/debug.log', print_r($result, 1) );
-        if($update)
-            update_post_meta( $post_id, '_'.DT_PREFIX.$suffix.'options', $result );
-        else
-            return $result;
+      $main_type = get_post_meta( $media_id, '_'.DTM_PREFIX.'main_type', true );
+      $type = get_post_meta( $media_id, '_'.DTM_PREFIX.'type', true );
+      
+      return array($main_type, $type);
     }
-    function get_side_options($post_id=false, $type=false, $update=false){
+    protected function get_meta_settings($post_id, $settings_name){
 
-        return $this->get_options($post_id, $type, $update, true);
+      return $this->set_meta_settings($post_id, $settings_name, false);
+    }
+    protected function get_post_meta($post_id, $var){
+
+      return $this->set_post_meta($post_id, $var);
     }
 
     // render shortcode
@@ -157,19 +236,20 @@ class DT_MediaBlocks
         // if($mblock->post_status !== 'publish')
         //     return;
         if('publish' !== $_post->post_status){
-            if($this->is_debug())
+            if(is_wp_debug())
                 echo 'Блок не опубликован';
             return;
         }
 
         $type = $this->get_media_type($id);
+        if(!is_array($type))
+          return false;
 
-        $attachments = get_post_meta( $id, DT_PREFIX.'media_imgs', true );
-        $attachments = explode(',', $attachments);
-        if( $attachments[0] == '' )
-            if($this->is_debug()) return 'Файлов не найдено'; else return; 
+        $attachments = explode(',', $this->get_post_meta($id, 'media_imgs'));
+        if( sizeof($attachments) == 0 )
+            if(is_wp_debug()) return 'Файлов не найдено'; else return; 
 
-        switch ( $type ) {
+        switch ( $type[1] ) {
             case 'owl-carousel':
                 // load assets
                 $affix = (WP_DEBUG) ? '' : '.min';
@@ -177,9 +257,9 @@ class DT_MediaBlocks
                 wp_enqueue_style( 'owl-carousel-core', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.carousel.css', array(), $this->version );
                 
                 // get metas
-                $metas_arr = $this->get_options($id, $type, false );
+                $metas_arr = $this->get_meta_settings($id, $type[1]);
                 $metas_arr = apply_filters( 'array_options_before_view', $metas_arr );
-                $metas_arr_side = $this->get_side_options($id, $type, false );
+                $metas_arr_side = $this->get_meta_settings($id, $type[0]);
                 $metas_arr_side = apply_filters( 'array_side_options_before_view', $metas_arr_side );
                 extract($metas_arr_side);
 
@@ -194,14 +274,14 @@ class DT_MediaBlocks
                 $script_options = str_replace('"on"', 'true', $script_options);
                 $script_options = str_replace('"false"', 'false', $script_options);
 
-                $slider_wrap = array("<div id='mediablock-".$id."' class='media-block ".$type."'>", "</div>");
+                $slider_wrap = array("<div id='mediablock-{$id}' class='media-block {$type[0]} {$type[1]}'>", "</div>");
                 $item = array("<div class='item'>", "</div>");
 
                 $class = (isset($lightbox_class)) ? $lightbox_class : 'fancybox';
 
                 $result = array('<section id="mblock">');
 
-                if(get_post_meta( $id, '_'.DT_PREFIX.'show_title', true ))
+                if(get_post_meta( $id, '_'.DTM_PREFIX.'show_title', true ))
                     $result[] = '<h3>'. $_post->post_title .'</h3>';
                 $result[] = '<div class="excerpt">'.apply_filters('the_content', $_post->post_excerpt)."</div>";
                 $result[] = $slider_wrap[0];
@@ -240,30 +320,6 @@ class DT_MediaBlocks
     private function setup_shortcode(){
 
         add_shortcode( 'mblock', array($this, 'media_sc') );
-    }
-
-    /**
-     * Set global actions
-     */
-	function register_post_types(){
-		register_post_type( DT_MULTIMEDIA_MAIN_TYPE, array(
-                'query_var' => false,
-                'rewrite' => false,
-                'public' => false,
-                'exclude_from_search' => true,
-                'publicly_queryable' => false,
-                'show_in_nav_menus' => false,
-                'show_ui' => true,
-                'supports' => array('title', 'custom-fields', 'excerpt'),
-                'labels' => array(
-                    'name' => 'Медиа блоки'
-                )
-            )
-        );
-	}
-    function setup_actions(){
-
-        add_action('init', array($this, 'register_post_types'));
     }
 }
 new DT_MediaBlocks();

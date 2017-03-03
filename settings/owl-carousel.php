@@ -1,144 +1,165 @@
 <?php
 defined( 'ABSPATH' ) or die();
  
-// $id, $name, $type, $value - required
-function get_dt_settings(){
+// $id, $label, $type, $value - required
 $settings = array(
 // Responsive
-    'responsive' => array(
-        'name' => 'Non responsive',
+    array(
+        'id' => 'responsive',
+        'label' => 'Non responsive',
         'desc' => 'Use Owl Carousel on desktop-only website',
         'type' => 'checkbox',
-        'hide' => 'itemsDesktop, itemsDesktopSmall, itemsTablet, itemsMobile',
+        'data-hide' => 'itemsDesktop, itemsDesktopSmall, itemsTablet, itemsMobile',
     ),
-    'items' => array(
-        'name' => 'Items',
+    array(
+        'id' => 'items',
+        'label' => 'Items',
         'desc' => 'The number of items you want to see on the screen.',
         'type' => 'number',
-        'placeholder' => 5,
+        'default' => 5,
     ),
-    'itemsDesktop' => array(
-        'name' => 'Items Desktop',
+    array(
+        'id' => 'itemsDesktop',
+        'label' => 'Items Desktop',
         'desc' => 'The number of items on desktop resolutions (1199px)',
-        'placeholder' => 4,
+        'default' => 4,
         'type' => 'number',
     ),
-    'itemsDesktopSmall' => array(
-        'name' => 'Items Desktop Small',
+    array(
+        'id' => 'itemsDesktopSmall',
+        'label' => 'Items Desktop Small',
         'desc' => 'The number of items on small desktop resolutions (979px)',
-        'placeholder' => 3,
+        'default' => 3,
         'type' => 'number'
     ),
-    'itemsTablet' => array(
-        'name' => 'Items Tablet',
+    array(
+        'id' => 'itemsTablet',
+        'label' => 'Items Tablet',
         'desc' => 'The number of items on tablet resolutions (768px)',
-        'placeholder' => 2,
+        'default' => 2,
         'type' => 'number'
     ),
-    'itemsMobile' => array(
-        'name' => 'Items Mobile',
+    array(
+        'id' => 'itemsMobile',
+        'label' => 'Items Mobile',
         'desc' => 'The number of items on mobile resolutions (479px)',
-        'placeholder' => 1,
+        'default' => 1,
         'type' => 'number',
     ),
 
 // autoPlay
-    'autoPlay' => array(
-        'name' => 'Auto Play',
+    array(
+        'id' => 'autoPlay' ,
+        'label' => 'Auto Play',
         'desc' => 'Change to any integrer for example autoPlay : 5000 to play every 5 seconds, or 0 to disable autoPlay.',
-        'placeholder' => 4000,
+        'default' => 4000,
         'type' => 'number'
     ),
-    'stopOnHover' => array(
-        'name' => 'Stop On Hover',
+    array(
+        'id' => 'stopOnHover' ,
+        'label' => 'Stop On Hover',
         'desc' => 'Stop autoplay on mouse hover',
         'type' => 'checkbox',
         'default' => 'on'
     ),
     
 // Pagination
-    'pagination' => array(
-        'name' => 'Pagination',
+    array(
+        'id' => 'pagination',
+        'label' => 'Pagination',
         'desc' => 'Hide pagination.',
         'type' => 'checkbox',
         'default' => 'on',
-        'hide' => 'paginationNumbers, paginationSpeed'
+        'data-hide' => 'paginationNumbers, paginationSpeed'
     ),
-    'paginationNumbers' => array(
-        'name' => 'Pagination Numbers',
+    array(
+        'id' => 'paginationNumbers',
+        'label' => 'Pagination Numbers',
         'desc' => 'Show numbers inside pagination buttons',
         'type' => 'checkbox',
     ),
-    'paginationSpeed' => array(
-        'name' => 'Pagination Speed',
+    array(
+        'id' => 'paginationSpeed',
+        'label' => 'Pagination Speed',
         'desc' => 'Pagination speed in milliseconds.',
-        'placeholder' => 800,
+        'default' => 800,
         'type' => 'number',
     ),
 
 // Navigation
-    'navigation' => array(
-        'name' => 'Navigation',
+    array(
+        'id' => 'navigation',
+        'label' => 'Navigation',
         'desc' => 'Display "next" and "prev" buttons.',
         'type' => 'checkbox',
-        'show' => 'navigationTextNext, navigationTextPrev'
+        'data-show' => 'navigationTextNext, navigationTextPrev'
     ),
-    'navigationTextPrev' => array(
-        'name' => 'Navigation "Prev"',
+    array(
+        'id' => 'navigationTextPrev',
+        'label' => 'Navigation "Prev"',
         'desc' => 'Text on "Prev" button',
-        'placeholder' => 'Prev',
+        'default' => 'Prev',
         'type' => 'text',
     ),
-    'navigationTextNext' => array(
-        'name' => 'Navigation "Next"',
+    array(
+        'id' => 'navigationTextNext',
+        'label' => 'Navigation "Next"',
         'desc' => 'Text on "Next" button',
-        'placeholder' => 'Next',
+        'default' => 'Next',
         'type' => 'text',
     ),
-    'rewindNav' => array(
-        'name' => 'Rewind',
+    array(
+        'id' => 'rewindNav',
+        'label' => 'Rewind',
         'desc' => 'Slide to first item.',
         'type' => 'checkbox',
         'default' => 'on',
-        'show' => 'rewindSpeed'
+        'data-show' => 'rewindSpeed'
     ),
-    'rewindSpeed' => array(
-        'name' => 'Rewind Speed',
+    array(
+        'id' => 'rewindSpeed',
+        'label' => 'Rewind Speed',
         'desc' => 'Rewind speed in milliseconds.',
-        'placeholder' => 1000,
+        'default' => 1000,
         'type' => 'number'
     ),
-    'scrollPerPage' => array(
-        'name' => 'Scroll per Page',
+    array(
+        'id' => 'scrollPerPage',
+        'label' => 'Scroll per Page',
         'desc' => 'Scroll per page not per item. This affect next/prev buttons and mouse/touch dragging.',
         'type' => 'checkbox',
     ),
 
-    'autoHeight' => array(
-        'name' => 'Auto Height',
+    array(
+        'id' => 'autoHeight',
+        'label' => 'Auto Height',
         'desc' => 'Add height to owl-wrapper-outer so you can use diffrent heights on slides. Use it only for one item per page setting.',
         'type' => 'checkbox',
     ),
-    'addClassActive' => array(
-        'name' => 'Add Class Active',
+    array(
+        'id' => 'addClassActive',
+        'label' => 'Add Class Active',
         'desc' => 'Add "active" classes on visible items. Works with any numbers of items on screen.',
         'type' => 'checkbox',
     ),
 
-    'mouseDrag' => array(
-        'name' => 'Mouse Drag',
+    array(
+        'id' => 'mouseDrag',
+        'label' => 'Mouse Drag',
         'desc' => 'Turn on mouse events.',
         'type' => 'checkbox',
         'default' => 'on'
     ),
-    'touchDrag' => array(
-        'name' => 'Touch Drag',
+    array(
+        'id' => 'touchDrag',
+        'label' => 'Touch Drag',
         'desc' => 'Turn on touch events.',
         'type' => 'checkbox',
         'default' => 'on'
     ),
-    'dragBeforeAnimFinish' => array(
-        'name' => 'Drag Before Animation Finishes',
+    array(
+        'id' => 'dragBeforeAnimFinish',
+        'label' => 'Drag Before Animation Finishes',
         'desc' => 'Ignore whether a transition is done (only dragging).',
         'type' => 'checkbox',
         'default' => 'on'
@@ -149,64 +170,18 @@ if( get_theme_mod( 'site-format' ) )
     $settings['responsive']['default'] = 'on';
 
 return $settings;
-}
-
-function get_dt_side_settings(){
-    $sizes = get_intermediate_image_sizes();
-    $view_sizes = array();
-    foreach ($sizes as $value) {
-        $view_sizes[$value] = $value;
-    }
-
-$settings = array(
-    'template' => array(
-       'name' => 'Template',
-       'desc' => 'include CSS template',
-       'type' => 'select',
-       'default' => 'default',
-       'options' => array(
-            ''=>'Не использовать',
-            'default'=>'default'
-            )
-       ),
-    'image_size' => array(
-       'name' => 'Image size',
-       'desc' => '',
-       'type' => 'select',
-       'options' => $view_sizes
-       ),
-    'image_captions' => array(
-       'name' => 'Show image captions',
-       'desc' => '',
-       'type' => 'checkbox',
-       ),
-    'lightbox_links' => array(
-     'name' => 'Use lightbox',
-     'desc' => 'Add links w/ class "zoomin" for lightbox',
-     'type' => 'checkbox',
-     ),
-    'lightbox_class' => array(
-     'name' => 'Links class',
-     'desc' => 'Add classes for lightbox links',
-     'type' => 'text',
-     'placeholder' => 'fancybox',
-     // 'default' => 'fancybox',
-     )
-    );
-    return $settings;
-}
 
 // todo:
 // lazy load
     // 'lazyLoad' => array(
-    //     'name' => 'Lazy Load',
+    //     'label' => 'Lazy Load',
     //     'desc' => 'Delays loading of images. Images outside of viewport won\'t be loaded before user scrolls to them. Great for mobile devices to speed up page loadings. ',
     //     'default' => false,
     //     'type' => 'checkbox',
     //     'type' => 'bool'
     // ),
     // 'lazyFollow' => array(
-    //     'name' => 'Lazy Follow',
+    //     'label' => 'Lazy Follow',
     //     'desc' => 'When pagination used, it skips loading the images from pages that got skipped. It only loads the images that get displayed in viewport. If set to false, all images get loaded when pagination used. It is a sub setting of the lazy load function.',
     //     'default' => false,
     //     'type' => 'checkbox',
@@ -214,15 +189,15 @@ $settings = array(
     // ),
 
     // 'responsiveRefreshRate' => array(
-    //     'name' => 'Responsive Refresh Rate',
+    //     'label' => 'Responsive Refresh Rate',
     //     'desc' => 'Check window width changes every X ms for responsive actions',
-    //     'placeholder' => 200,
+    //     'default' => 200,
     //     'type' => 'text',
     //     'type' => 'number'
     // ),
 
     // 'itemsScaleUp' => array(
-    //     'name' => 'Item Scale Up',
+    //     'label' => 'Item Scale Up',
     //     'desc' => 'Option to not stretch items when it is less than the supplied items.',
     //     'default' => false,
     //     'type' => 'checkbox',
