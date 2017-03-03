@@ -99,7 +99,8 @@ class isAdminView extends DT_MediaBlocks
 			unset($input['desc']);
 
 			if( !isset($input['name']) )
-				$input['name'] = $input['id'];
+				$input['name'] = isset($input['id']) ? $input['id'] : '';
+			
 
 			$is_default = isset($input['default']) ? true : false;
 			switch ($input['type']) {
@@ -108,7 +109,7 @@ class isAdminView extends DT_MediaBlocks
 					unset($input['default']);
 
 					$input_html = "
-					<input {$input['name']} type='hidden' value=''>
+					<input name='{$input['name']}' type='hidden' value=''>
 					<input ";
 					foreach ($input as $attr => $val) {
 						$attr = esc_attr($attr);
@@ -187,7 +188,7 @@ class isAdminView extends DT_MediaBlocks
 		remove_meta_box( 'postexcerpt' , DT_MULTIMEDIA_MAIN_TYPE, 'normal' );
 	}
 
-	protected function get_attachments($post){
+	protected function get_admin_wrap_attachments($post){
 		$ids = get_post_meta( $post->ID, '_'.DTM_PREFIX.'media_imgs', true );
 		$ids = explode(',', esc_attr($ids));
 		$style = $this->get_post_meta($post->ID, 'detail_view') ? 'list' : 'tile';
@@ -274,7 +275,7 @@ class isAdminView extends DT_MediaBlocks
 					'type'      =>$type[1]
 					));
 			?>
-			<?php $this->get_attachments($post); ?>
+			<?php $this->get_admin_wrap_attachments($post); ?>
 			<div class="clear"></div>
 		</div>
 		<script type="text/javascript">
@@ -294,6 +295,20 @@ class isAdminView extends DT_MediaBlocks
 					});
 				});
 				$('#main_type').change();
+
+				var $select_tpl = $('select#template');
+				function custom_template(){
+					var row = 'tr#style_path > td';
+					if( $select_tpl.val() == 'custom' ){
+						$(row).slideDown();
+					} else {
+						$(row).slideUp();
+					}
+				}
+				$select_tpl.on('change', function(){
+					custom_template();
+				});
+				custom_template();
 
 				$('#detail_view').on('click', function(e){
 					e.preventDefault();
@@ -317,13 +332,17 @@ class isAdminView extends DT_MediaBlocks
 	// main settings
 	function preview_media_main_settings_callback( $post ) {
 		$type_name = 'type';
-		$type = $this->get_post_meta($post->ID, $type_name);
+		if(! $type = $this->get_post_meta($post->ID, $type_name) )
+			$type = 'owl-carousel';
 		$this->form_render( $this->get_settings($type), $this->set_post_meta($post->ID, $type.'_opt') );
 	}
 	// side settings
-	function preview_media_side_settings_callback( $post ){
+	function preview_media_side_settings_callback( $post ){ ?>
+		<style> tr#style_path > td {display:none;} </style>
+		<?php
 		$type_name = 'main_type';
-		$type = $this->get_post_meta($post->ID, $type_name); // carousel
+		if(! $type = $this->get_post_meta($post->ID, $type_name) )
+			$type = 'carousel';
 		$this->form_render( $this->get_settings($type), $this->set_post_meta($post->ID, $type.'_opt') );
 	}
 

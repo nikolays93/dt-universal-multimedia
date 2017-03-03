@@ -9,6 +9,7 @@ $settings = array(
         'label' => 'Non responsive',
         'desc' => 'Use Owl Carousel on desktop-only website',
         'type' => 'checkbox',
+        'default' => get_theme_mod( 'site-format' ) ? 'on' : '',
         'data-hide' => 'itemsDesktop, itemsDesktopSmall, itemsTablet, itemsMobile',
     ),
     array(
@@ -165,10 +166,6 @@ $settings = array(
         'default' => 'on'
     ),
 );
-
-if( get_theme_mod( 'site-format' ) )
-    $settings['responsive']['default'] = 'on';
-
 return $settings;
 
 // todo:

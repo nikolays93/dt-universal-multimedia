@@ -22,6 +22,12 @@ $settings = array(
       )
     ),
   array(
+    'id' => 'style_path',
+    'label' => 'Custom path',
+    'desc' => '',
+    'type' => 'text',
+    ),
+  array(
     'id' => 'image_size',
     'label' => 'Image size',
     'desc' => '',

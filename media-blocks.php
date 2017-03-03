@@ -3,7 +3,7 @@
 Plugin Name: Мультимедия блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.2.2 alpha
+Version: 1.3.2 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -53,7 +53,7 @@ class DT_MediaBlocks
       $this->define_constants();
       $this->add_required_classes();
       $this->setup_actions();
-          // $this->setup_filters();
+      $this->setup_filters();
       $this->setup_shortcode();
 
       if(is_admin())
@@ -138,6 +138,38 @@ class DT_MediaBlocks
       add_action('init', array($this, 'register_post_types'));
     }
 
+    function owl_nextprev( $metas_arr ){
+    	if(isset($metas_arr['navigationTextNext']) || isset($metas_arr['navigationTextPrev'])){
+    		if(isset($metas_arr['navigationTextPrev'])){
+    			$prev = $metas_arr['navigationTextPrev'];
+    			unset($metas_arr['navigationTextPrev']);
+    		}
+    		else {
+    			$prev = 'prev';
+    		}
+    		if(isset($metas_arr['navigationTextNext'])){
+    			$next = $metas_arr['navigationTextNext'];
+    			unset($metas_arr['navigationTextNext']);
+    		}
+    		else {
+    			$next = 'next';
+    		}
+
+    		$metas_arr['navigationText'] = array($prev, $next);
+    	}
+    	return $metas_arr;
+    }
+    function bool_replace($script_options){
+    	$script_options = str_replace('"on"', 'true', $script_options);
+    	$script_options = str_replace('"false"', 'false', $script_options);
+    	return $script_options;
+    }
+
+    function setup_filters(){
+		add_filter( 'array_options_before_view', 	array($this, 'owl_nextprev'), 10, 1 );
+		add_filter( 'json_change_values', 			array($this, 'bool_replace'), 10, 1 );
+    }
+
     protected function get_settings($file=false) {
       if($file === false)
         return false;
@@ -192,13 +224,14 @@ class DT_MediaBlocks
           if($in_set[$param_name] == '' && $param['type'] == 'checkbox')
               $in_set[$param_name] = 'false';
 
-          if( $in_set[$param_name] != '' )
+          if( $in_set[$param_name] != '' || $param['type'] == 'select' )
             $result[$param_name] = $in_set[$param_name];
         }
 
       }
       
-      // file_put_contents(DT_MULTIMEDIA_PATH . 'debug2.log', print_r($result, 1) );
+      // if($settings_name == 'carousel')
+      	// file_put_contents(DT_MULTIMEDIA_PATH . 'debug2.log', print_r($result, 1) );
 
       if($is_record)
         update_post_meta( $post_id, '_'.DTM_PREFIX.$settings_name.'_opt', $result );
@@ -206,9 +239,6 @@ class DT_MediaBlocks
         return $result;
     }
 
-    /**
-     * Media output
-     */
     protected function get_media_type($media_id){
       $main_type = get_post_meta( $media_id, '_'.DTM_PREFIX.'main_type', true );
       $type = get_post_meta( $media_id, '_'.DTM_PREFIX.'type', true );
@@ -224,67 +254,62 @@ class DT_MediaBlocks
       return $this->set_post_meta($post_id, $var);
     }
 
-    // render shortcode
-    function media_sc( $atts ) {
-        $atts = shortcode_atts( array(
-            'id' => false
-            ), $atts );
-        $id = intval($atts['id']);
-        $_post = get_post($id);
+    /**
+     * Media output
+     */
+    function load_assets($type, $template, $style_path){
+    	$affix = (is_wp_debug()) ? '' : '.min';
+
+    	if($type == 'owl-carousel'){
+    		wp_enqueue_script( 'owl-carousel', DT_MULTIMEDIA_ASSETS_URL.'owl-carousel/owl.carousel'.$affix.'.js', array('jquery'), $this->version, true );
+    		wp_enqueue_style( 'owl-carousel-core', DT_MULTIMEDIA_ASSETS_URL.'owl-carousel/owl.carousel.css', array(), $this->version );
+    	}
+
+
+    	if( $template === "" )
+    		return false;
+
+    	switch ($template) {
+    		case 'custom':
+	    		if( $style_path !== false )
+	    			wp_enqueue_style( $type.'-theme', get_template_directory_uri().'/'.$style_path.'.css', array(), $this->version );
+    			break;
+
+    		case 'default':
+	    		$template = 'owl.theme';
+    			break;
+
+    		default:
+    			$template = 'default.theme';
+    			break;
+    	}
+    	wp_enqueue_style( $type.'-theme', DT_MULTIMEDIA_ASSETS_URL.$type.'/'.$template.'.css',
+    		array(), $this->version );
+    }
+    function carousel($type, $mblock, $attachments, $non_script = false){
+    	$result = array();
+    	$id = $mblock->ID;
+    	
+    	// parse type[0] settings
+        extract($this->get_meta_settings($id, 'carousel'));
+        $class = (isset($lightbox_class)) ? $lightbox_class : 'fancybox';
+
+        // load assets
+        $template = isset($template) ? $template : false;
+        $style_path = isset($style_path) ? $style_path : false;
+        $this->load_assets($type, $template, $style_path);
         
-        // $mblock = get_post($id);
-        // if($mblock->post_status !== 'publish')
-        //     return;
-        if('publish' !== $_post->post_status){
-            if(is_wp_debug())
-                echo 'Блок не опубликован';
-            return;
-        }
+        // parse type[1] settings
+        $metas_arr = apply_filters( 'array_options_before_view',
+        	$this->get_meta_settings($id, $type) );
 
-        $type = $this->get_media_type($id);
-        if(!is_array($type))
-          return false;
-
-        $attachments = explode(',', $this->get_post_meta($id, 'media_imgs'));
-        if( sizeof($attachments) == 0 )
-            if(is_wp_debug()) return 'Файлов не найдено'; else return; 
-
-        switch ( $type[1] ) {
+        $script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($metas_arr) ) );
+        
+        $item = array("<div class='item'>", "</div>");
+        $slider_wrap = array("<div id='mediablock-{$id}' class='media-block carousel {$type}'>", "</div>");
+        $result[] = $slider_wrap[0];
+    	switch ( $type ) {
             case 'owl-carousel':
-                // load assets
-                $affix = (WP_DEBUG) ? '' : '.min';
-                wp_enqueue_script( 'owl-carousel', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.carousel'.$affix.'.js', array('jquery'), $this->version );
-                wp_enqueue_style( 'owl-carousel-core', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/owl.carousel.css', array(), $this->version );
-                
-                // get metas
-                $metas_arr = $this->get_meta_settings($id, $type[1]);
-                $metas_arr = apply_filters( 'array_options_before_view', $metas_arr );
-                $metas_arr_side = $this->get_meta_settings($id, $type[0]);
-                $metas_arr_side = apply_filters( 'array_side_options_before_view', $metas_arr_side );
-                extract($metas_arr_side);
-
-                if( isset($template) && $template != 'false' ) {
-                    wp_enqueue_style( 'owl-carousel-theme', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/'.$template.'.theme.css', array(), $this->version );
-                }
-                else {
-                    wp_enqueue_style( 'owl-carousel-theme', DT_MULTIMEDIA_ASSETS_URL.'/owl-carousel/default.theme.css', array(), $this->version );
-                }
-                
-                $script_options = cpJsonStr( json_encode($metas_arr) );
-                $script_options = str_replace('"on"', 'true', $script_options);
-                $script_options = str_replace('"false"', 'false', $script_options);
-
-                $slider_wrap = array("<div id='mediablock-{$id}' class='media-block {$type[0]} {$type[1]}'>", "</div>");
-                $item = array("<div class='item'>", "</div>");
-
-                $class = (isset($lightbox_class)) ? $lightbox_class : 'fancybox';
-
-                $result = array('<section id="mblock">');
-
-                if(get_post_meta( $id, '_'.DTM_PREFIX.'show_title', true ))
-                    $result[] = '<h3>'. $_post->post_title .'</h3>';
-                $result[] = '<div class="excerpt">'.apply_filters('the_content', $_post->post_excerpt)."</div>";
-                $result[] = $slider_wrap[0];
                 foreach ($attachments as $attachment) {
                     $href = wp_get_attachment_url( $attachment );
                     $link =  (isset($lightbox_links)) ?
@@ -299,22 +324,60 @@ class DT_MediaBlocks
                     $result[] = '   '.$link[1];
                     $result[] = $item[1];
                 }
-                $result[] = $slider_wrap[1];
-                $result[] = '</section>';
                     // $image_meta = wp_get_attachment_metadata( $attachment );
 
-                $result[] = "<script type='text/javascript'>";
-                $result[] = " jQuery(function($){";
-                $result[] = "     $('#mediablock-".$id."').owlCarousel(".$script_options.");";
-                $result[] = " });";
-                $result[] = "</script>";
-                break;
-            
-            default:
-                # code...
+                $script   = array("<script type='text/javascript'>");
+                $script[] = " jQuery(function($){";
+                $script[] = "     $('#mediablock-".$id."').owlCarousel(".$script_options.");";
+                $script[] = " });";
+                $script[] = "</script>";
                 break;
         }
-        
+        $result[] = $slider_wrap[1];
+        if(! $non_script )
+          $result[] = implode("\n", $script);
+        return implode("\n", $result);
+    }
+    function slider($type, $mblock, $attachments, $non_script = false){
+
+    }
+    function sync_slider($type, $mblock, $attachments){
+    	$this->carousel($type, $mblock, $attachments, true);
+    	$this->slider(  $type, $mblock, $attachments, true);
+    	//script
+    }
+    // render shortcode
+    function media_sc( $atts ) {
+    	$result = array();
+        $atts = shortcode_atts( array('id' => false), $atts );
+        $id = intval($atts['id']);
+
+        $mblock = get_post( $id );
+        if('publish' !== $mblock->post_status){
+            if(is_wp_debug()) echo 'Блок не опубликован';
+            return;
+        }
+
+        if(sizeof($type = $this->get_media_type($id)) == 0)
+        	return false;
+
+        $attachments = explode(',', $this->get_post_meta($id, 'media_imgs'));
+        if( sizeof($attachments) == 0 )
+            return (is_wp_debug()) ? 'Файлов не найдено' : false; 
+
+        $result[] = '<section id="mblock">';
+        if($this->get_post_meta( $id, 'show_title' ) && $mblock->post_title != '')
+        		$result[] = '<h3>'. $mblock->post_title .'</h3>';
+    	if($mblock->post_excerpt != '')
+    		$result[] = '<div class="excerpt">'.apply_filters('the_content', $mblock->post_excerpt)."</div>";
+
+        switch ( $type[0] ) {
+        	default: // carousel, slider
+        	$type[0] = str_replace("-", "_", $type[0]);
+        	$result[] = $this->$type[0]($type[1], $mblock, $attachments);
+        		break;
+        } // switch
+        $result[] = '</section>';
         return implode("\n", $result);
     }
     private function setup_shortcode(){
@@ -323,29 +386,6 @@ class DT_MediaBlocks
     }
 }
 new DT_MediaBlocks();
-
-function owl_nextprev( $metas_arr ){
-    if(isset($metas_arr['navigationTextNext']) || isset($metas_arr['navigationTextPrev'])){
-        if(isset($metas_arr['navigationTextPrev'])){
-            $prev = $metas_arr['navigationTextPrev'];
-            unset($metas_arr['navigationTextPrev']);
-        }
-        else {
-            $prev = 'prev';
-        }
-        if(isset($metas_arr['navigationTextNext'])){
-            $next = $metas_arr['navigationTextNext'];
-            unset($metas_arr['navigationTextNext']);
-        }
-        else {
-            $next = 'next';
-        }
-
-        $metas_arr['navigationText'] = array($prev, $next);
-    }
-    return $metas_arr;
-}
-add_filter( 'array_options_before_view', 'owl_nextprev', 10 );
 
 // function rewrite_flush() {
 //     DT_MultiMedia::register_post_types();
