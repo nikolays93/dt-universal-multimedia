@@ -1,6 +1,6 @@
 jQuery(function($){
   var frame, media_ids = [],
-      metaBox = $('#preview_media_edit.postbox'), // Your meta box id here
+      metaBox = $('#attachments.postbox'), // Your meta box id here
       addImgLink = metaBox.find('#upload-images'),
       imgsContainer = metaBox.find('#dt-media');
   
@@ -49,8 +49,9 @@ jQuery(function($){
       
       for(var i = 0; i < attachments.length; i++){
       	var url = image[i].url;
-      	if( typeof(image[i].sizes.medium) !== undefined )
+      	if( typeof(image[i].sizes.medium) !== undefined ){
       		var url = image[i].sizes.medium.url;
+        }
 
       	console.log( image[i] );
       	
@@ -87,11 +88,11 @@ jQuery(function($){
       target = target.split(', ');
       target.forEach(function(item, i){
         if(action == 'toggle' )
-          $('#'+item+' td').slideToggle();
+          $('#'+item+' td, #'+item+' th').slideToggle();
         else if(action == 'show')
-          $('#'+item+' td').slideDown();
+          $('#'+item+' td, #'+item+' th').slideDown();
         else if(action == 'hide')
-          $('#'+item+' td').slideUp();
+          $('#'+item+' td, #'+item+' th').slideUp();
       });
     }
   }
@@ -132,4 +133,48 @@ jQuery(function($){
     }
   });
 
+  $('#shortcode').on('click', function(){ $(this).select(); });
+  
+  $('#main_type').on('change', function(){
+    var val = $(this).val();
+    $('[name=type]').each(function(){
+      if( $(this).hasClass(val) ){
+        $(this).slideDown();
+        $(this).removeAttr('disabled');
+      } else {
+        $(this).hide();
+        $(this).attr('disabled', 'disable');
+      }
+    });
+  });
+  $('#main_type').change();
+
+  var $select_tpl = $('select#block_template');
+  function custom_template(){
+    var row = 'tr#style_path > td';
+    if( $select_tpl.val() == 'custom' ){
+      $(row).slideDown();
+    } else {
+      $(row).slideUp();
+    }
+  }
+  $select_tpl.on('change', function(){
+    custom_template();
+  });
+  custom_template();
+
+  $('#detail_view').on('click', function(e){
+    e.preventDefault();
+    // toggleValue
+    if($('[name="detail_view"]').val() == 'on')
+      $('[name="detail_view"]').val('')
+    else 
+      $('[name="detail_view"]').val('on')
+
+    $(this).find('span').each(function(){
+      $(this).toggleClass('hidden');
+    });
+    $('#dt-media').toggleClass('tile');
+    $('#dt-media').toggleClass('list');
+  });
 });

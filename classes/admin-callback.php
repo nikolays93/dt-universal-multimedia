@@ -1,0 +1,222 @@
+<?php
+class isAdminView extends DT_MediaBlocks
+{
+	protected $settings;
+	protected $post_id;
+
+	function __construct(){
+		add_filter( 'clear_checkbox_render', '__return_true', 10, 1 );
+		$this->preview_hooks();
+
+	}
+
+	function preview_hooks(){
+		add_action( 'edit_form_after_title', array( $this, 'after_title' ) );
+		add_action( 'add_meta_boxes', array( $this, 'blocks_meta_boxes' ) );
+		add_action( 'add_meta_boxes' , array( $this, 'remove_default_divs' ), 99 );
+		
+
+		add_action( 'save_post', array( $this, 'validate_main_settings' ) );
+
+		add_action( 'load-post.php', array( $this, 'admin_asssets' ) );
+		add_action( 'load-post-new.php', array( $this, 'admin_asssets' ) );
+	}
+
+	/**
+	 * Replace Meta Boxes
+	 */
+	function after_title() {
+		global $post, $wp_meta_boxes;
+		if($post->post_type !== DTM_TYPE)
+			return;
+
+		$show_input = array(
+			'id' => 'show_title',
+			'type' => 'checkbox',
+			);
+
+		echo "<div class='wrap-sc'>";
+		echo "<label> "._('Show title');
+		$value = array( $show_input['id'] => $this->block_meta_field($post->ID, $show_input['id']) );
+		DTForm::render( $show_input, $value, false, false );
+		echo "</label>";
+
+		echo 'Вставьте шорткод в любую запись Вашего сайта';
+		echo '<input id="shortcode" readonly="readonly" type="text" value=\'[mblock id="'.$post->ID.'"]\'>';
+		echo "</div>";
+	}
+
+	function blocks_meta_boxes( $post_type ){
+		add_meta_box('attachments', 'Мультимедиа', array( $this, 'attachments_callback' ), DTM_TYPE, 'normal', 'high');
+		add_meta_box('main_settings', 'Настройки', array( $this, 'main_settings_callback' ), DTM_TYPE, 'normal');
+		add_meta_box('side_settings', 'Настройки', array( $this, 'side_settings_callback' ), DTM_TYPE, 'side');
+		add_meta_box('mb_postexcerpt', __( 'Сообщение блока' ), array($this, 'excerpt_box'), DTM_TYPE, 'normal');
+	}
+
+	function remove_default_divs() {
+		remove_meta_box( 'slugdiv',		DTM_TYPE, 'normal' ); // ярлык записи,
+		remove_meta_box( 'postcustom',	DTM_TYPE, 'normal' ); // Произвольные поля
+		remove_meta_box( 'postexcerpt' , DTM_TYPE, 'normal' );
+	}
+
+	/**
+	 * Enqueue Assets
+	 */
+	function admin_asssets(){
+		if ( ! did_action( 'wp_enqueue_media' ) ) 
+			wp_enqueue_media();
+
+		$screen = get_current_screen();
+		if( $screen->post_type != DTM_TYPE)
+			return false;
+
+		wp_enqueue_style( 'dt-style',   DT_MULTIMEDIA_ASSETS_URL.'/core/style.css', array(), DT_MediaBlocks::VERSION);
+		wp_enqueue_script('dt-preview', DT_MULTIMEDIA_ASSETS_URL.'/core/preview.js', array('jquery'), DT_MediaBlocks::VERSION, true);
+	}
+
+	/**
+	 * Meta Box Render Callbacks
+	 */
+	protected function get_admin_wrap_attachments($post){
+		$ids = $this->block_meta_field( $post->ID, 'media_imgs' );
+		$ids_arr = explode( ',', esc_attr($ids) );
+		$style = $this->block_meta_field($post->ID, 'detail_view') ? 'list' : 'tile';
+
+		echo '<div class="attachments '.$style.'" id="dt-media">';
+		if($ids){
+			foreach ($ids_arr as $id) { ?>
+			<div class="attachment" data-id="<?php echo $id; ?>">
+				<?php
+					$meta = wp_get_attachment_metadata( $id );
+					$attrs = ( $meta['image_meta']['orientation'] == 1 ) ? array('class' => 'portrait') : array();
+				?>
+				<div class="item">
+				<?php
+					// wp_get_attachment_metadata( $id )
+					$attachment = get_post( $id );
+				?>
+					<span class="dashicons dashicons-no remove"></span>
+					<div class="crop">
+						<?php
+							echo wp_get_attachment_image($id, 'medium', null, $attrs);
+						?>
+					</div>
+					<input type="text" name="attachment_text[<?php echo $id; ?>]" value="<?php echo $attachment->post_excerpt; ?>">
+					<textarea name="" id="" cols="90" rows="4"><?php echo $attachment->post_content; ?></textarea>
+					<!-- <input type="text"> -->
+					<input type="hidden" id="dt-ids" name="attachment_id[]" value="<?php echo $id; ?>">
+				</div>
+			</div>
+			<?php
+			} // foreach
+		} // if
+		echo '</div>';
+	}
+
+	function attachments_callback( $post ) {
+		wp_enqueue_media();
+
+		//_dump( get_post_meta( $post->ID ) );
+		//wp_nonce_field( 'dp_addImages_nonce', 'wp_developer_page_nonce' );
+		?>
+		<div class="dt-media">
+			<div class="hide-if-no-js wp-media-buttons">
+			<?php
+				//str
+				$is_detail_view = $this->block_meta_field($post->ID, 'detail_view');
+			?>
+				<input type="hidden" name="detail_view" value="<?=$is_detail_view;?>">
+				<button id="detail_view" class="button" type="button">
+					<span class="dashicons dashicons-screenoptions <?php
+						echo ($is_detail_view) ? '' : 'hidden'; ?>"></span>
+					<span class="dashicons dashicons-list-view <?php
+						echo ($is_detail_view) ? 'hidden' : ''; ?>"></span>
+				</button>
+				<button id="upload-images" class="button add_media">
+					<span class="wp-media-buttons-icon"></span> Добавить медиафайл
+				</button>
+			</div>
+			<label>Тип мультимедия: </label>
+			<?php
+				$type = $this->get_media_type( $post->ID );
+				DTForm::render( $this->get_settings('general'), array(
+					'main_type' =>$type[0],
+					'type'      =>$type[1]
+					), false, false);
+			?>
+			<?php $this->get_admin_wrap_attachments($post); ?>
+			<div class="clear"></div>
+		</div>
+		<?php
+	}
+
+	function main_settings_callback( $post ) {
+		if(! $type = $this->block_meta_field($post->ID, 'type') )
+			$type = 'owl-carousel';
+		DTForm::render( $this->get_settings($type), $this->block_meta_field($post->ID, $type.'_opt'), true, false );
+	}
+
+	function side_settings_callback( $post ){
+		$type_name = 'main_type';
+		if(! $type = $this->block_meta_field($post->ID, $type_name) )
+			$type = 'carousel';
+		DTForm::render( $this->get_settings($type), $this->block_meta_field($post->ID, $type.'_opt'), true, false, 
+			array('<table class="table side-settings"><tbody>', '</tbody></table>', 'td') );
+	}
+
+	function excerpt_box(){
+		global $post;
+
+		echo "<label class='screen-reader-text' for='excerpt'> {_('Excerpt')} </label>
+		<textarea rows='1' cols='40' name='excerpt' tabindex='6' id='excerpt'>{$post->post_excerpt}</textarea>";
+	}
+
+	/**
+	 * Validate Post's Data
+	 */
+	private function check_security( $post_id ){
+		// if ( ! isset( $_POST['wp_developer_page_nonce'] ) )
+		// return $post_id;
+		// $nonce = $_POST['wp_developer_page_nonce'];
+		// if ( ! wp_verify_nonce( $nonce, 'dp_addImages_nonce' ) )
+		// 	return $post_id;
+
+		// Если это автосохранение ничего не делаем.
+		// if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
+		// 	return $post_id;
+	}
+	private function validate_media_attachments( $post_id ){
+		if( !isset($_POST['attachment_id']) || !is_array($_POST['attachment_id']))
+			return $post_id;
+
+		$attachment_ids = $_POST['attachment_id'];
+		$attachment_ids = implode(',', $attachment_ids);
+		update_post_meta( $post_id, '_'.DTM_PREFIX.'media_imgs', $attachment_ids );
+
+		if(isset($_POST['attachment_text']) && is_array($_POST['attachment_text'])){
+			$metas = $_POST['attachment_text'];
+			foreach ($metas as $id => $meta) {
+				wp_update_post( array('ID' => $id, 'post_excerpt' => $meta ) );
+			}
+		}
+	}
+
+	function validate_main_settings( $post_id ){
+		if( FALSE === $this->check_security($post_id) )
+			return $post_id;
+
+		$this->validate_media_attachments($post_id);
+
+		$this->block_meta_field($post_id, 'show_title', true);
+		$this->block_meta_field($post_id, 'detail_view', true);
+
+		if(!isset($_POST['type']) || !isset($_POST['main_type']))
+			return $post_id;
+
+		$this->block_meta_field($post_id, 'main_type', true);
+		$this->block_meta_field($post_id, 'type', true);
+		
+		$this->block_meta_settings($post_id, $_POST['main_type'], $_POST );
+		$this->block_meta_settings($post_id, $_POST['type'], $_POST );
+	}
+}

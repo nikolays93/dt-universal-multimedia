@@ -133,37 +133,40 @@ select.button {
 }
 
 /* settings */
-#preview_media_main_settings table,
-#preview_media_side_settings table {
+#main_settings table,
+#side_settings table {
 	    width: 100%;
     max-width: 100%;
     margin-bottom: 1rem;
     border-collapse: collapse;
     background-color: transparent;
 }
-#preview_media_main_settings table td {
+#main_settings table td,
+#main_settings table th {
 	padding: .75rem;
     vertical-align: top;
 }
-#preview_media_main_settings table tr + tr td {
+#main_settings table tr + tr td,
+#main_settings table tr + tr th {
 	border-top: 1px solid #eceeef;
 }
-#preview_media_main_settings input[type='checkbox']{
+#main_settings input[type='checkbox']{
 	float:left;
 	margin-right: 15px;
 }
 
 /* side metabox */
-/*#preview_media_side_settings input[type="checkbox"] {
-	float: left;
-}*/
-#preview_media_side_settings table td {
+table.side-settings td,
+table.side-settings th {
 	vertical-align: middle;
 	padding: .25rem;
 }
-#preview_media_side_settings .description {
+#side_settings .description {
 	display: none;
 }
+/*tr#style_path > td {
+	display: none;
+}*/
 
 #shortcode, #shortcode:hover, #shortcode:focus {
 	font-size: 13px;

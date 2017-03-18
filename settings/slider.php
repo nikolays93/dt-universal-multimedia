@@ -29,31 +29,16 @@ $settings = array(
     'type' => 'text',
     ),
   array(
-    'id' => 'image_size',
-    'label' => 'Image size',
+    'id' => 'Width_img',
+    'label' => 'Width',
     'desc' => '',
-    'type' => 'select',
-    'options' => $view_sizes
-    ),
-  array(
-    'id' => 'image_captions',
-    'label' => 'Show image captions',
-    'desc' => '',
-    'type' => 'checkbox',
-    ),
-  array(
-    'id' => 'lightbox_links',
-    'label' => 'Use lightbox',
-    'desc' => 'Add links w/ class "zoomin" for lightbox',
-    'type' => 'checkbox',
-    ),
-  array(
-    'id' => 'lightbox_class',
-    'label' => 'Links class',
-    'desc' => 'Add classes for lightbox links',
     'type' => 'text',
-    'default' => 'fancybox',
-     // 'default' => 'fancybox',
+    ),
+  array(
+    'id' => 'Height_img',
+    'label' => 'Height',
+    'desc' => '',
+    'type' => 'text',
     )
   );
   return $settings;
