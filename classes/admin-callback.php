@@ -37,7 +37,7 @@ class isAdminView extends DT_MediaBlocks
 
 		echo "<div class='wrap-sc'>";
 		echo "<label> "._('Show title');
-		$value = array( $show_input['id'] => $this->block_meta_field($post->ID, $show_input['id']) );
+		$value = array( $show_input['id'] => $this->meta_field($post->ID, $show_input['id']) );
 		DTForm::render( $show_input, $value, false, false );
 		echo "</label>";
 
@@ -78,9 +78,9 @@ class isAdminView extends DT_MediaBlocks
 	 * Meta Box Render Callbacks
 	 */
 	protected function get_admin_wrap_attachments($post){
-		$ids = $this->block_meta_field( $post->ID, 'media_imgs' );
+		$ids = $this->meta_field( $post->ID, 'media_imgs' );
 		$ids_arr = explode( ',', esc_attr($ids) );
-		$style = $this->block_meta_field($post->ID, 'detail_view') ? 'list' : 'tile';
+		$style = $this->meta_field($post->ID, 'detail_view') ? 'list' : 'tile';
 
 		echo '<div class="attachments '.$style.'" id="dt-media">';
 		if($ids){
@@ -123,7 +123,7 @@ class isAdminView extends DT_MediaBlocks
 			<div class="hide-if-no-js wp-media-buttons">
 			<?php
 				//str
-				$is_detail_view = $this->block_meta_field($post->ID, 'detail_view');
+				$is_detail_view = $this->meta_field($post->ID, 'detail_view');
 			?>
 				<input type="hidden" name="detail_view" value="<?=$is_detail_view;?>">
 				<button id="detail_view" class="button" type="button">
@@ -138,10 +138,9 @@ class isAdminView extends DT_MediaBlocks
 			</div>
 			<label>Тип мультимедия: </label>
 			<?php
-				$type = $this->get_media_type( $post->ID );
 				DTForm::render( $this->get_settings('general'), array(
-					'main_type' =>$type[0],
-					'type'      =>$type[1]
+					'main_type' => $this->meta_field( $post->ID, 'main_type' ),
+					'type'      => $this->meta_field( $post->ID, 'type' )
 					), false, false);
 			?>
 			<?php $this->get_admin_wrap_attachments($post); ?>
@@ -151,16 +150,16 @@ class isAdminView extends DT_MediaBlocks
 	}
 
 	function main_settings_callback( $post ) {
-		if(! $type = $this->block_meta_field($post->ID, 'type') )
+		$main_type = $this->meta_field($post->ID, 'main_type');
+		if(! $type = $this->meta_field($post->ID, 'type') )
 			$type = 'owl-carousel';
-		DTForm::render( $this->get_settings($type), $this->block_meta_field($post->ID, $type.'_opt'), true, false );
+		DTForm::render( $this->get_settings( $type, $main_type ), $this->meta_field($post->ID, $type.'_opt'), true, false );
 	}
 
 	function side_settings_callback( $post ){
-		$type_name = 'main_type';
-		if(! $type = $this->block_meta_field($post->ID, $type_name) )
+		if(! $type = $this->meta_field($post->ID, 'main_type') )
 			$type = 'carousel';
-		DTForm::render( $this->get_settings($type), $this->block_meta_field($post->ID, $type.'_opt'), true, false, 
+		DTForm::render( $this->get_settings( $type ), $this->meta_field($post->ID, $type.'_opt'), true, false, 
 			array('<table class="table side-settings"><tbody>', '</tbody></table>', 'td') );
 	}
 
@@ -191,13 +190,13 @@ class isAdminView extends DT_MediaBlocks
 
 		$attachment_ids = $_POST['attachment_id'];
 		$attachment_ids = implode(',', $attachment_ids);
-		update_post_meta( $post_id, '_'.DTM_PREFIX.'media_imgs', $attachment_ids );
+		$this->meta_field( $post_id, 'media_imgs', $attachment_ids );
 
-		if(isset($_POST['attachment_text']) && is_array($_POST['attachment_text'])){
-			$metas = $_POST['attachment_text'];
-			foreach ($metas as $id => $meta) {
-				wp_update_post( array('ID' => $id, 'post_excerpt' => $meta ) );
-			}
+		if( !isset($_POST['attachment_text']) || !is_array($_POST['attachment_text']))
+			return $post_id;
+
+		foreach ($_POST['attachment_text'] as $id => $meta) {
+			wp_update_post( array('ID' => $id, 'post_excerpt' => $meta ) );
 		}
 	}
 
@@ -207,16 +206,18 @@ class isAdminView extends DT_MediaBlocks
 
 		$this->validate_media_attachments($post_id);
 
-		$this->block_meta_field($post_id, 'show_title', true);
-		$this->block_meta_field($post_id, 'detail_view', true);
+		$this->meta_field($post_id, 'show_title', $_POST['show_title']);
+		$this->meta_field($post_id, 'detail_view', $_POST['detail_view']);
 
-		if(!isset($_POST['type']) || !isset($_POST['main_type']))
+		if( !isset($_POST['main_type']) || !isset($_POST['type']) )
 			return $post_id;
 
-		$this->block_meta_field($post_id, 'main_type', true);
-		$this->block_meta_field($post_id, 'type', true);
+		$this->meta_field($post_id, 'main_type', $_POST['main_type']);
+		$this->meta_field($post_id, 'type', $_POST['type']);
 		
-		$this->block_meta_settings($post_id, $_POST['main_type'], $_POST );
-		$this->block_meta_settings($post_id, $_POST['type'], $_POST );
+		$this->settings_from_file($post_id, $_POST['main_type'], false, $_POST );
+		$this->settings_from_file($post_id, $_POST['type'], $_POST['main_type'], $_POST );
+
+		// file_put_contents(__DIR__ . '/../post.log', print_r($_POST, 1));
 	}
 }

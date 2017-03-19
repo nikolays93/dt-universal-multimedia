@@ -27,7 +27,6 @@ $settings = array(
     'desc' => '',
     'type' => 'text',
     ),
-  // $image_size = 'thumbnail';
   array(
     'id' => 'sl_width',
     'label' => 'Width',
@@ -39,6 +38,21 @@ $settings = array(
     'label' => 'Height',
     'desc' => '',
     'type' => 'text',
+    ),
+  array(
+    'id' => 'carousel_size',
+    'label' => 'Carousel size',
+    'desc' => '',
+    'type' => 'select',
+    'options' => $view_sizes
+    ),
+  array(
+    'id' => 'lightbox',
+    'label' => 'Use lightbox',
+    'desc' => 'Add class for lightbox links',
+    'type' => 'text',
+    'default' => 'zoom',
+     // 'default' => 'fancybox',
     )
   );
   return $settings;

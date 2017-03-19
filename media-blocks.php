@@ -3,7 +3,7 @@
 Plugin Name: Мультимедия блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.3.2 alpha
+Version: 1.4.0 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -45,23 +45,20 @@ if(!function_exists('cpJsonStr')){
 
 class DT_MediaBlocks
 {
-  const VERSION = 1.3;
+  const VERSION = 1.4;
   const CLASSES_DIR = '/classes/';
   
   protected $errors = array();
 
     function __construct(){
       $this->define_constants();
+      $this->setup_filters();
+      $this->include_required_classes( array('DTForm' => 'dt-form-render') );
       if( is_admin() ){
-      	$this->include_required_classes( array(
-      		'isAdminView' => 'admin-callback',
-      		'DTForm' => 'dt-form-render',
-      		) );
+      	$this->include_required_classes( array('isAdminView' => 'admin-callback') );
       }
       else {
-      	$this->include_required_classes( array(
-      		'MediaOutput' => 'front-callback',
-      		) );
+      	$this->include_required_classes( array('MediaOutput' => 'front-callback') );
       }
       
       add_action('init', array($this, 'register_post_types'));
@@ -72,7 +69,6 @@ class DT_MediaBlocks
       else {
       	new MediaOutput();
       }
-        
     }
 
     /**
@@ -143,10 +139,62 @@ class DT_MediaBlocks
     }
 
     /**
-     * Settings & Options
+     * Filters
      */
-    // include settings file
-    protected function get_settings( $file = false ) {
+    function setup_filters(){
+      add_filter( 'array_options_before_view',  array($this, 'owl_nextprev'), 10, 1 );
+      add_filter( 'json_change_values',       array($this, 'str_to_bool'), 10, 1 );
+      add_filter( 'json_change_values',       array($this, 'json_function_names'), 15, 1 );
+      add_filter( 'dash_to_underscore',       array($this, 'dash_to_underscore_filter'), 10, 1 );
+    }
+
+    function owl_nextprev( $metas_arr ){
+      if(isset($metas_arr['navigationTextNext']) || isset($metas_arr['navigationTextPrev'])){
+        if(isset($metas_arr['navigationTextPrev'])){
+          $prev = $metas_arr['navigationTextPrev'];
+          unset($metas_arr['navigationTextPrev']);
+        }
+        else {
+          $prev = 'prev';
+        }
+        if(isset($metas_arr['navigationTextNext'])){
+          $next = $metas_arr['navigationTextNext'];
+          unset($metas_arr['navigationTextNext']);
+        }
+        else {
+          $next = 'next';
+        }
+
+        $metas_arr['navigationText'] = array($prev, $next);
+      }
+      return $metas_arr;
+    }
+    function str_to_bool( $json ){
+      $json = str_replace('"on"',  'true',  $json);
+      $json = str_replace('"false"', 'false', $json);
+      return $json;
+    }
+    function json_function_names( $json ){
+      $json = str_replace( '"%', '', $json );
+      $json = str_replace( '%"', '', $json );
+      return $json;
+    }
+    
+    function dash_to_underscore_filter( $str ){
+      $str = str_replace('-', '_', $str);
+      return $str;
+    }
+
+    /**
+     * Settings & Options
+     *
+     * Include settings file
+     * 
+     * @param  string settings filename
+     * @param  string type returned settings
+     * @return array settings
+     */
+    protected function get_settings( $file = false, $main_type = 'carousel' ) {
       if( empty($file) )
         return false;
 
@@ -158,65 +206,87 @@ class DT_MediaBlocks
         $this->set_notice('Файл настроек не найден!');
     }
 
-    // main settings
-    protected function block_meta_settings( $post_id, $settings_name, $block_values = false ){
-      if(!$settings_name || !$post_id)
+    /**
+     * Update or Get post meta with prefix (create if empty)
+     * 
+     * @param  int
+     * @param  string meta name (without prefix)
+     * @param  string values for update or get
+     */
+    protected function meta_field( $post_id, $var, $record = false ){
+      if( !$post_id )
         return false;
 
-      $result = array();
-      $values = ($block_values) ? $block_values : $this->block_meta_field( $post_id, $settings_name.'_opt' );
-      $settings_type = $this->get_settings( $settings_name );
-      
-      foreach ( $settings_type as $param ){
-        // p_name - это ID или NAME, иначе '';
-        if( isset($param['id']) )
-          $p_name = $param['id'];
-        else
-          $p_name = (isset($param['name'])) ? $param['name'] : '';
-
-        // Если не указан default принимаем placeholder, иначе '';
-        if(isset($param['default']))
-          $default = $param['default'];
-        else
-          $default = isset($param['placeholder']) ? $param['placeholder'] : '';
-
-        if(isset($values[$p_name]) && $values[$p_name] != $default){
-          // Если пришел пустой checkbox присваиваем ему 'false'
-          if( $values[$p_name] == '' && $param['type'] == 'checkbox' )
-              $values[$p_name] = 'false';
-
-          // принимаем значения если они не пустые, или если это select (Даже пустые)
-          if( $values[$p_name] != '' || $param['type'] == 'select' )
-            $result[$p_name] = $values[$p_name];
+      if( $record !== false ){
+        if( $record != '' ){
+          update_post_meta( $post_id, '_'.DTM_PREFIX.$var, $record );
         }
-      }
-      
-      if( $block_values )
-        update_post_meta( $post_id, '_'.DTM_PREFIX.$settings_name.'_opt', $result );
-      else
-        return $result;
-    }
-
-    // side settings
-    protected function block_meta_field( $post_id, $var, $is_record = false ){
-      if( !$post_id || !$var )
-        return false;
-
-      if($is_record){
-        if(isset($_POST[$var]))
-          update_post_meta( $post_id, '_'.DTM_PREFIX.$var, $_POST[$var] );
+        else {
+          delete_post_meta( $post_id, '_'.DTM_PREFIX.$var );
+        }
       }
       else {
         return get_post_meta( $post_id, '_'.DTM_PREFIX.$var, true );
       }
     }
 
-    // carousel, slider, gallery..
-    protected function get_media_type( $media_id ){
-      $main_type = get_post_meta( $media_id, '_' . DTM_PREFIX . 'main_type', true );
-      $type = get_post_meta( $media_id, '_' . DTM_PREFIX . 'type', true );
-      
-      return array( $main_type, $type );
+    /**
+     * Get or Set values to meta from settings file
+     * 
+     * @param  int    $post_id
+     * @param  string $settings_name      settings filename
+     * @param  string $settings_maintype  sub_type settinigs (owl-carousel, slick, fancy..)
+     * @param  values $block_values       to record, get installed values if 'false'
+     * @return is get (array) else (null)
+     */
+    protected function settings_from_file( $post_id, $settings_name, $settings_maintype = false, $block_values = false ){
+      $post_id = intval( $post_id );
+      if( !$settings_name || !$post_id )
+        return false;
+
+      $result = array();
+      $values = ($block_values) ? $block_values : $this->meta_field( $post_id, $settings_name.'_opt' );
+      $settings_type = $this->get_settings( $settings_name, $settings_maintype );
+
+      foreach ( $settings_type as $param ){
+        // Если не указан name принимаем id, иначе '';
+        if( !isset($param['name']) )
+          $param['name'] = isset($param['id']) ? $param['id'] : '';
+
+        // Если не указан default принимаем placeholder, иначе '';
+        if( !isset($param['default']) )
+          $param['default'] = isset($param['placeholder']) ? $param['placeholder'] : '';
+
+        $pn = $param['name'];
+        if($settings_maintype !== false){
+          if(isset($values[$pn]) && $values[$pn] != $param['default']){
+          // Пустой checkbox записываем как 'false'
+            if( $values[$pn] == '' && $param['type'] == 'checkbox' )
+              $result[$pn] = 'false';
+
+          // Принимаем значения если они не пустые, или если это select (Даже пустые)
+            elseif( $values[$pn] != '' || $param['type'] == 'select' )
+              $result[$pn] = $values[$pn];
+          }
+        }
+        else {
+          if( isset($values[$pn]) && ($values[$pn] != '' || $param['type'] == 'select') )
+              $result[$pn] = $values[$pn];
+        }
+
+
+        // $debug[] = $pn .' => '. $values[$pn] . '(' . $param['type'] . ')';
+      }
+
+
+      if( $block_values ){
+        $this->meta_field( $post_id, $settings_name.'_opt', $result );
+        // $_debug = print_r($debug, 1) . "\n\n" . print_r($result, 1);
+        // file_put_contents(__DIR__ . '/post_result.log', $_debug);
+      }
+      else{
+        return $result;
+      }
     }
 }
 new DT_MediaBlocks();

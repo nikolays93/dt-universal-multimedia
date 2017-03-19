@@ -1,5 +1,5 @@
 <?php
-// ver 1.2.3
+// ver 1.2.7
 
 if(! function_exists('_isset_false') ){
   function _isset_false(&$var, $unset = false){
@@ -13,6 +13,15 @@ if(! function_exists('_isset_false') ){
 if(! function_exists('_isset_empty') ){
   function _isset_empty(&$var, $unset = false){
     $result = $var = isset($var) ? $var : '';
+    if($unset)
+      $var = FALSE;
+    return $result;
+  }
+}
+
+if(! function_exists('_isset_default') ){
+  function _isset_default(&$var, $default, $unset = false){
+    $result = $var = isset($var) ? $var : $default;
     if($unset)
       $var = FALSE;
     return $result;
@@ -45,7 +54,7 @@ class DTForm
 {
   private static function is_checked( $name, $value, $active, $default ){
     if( $active || $default ){
-      if( $value ){
+      if( $value ){ // str or bool
         if( is_array($active) ){
           if( in_array($value, $active) )
             return true;
@@ -56,7 +65,7 @@ class DTForm
         }
       }
       else {
-        if( $default || $active != '')
+        if( ($default || $active != '') && $active != 'false' ) // str or bool
           return true;
       }
     }
@@ -100,7 +109,7 @@ class DTForm
       $default = _isset_false($input['default'], 1);
       $value   = _isset_false($input['value']);
       if( !isset($input['name']) )
-          $input['name'] = isset($input['id']) ? $input['id'] : '';
+          $input['name'] = _isset_empty($input['id']); //isset($input['id']) ? $input['id'] : '';
       
       /**
        * get values
@@ -111,12 +120,7 @@ class DTForm
         $entry = self::is_checked( $name, $value, _isset_false($active[$name]), $default );
       }
       elseif( $input['type'] == 'select'){
-        if( isset($active[$name]) ){
-          $entry = $active[$name];
-        }
-        elseif( $default ){
-          $entry = $default;
-        }
+        $entry = _isset_default($active[$name], $default);
       }
       else {
         // if text, textarea, number, email..
@@ -167,7 +171,7 @@ class DTForm
   
   public static function render_checkbox( $input, $checked, $is_table, $label = '' ){
     $result = '';
-    if( $input['value'] === false )
+    if( !isset($input['value']) )
       $input['value'] = 'on';
 
     if( $checked )
@@ -222,8 +226,8 @@ class DTForm
   public static function render_textarea( $input, $entry, $is_table, $label = '' ){
     $result = '';
     // set defaults
-    if(!isset($input['rows'])) $input['rows'] = 5;
-    if(!isset($input['cols'])) $input['cols'] = 40;
+    _isset_default($input['rows'], 5);
+    _isset_default($input['cols'], 40);
 
     if(!$is_table && $label)
       $result .= "<label for='{$input['id']}'> {$label} </label>";
@@ -262,7 +266,7 @@ class DTForm
   }
 
   static function render_number($input, $entry, $is_table, $label = ''){
-
+    
     return self::render_text($input, $entry, $is_table, $label);
   }
   static function render_email($input, $entry, $is_table, $label = ''){

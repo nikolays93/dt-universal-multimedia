@@ -10,7 +10,6 @@ foreach ($sizes as $value) {
 $settings = array(
   array(
     'id'  => 'block_template',
-    'name' => 'template',
     'label' => 'Template',
     'desc' => 'include CSS template',
     'type' => 'select',
@@ -29,7 +28,7 @@ $settings = array(
     'type' => 'text',
     ),
   array(
-    'id' => 'image_size',
+    'id' => 'carousel_size',
     'label' => 'Image size',
     'desc' => '',
     'type' => 'select',
@@ -42,17 +41,11 @@ $settings = array(
     'type' => 'checkbox',
     ),
   array(
-    'id' => 'lightbox_links',
+    'id' => 'lightbox',
     'label' => 'Use lightbox',
-    'desc' => 'Add links w/ class "zoomin" for lightbox',
-    'type' => 'checkbox',
-    ),
-  array(
-    'id' => 'lightbox_class',
-    'label' => 'Links class',
-    'desc' => 'Add classes for lightbox links',
+    'desc' => 'Add class for lightbox links',
     'type' => 'text',
-    'default' => 'fancybox',
+    'default' => 'zoom',
      // 'default' => 'fancybox',
     )
   );

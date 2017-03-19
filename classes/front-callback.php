@@ -6,46 +6,8 @@
 class MediaOutput extends DT_MediaBlocks
 {
 	function __construct(){
-
-		$this->setup_filters();
-
 		add_shortcode( 'mblock', array($this, 'media_sc') );
 	}
-
-	/**
-     * Filters
-     */
-    function setup_filters(){
-      add_filter( 'array_options_before_view',  array($this, 'owl_nextprev'), 10, 1 );
-      add_filter( 'json_change_values',       array($this, 'bool_to_str'), 10, 1 );
-    }
-
-    function owl_nextprev( $metas_arr ){
-    	if(isset($metas_arr['navigationTextNext']) || isset($metas_arr['navigationTextPrev'])){
-    		if(isset($metas_arr['navigationTextPrev'])){
-    			$prev = $metas_arr['navigationTextPrev'];
-    			unset($metas_arr['navigationTextPrev']);
-    		}
-    		else {
-    			$prev = 'prev';
-    		}
-    		if(isset($metas_arr['navigationTextNext'])){
-    			$next = $metas_arr['navigationTextNext'];
-    			unset($metas_arr['navigationTextNext']);
-    		}
-    		else {
-    			$next = 'next';
-    		}
-
-    		$metas_arr['navigationText'] = array($prev, $next);
-    	}
-    	return $metas_arr;
-    }
-    function bool_to_str( $script_options ){
-    	$script_options = str_replace('"on"', 'true', $script_options);
-    	$script_options = str_replace('"false"', 'false', $script_options);
-    	return $script_options;
-    }
 
 	function load_assets($type, $template, $style_path){
     	$affix = (is_wp_debug()) ? '' : '.min';
@@ -76,73 +38,229 @@ class MediaOutput extends DT_MediaBlocks
     	wp_enqueue_style( $type.'-theme', DT_MULTIMEDIA_ASSETS_URL.$type.'/'.$template.'.css',
     		array(), self::VERSION );
     }
-
+    
     /**
-     * $type str sub_type ( fancy, owl, slick.. )
-     * $mblock WP_Post 
-     * $attachments array() attachemt ids
+     * Render media blocks
+     * 
+     * @param  string sub_type ( fancy, owl, slick.. )
+     * @param  WP_Post
+     * @param  [type]
+     * @param  boolean print initialize script
+     * @return html output
      */
-    function render_carousel( $type, $mblock, $attachments, $non_script = false ){
+    function render_carousel( $type, $mblock, $attachments, $not_init_script = false, $sync = false ){
     	$result = array();
     	$id = $mblock->ID;
     	
     	// parse type[0] settings
-    	extract($this->block_meta_settings($id, 'carousel'));
-    	$class = (isset($lightbox_class)) ? $lightbox_class : 'fancybox';
+    	$main_type = ($sync) ? 'sync-slider' : 'carousel';
+    	$o = $this->settings_from_file($id, $main_type);
+        extract($o);
 
         // load assets
-    	$template = isset($template) ? $template : false;
-    	$style_path = isset($style_path) ? $style_path : false;
+        _isset_false($template);
+        _isset_false($style_path);
     	$this->load_assets($type, $template, $style_path);
 
-        // parse type[1] settings
-    	$metas_arr = apply_filters( 'array_options_before_view',
-    		$this->block_meta_settings($id, $type) );
-
-    	$script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($metas_arr) ) );
-
-    	$item = array("<div class='item'>", "</div>");
     	$slider_wrap = array("<div id='mediablock-{$id}' class='media-block carousel {$type}'>", "</div>");
+    	$item = array("<div class='item'>", "</div>");
+    	
     	$result[] = $slider_wrap[0];
-    	switch ( $type ) {
-    		case 'owl-carousel':
-    		foreach ($attachments as $attachment) {
-    			$href = wp_get_attachment_url( $attachment );
-    			$link =  (isset($lightbox_links)) ?
-    			array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$class.'">', '</a>') : array('', '');
+    	foreach ($attachments as $attachment) {
+    		$href = wp_get_attachment_url( $attachment );
+    		$link =  (isset($lightbox) && !$sync) ?
+    			array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$lightbox.'">', '</a>') : array('', '');
 
-    			$caption = (isset($image_captions)) ? '<p id="caption">'.get_the_excerpt( $attachment ).'</p>' : '';
+    		$caption = (isset($image_captions)) ? '<p id="caption">'.get_the_excerpt( $attachment ).'</p>' : '';
 
-    			$result[] = $item[0];
-    			$result[] = '   '.$link[0];
-                $result[] = '       '. wp_get_attachment_image( $attachment, $image_size ); //,null,array(attrs)
-                $result[] = '       '.$caption;
-                $result[] = '   '.$link[1];
-                $result[] = $item[1];
-            }
-                // $image_meta = wp_get_attachment_metadata( $attachment );
-
-            $script   = array("<script type='text/javascript'>");
-            $script[] = " jQuery(function($){";
-            $script[] = "     $('#mediablock-".$id."').owlCarousel(".$script_options.");";
-            $script[] = " });";
-            $script[] = "</script>";
-            break;
+    		$result[] = $item[0];
+    		$result[] = '   '.$link[0];
+            $result[] = '   '. wp_get_attachment_image( $attachment, $carousel_size ); //,null,array(attrs)
+            $result[] = '   '.$caption;
+            $result[] = '   '.$link[1];
+            $result[] = $item[1];
         }
-        $result[] = $slider_wrap[1];
-        if(! $non_script )
-        	$result[] = implode("\n", $script);
-        return implode("\n", $result);
-    }
-    function render_slider( $type, $mblock, $attachments, $non_script = false ){
 
+        $script = array();
+        if(! $not_init_script ){
+	        // parse sub_type settings
+	    	$php_to_js_params = apply_filters( 'array_options_before_view',
+	    		$this->settings_from_file($id, $type) );
+	    	$script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($php_to_js_params) ) );
+    		switch ( $type ) {
+    			case 'owl-carousel':
+	                // $image_meta = wp_get_attachment_metadata( $attachment );
+	    			$script[]   = "<script type='text/javascript'>";
+	    			$script[] = " jQuery(function($){";
+	            	// todo: rewrite it
+	            	//$script[] = "     $('#mediablock-".$id."').owlCarousel(".$script_options.");";
+	    			$script[] = " });";
+	    			$script[] = "</script>";
+	    			break;
+    		}
+    	}
+        $result[] = $slider_wrap[1];
+
+        $out = implode("\n", $result) . implode("\n", $script);
+        return $out;
+    }
+    function render_slider( $type, $mblock, $attachments, $not_init_script = false, $sync = false ){
+    	$result = array();
+    	$id = $mblock->ID;
+    	
+    	// parse type[0] settings
+    	$main_type = ($sync) ? 'sync-slider' : 'carousel';
+    	$o = $this->settings_from_file($id, $main_type);
+        extract($o);
+        
+        // load assets
+        _isset_false($template);
+        _isset_false($style_path);
+    	$this->load_assets($type, $template, $style_path);
+
+        if(! isset($sl_width) )
+        	$sl_width = 1110;
+        
+        if(! isset($sl_height) )
+        	$sl_height = 500;
+
+    	$slider_wrap = array("<div id='mediablock-{$id}' class='media-block slider {$type}'>", "</div>");
+    	$item = array("<div class='item'>", "</div>");
+    	
+    	$result[] = $slider_wrap[0];
+    	foreach ($attachments as $attachment) {
+    		$href = wp_get_attachment_url( $attachment );
+    		$link =  ( isset($lightbox) ) ?
+    			array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$lightbox.'">', '</a>') : array('', '');
+
+    		$caption = (isset($image_captions)) ? '<p id="caption">'.get_the_excerpt( $attachment ).'</p>' : '';
+
+    		$result[] = $item[0];
+    		$result[] = '   '.$link[0];
+            $result[] = '       '. wp_get_attachment_image( $attachment, array((int)$sl_width, (int)$sl_height) ); //,null,array(attrs)
+            $result[] = '       '.$caption;
+            $result[] = '   '.$link[1];
+            $result[] = $item[1];
+        }
+
+        $script = array();
+        if(! $not_init_script ){
+	        // parse sub_type settings
+	    	$php_to_js_params = apply_filters( 'array_options_before_view',
+	    		$this->settings_from_file($id, $type) );
+	    	$script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($php_to_js_params) ) );
+    		switch ( $type ) {
+    			case 'owl-carousel':
+	                // $image_meta = wp_get_attachment_metadata( $attachment );
+	    			$script[]   = "<script type='text/javascript'>";
+	    			$script[] = " jQuery(function($){";
+	            	// todo: rewrite it
+	            	//$script[] = "     $('#mediablock-".$id."').owlCarousel(".$script_options.");";
+	    			$script[] = " });";
+	    			$script[] = "</script>";
+	    			break;
+    		}
+    	}
+        $result[] = $slider_wrap[1];
+
+        $out = implode("\n", $result) . implode("\n", $script);
+        return $out;
     }
     function render_sync_slider( $type, $mblock, $attachments ){
-    	$this->render_carousel($type, $mblock, $attachments, true);
-    	$this->render_slider(  $type, $mblock, $attachments, true);
-	//script
+        $out = $this->render_slider( $type, $mblock, $attachments, true, true );
+    	$out .= $this->render_carousel( $type, $mblock, $attachments, true, true );
+
+    	ob_start();
+
+    	$php_to_js_params = apply_filters( 'array_options_before_view',
+    		$this->settings_from_file($mblock->ID, $type, 'sync-slider') );
+
+    	$slider_params = array(
+    		'singleItem' => "on",
+    		"navigation" => "false",
+    		"pagination" => "false",
+    		"afterAction" => "%position%"
+    		);
+    	foreach ($php_to_js_params as $key => $value) {
+    		if(in_array( $key, array("autoPlay", "stopOnHover", "rewindNav", "rewindSpeed", "autoHeight") ))
+    			$slider_params[$key] = $value;
+    	}
+    	$php_to_js_params['afterInit'] = '%addFirstActive%';
+
+    	$slider_script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($slider_params) ) );
+    	$script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($php_to_js_params) ) );
+    	?>
+    	<script type="text/javascript">
+			jq = jQuery.noConflict();
+			jq(function( $ ) {
+				//on.load
+			  $(function(){
+			  	var $sync1 = $("#mediablock-<?php echo $mblock->ID; ?>.slider");
+			    var sync2Selector = "#mediablock-<?php echo $mblock->ID; ?>.carousel";
+			    var $sync2 = $(sync2Selector);
+			    var activeClass = "inslide";
+
+			  	function center(number){
+			      var sync2visible = $sync2.data("owlCarousel").owl.visibleItems;
+			      var num = number;
+			      var found = false;
+			      for(var i in sync2visible){
+			        if(num === sync2visible[i]){
+			          var found = true;
+			        }
+			      }
+
+			      if(found===false){
+			        if(num>sync2visible[sync2visible.length-1]){
+			          $sync2.trigger("owl.goTo", num - sync2visible.length+2)
+			        }else{
+			          if(num - 1 === -1){
+			            num = 0;
+			          }
+			          $sync2.trigger("owl.goTo", num);
+			        }
+			      } else if(num === sync2visible[sync2visible.length-1]){
+			        $sync2.trigger("owl.goTo", sync2visible[1])
+			      } else if(num === sync2visible[0]){
+			        $sync2.trigger("owl.goTo", num-1)
+			      }
+			    }
+
+			    function position(el){
+			      var current = this.currentItem;
+			      $(sync2Selector)
+			        .find(".owl-item")
+			        .removeClass(activeClass)
+			        .eq(current)
+			        .addClass(activeClass)
+			      if( $sync2.data("owlCarousel") !== undefined ){
+			        center(current)
+			      }
+			    }
+
+			    function addFirstActive(el){
+			    	el.find(".owl-item").eq(0).addClass(activeClass);
+			    }
+
+			    $sync1.owlCarousel(<?php echo $slider_script_options; ?>);
+
+			    $sync2.owlCarousel(<?php echo $script_options; ?>);
+			   
+			    $(sync2Selector).on("click", ".owl-item", function(e){
+			      if(!$(this).hasClass(activeClass)){
+			        e.preventDefault();
+			        $sync1.trigger("owl.goTo", $(this).data("owlItem") );
+			      }
+			    });
+
+			  });
+			});
+		</script>
+    	<?php
+    	$out .= ob_get_clean();
+    	return $out;
     }
-    function render_gallery( $type, $mblock, $attachments, $non_script = false ){
+    function render_gallery( $type, $mblock, $attachments, $not_init_script = false ){
     	echo "<div class='row'>";
     	foreach ($attachments as $attachment_id) {
     		echo '<div class="col-3">';
@@ -166,27 +284,19 @@ class MediaOutput extends DT_MediaBlocks
     		return;
     	}
 
-    	$type = $this->get_media_type($id);
-    	if(sizeof($type) == 0)
-    		return false;
-
-    	$attachments = explode(',', $this->block_meta_field($id, 'media_imgs') );
+    	$attachments = explode(',', $this->meta_field($id, 'media_imgs') );
     	if( sizeof($attachments) == 0 )
-    		return (is_wp_debug()) ? 'Файлов не найдено' : false; 
+    		return ( is_wp_debug() ) ? 'Файлов не найдено' : false;
 
     	$result[] = '<section id="mblock">';
-    	if($this->block_meta_field( $id, 'show_title' ) && $mblock->post_title != '')
+    	if($this->meta_field( $id, 'show_title' ) && $mblock->post_title != '')
     		$result[] = '<h3>'. $mblock->post_title .'</h3>';
     	if($mblock->post_excerpt != '')
-    		$result[] = '<div class="excerpt">'.apply_filters('the_content', $mblock->post_excerpt)."</div>";
+    		$result[] = '<div class="excerpt">' .apply_filters('the_content', $mblock->post_excerpt). "</div>";
 
-    	switch ( $type[0] ) {
-        	default: // carousel, slider
-        	$type[0] = str_replace("-", "_", $type[0]);
-        	$func = 'render_' . $type[0];
-        	$result[] = $this->$func($type[1], $mblock, $attachments);
-        	break;
-        } // switch
+    	$func = 'render_' . apply_filters( 'dash_to_underscore', $this->meta_field( $id, 'main_type' ) );
+    	$result[] = $this->$func($this->meta_field( $id, 'type' ), $mblock, $attachments);
+
         $result[] = '</section>';
         return implode("\n", $result);
     }
