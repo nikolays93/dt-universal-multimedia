@@ -83,49 +83,9 @@ jQuery(function($){
   });
   setRemoveTrigger();
 
-  function doDataAction(target, action='toggle'){
-    if(target != undefined){
-      target = target.split(', ');
-      target.forEach(function(item, i){
-        if(action == 'toggle' )
-          $('#'+item+' td, #'+item+' th').slideToggle();
-        else if(action == 'show')
-          $('#'+item+' td, #'+item+' th').slideDown();
-        else if(action == 'hide')
-          $('#'+item+' td, #'+item+' th').slideUp();
-      });
-    }
-  }
-
-  var data = ["data-show", "data-hide"];
-  data.forEach(function(attr, i){
-    $('['+attr+']').on('change', function(){
-      doDataAction( $(this).attr(attr) );
-    });
-  });
-
-  $('[data-show]').each(function(){
-    if(! $(this).is(':checked') ){
-      doDataAction( $(this).attr('data-show') );
-    }
-  });
-  $('[data-hide]').each(function(){
-    if( $(this).is(':checked') ){
-      doDataAction( $(this).attr('data-hide') );
-    }
-  });
-  
-  // $('#preview_media_main_settings input[type="checkbox"]').on('change', function(){
-  //   setDataToggle($(this));
-  // });
-  // $('#preview_media_main_settings input[type="checkbox"]').each(function(i){
-  //   if( $(this).is(':checked') && $(this).attr('data-action') == 'hide')
-  //     setDataToggle($(this));
-
-  //   if( ! $(this).is(':checked') && $(this).attr('data-action') == 'show' )
-  //     setDataToggle($(this));
-  // });
-
+  //
+  //  Placeholder to value
+  //
   $('input[type=\'text\'], input[type=\'number\'], textarea').on('focus', function(){
     if($(this).val() == ''){
       $(this).val($(this).attr('placeholder'));
@@ -135,34 +95,9 @@ jQuery(function($){
 
   $('#shortcode').on('click', function(){ $(this).select(); });
   
-  $('#main_type').on('change', function(){
-    var val = $(this).val();
-    $('[name=type]').each(function(){
-      if( $(this).hasClass(val) ){
-        $(this).slideDown();
-        $(this).removeAttr('disabled');
-      } else {
-        $(this).hide();
-        $(this).attr('disabled', 'disable');
-      }
-    });
-  });
-  $('#main_type').change();
-
-  var $select_tpl = $('select#block_template');
-  function custom_template(){
-    var row = 'tr#style_path > td';
-    if( $select_tpl.val() == 'custom' ){
-      $(row).slideDown();
-    } else {
-      $(row).slideUp();
-    }
-  }
-  $select_tpl.on('change', function(){
-    custom_template();
-  });
-  custom_template();
-
+  /**
+   * Изменить стиль отображения attachments 
+   */
   $('#detail_view').on('click', function(e){
     e.preventDefault();
     // toggleValue
@@ -176,5 +111,92 @@ jQuery(function($){
     });
     $('#dt-media').toggleClass('tile');
     $('#dt-media').toggleClass('list');
+  });
+
+  /**
+   * Выбор типа
+   */
+  $('#main_type').on('change', function(){
+    var val = $(this).val();
+    $('[name=type]').each(function(){
+      if( $(this).hasClass(val) ){
+        $(this).slideDown()
+          .addClass('activated')
+          .removeAttr('disabled');
+      } else {
+        $(this).hide()
+          .removeClass('activated')
+          .attr('disabled', 'disable');
+      }
+    });
+  } ).trigger('change');
+
+  /**
+   * Скрыть под настройки data-hide, data-view, custom стиль
+   */
+  function doDataAction(target, action='toggle'){
+    if(target != undefined){
+      target = target.split(', ');
+      target.forEach(function(item, i){
+        if(action == 'toggle' )
+          $('#'+item+' td, #'+item+' th').slideToggle();
+        else if(action == 'show')
+          $('#'+item+' td, #'+item+' th').slideDown();
+        else if(action == 'hide')
+          $('#'+item+' td, #'+item+' th').slideUp();
+      });
+    }
+  }
+  function checkHiddens(){
+    var data = ["data-show", "data-hide"];
+    data.forEach(function(attr, i){
+      $('['+attr+']').on('change', function(){
+        doDataAction( $(this).attr(attr) );
+      });
+    });
+
+    $('[data-show]').each(function(){
+      if(! $(this).is(':checked') ){
+        doDataAction( $(this).attr('data-show') );
+      }
+    });
+    $('[data-hide]').each(function(){
+      if( $(this).is(':checked') ){
+        doDataAction( $(this).attr('data-hide') );
+      }
+    });
+  }
+  checkHiddens();
+  
+  $('select#block_template').on('change', function(){
+    var row = 'tr#style_path > td';
+    if( $(this).val() == 'custom' ){
+      $(row).slideDown();
+    } else {
+      $(row).slideUp();
+    }
+  }).trigger('change');
+  
+
+  /**
+   * Ajax
+   */
+  $('#main_type, #type').on('change', function(){
+    $.ajax({
+      type: 'POST', url: settings.url, data: {
+        action: 'main_settings',
+        nonce: settings.nonce,
+        main_type: $('#main_type').val(),
+        type: $('#type.activated').val()
+      },
+      success: function(response){
+        var $response = $(response);
+        // console.log(response);
+
+        $('#main_settings.postbox .inside').html( $response[0] );
+        $('#side_settings.postbox .inside').html( $response[1] );
+        checkHiddens();
+      }
+    }).fail(function() { console.log('Ajax error!'); });
   });
 });

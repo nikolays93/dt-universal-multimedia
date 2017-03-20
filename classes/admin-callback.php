@@ -6,11 +6,11 @@ class isAdminView extends DT_MediaBlocks
 
 	function __construct(){
 		add_filter( 'clear_checkbox_render', '__return_true', 10, 1 );
-		$this->preview_hooks();
+		$this->admin_actions();
 
 	}
 
-	function preview_hooks(){
+	function admin_actions(){
 		add_action( 'edit_form_after_title', array( $this, 'after_title' ) );
 		add_action( 'add_meta_boxes', array( $this, 'blocks_meta_boxes' ) );
 		add_action( 'add_meta_boxes' , array( $this, 'remove_default_divs' ), 99 );
@@ -20,6 +20,11 @@ class isAdminView extends DT_MediaBlocks
 
 		add_action( 'load-post.php', array( $this, 'admin_asssets' ) );
 		add_action( 'load-post-new.php', array( $this, 'admin_asssets' ) );
+
+		add_action( 'wp_enqueue_scripts', array($this, 'dtmb_add_ajax_data'), 99 );
+		
+		add_action( 'wp_ajax_main_settings', array($this, 'main_settings_callback') );
+		add_action( 'wp_ajax_main_settings', array($this, 'side_settings_callback') );
 	}
 
 	/**
@@ -54,8 +59,8 @@ class isAdminView extends DT_MediaBlocks
 	}
 
 	function remove_default_divs() {
-		remove_meta_box( 'slugdiv',		DTM_TYPE, 'normal' ); // ярлык записи,
-		remove_meta_box( 'postcustom',	DTM_TYPE, 'normal' ); // Произвольные поля
+		remove_meta_box( 'slugdiv',		 DTM_TYPE, 'normal' ); // ярлык записи,
+		remove_meta_box( 'postcustom',	 DTM_TYPE, 'normal' ); // Произвольные поля
 		remove_meta_box( 'postexcerpt' , DTM_TYPE, 'normal' );
 	}
 
@@ -72,6 +77,13 @@ class isAdminView extends DT_MediaBlocks
 
 		wp_enqueue_style( 'dt-style',   DT_MULTIMEDIA_ASSETS_URL.'/core/style.css', array(), DT_MediaBlocks::VERSION);
 		wp_enqueue_script('dt-preview', DT_MULTIMEDIA_ASSETS_URL.'/core/preview.js', array('jquery'), DT_MediaBlocks::VERSION, true);
+
+		wp_localize_script('dt-preview', 'settings',
+			array(
+				'url' => admin_url('admin-ajax.php'),
+				'nonce' => wp_create_nonce( 'any_secret_string' ),
+			)
+		); 
 	}
 
 	/**
@@ -150,15 +162,27 @@ class isAdminView extends DT_MediaBlocks
 	}
 
 	function main_settings_callback( $post ) {
-		$main_type = $this->meta_field($post->ID, 'main_type');
-		if(! $type = $this->meta_field($post->ID, 'type') )
+		$post_id = ( isset($post->ID) ) ? $post->ID : intval( $_POST['post_id'] );
+
+		$main_type = _isset_default( $_POST['main_type'], $this->meta_field($post_id, 'main_type') );
+		
+		if( isset($_POST['type']) )
+			$type = $_POST['type'];
+		elseif(! $type = $this->meta_field($post_id, 'type') )
 			$type = 'owl-carousel';
-		DTForm::render( $this->get_settings( $type, $main_type ), $this->meta_field($post->ID, $type.'_opt'), true, false );
+
+		var_dump($type);
+		DTForm::render( $this->get_settings( $type, $main_type ), $this->meta_field($post_id, $type.'_opt'), true, false );
 	}
 
 	function side_settings_callback( $post ){
-		if(! $type = $this->meta_field($post->ID, 'main_type') )
+		$post_id = ( isset($post->ID) ) ? $post->ID : intval( $_POST['post_id'] );
+		
+		if( isset($_POST['main_type']) )
+			$type = $_POST['main_type'];
+		elseif(! $type = $this->meta_field($post->ID, 'main_type') )
 			$type = 'carousel';
+
 		DTForm::render( $this->get_settings( $type ), $this->meta_field($post->ID, $type.'_opt'), true, false, 
 			array('<table class="table side-settings"><tbody>', '</tbody></table>', 'td') );
 	}
@@ -206,8 +230,8 @@ class isAdminView extends DT_MediaBlocks
 
 		$this->validate_media_attachments($post_id);
 
-		$this->meta_field($post_id, 'show_title', $_POST['show_title']);
-		$this->meta_field($post_id, 'detail_view', $_POST['detail_view']);
+		$this->meta_field($post_id, 'show_title', _isset_false($_POST['show_title']) );
+		$this->meta_field($post_id, 'detail_view', _isset_false($_POST['detail_view']) );
 
 		if( !isset($_POST['main_type']) || !isset($_POST['type']) )
 			return $post_id;
