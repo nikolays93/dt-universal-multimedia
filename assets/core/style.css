@@ -190,3 +190,7 @@ table.side-settings th {
 .wrap-sc label input[type="checkbox"]{
 	margin-left: 6px;
 }
+
+input[type="number"] {
+	width: 80px;
+}

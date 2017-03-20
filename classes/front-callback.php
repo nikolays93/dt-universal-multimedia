@@ -9,6 +9,24 @@ class MediaOutput extends DT_MediaBlocks
 		add_shortcode( 'mblock', array($this, 'media_sc') );
 	}
 
+    /**
+     * Получить стандартные классы ячейки bootstrap сетки
+     */
+    function get_column_class( $columns_count="4", $non_responsive=false ){
+        switch ($columns_count) {
+            case '1': $col = 'col-12'; break;
+            case '2': $col = (!$non_responsive) ? 'col-6 col-sm-6 col-md-6 col-lg-6' : 'col-6'; break;
+            case '3': $col = (!$non_responsive) ? 'col-12 col-sm-6 col-md-4 col-lg-4' : 'col-4'; break;
+            case '4': $col = (!$non_responsive) ? 'col-6 col-sm-4 col-md-3 col-lg-3' : 'col-3'; break;
+            case '5': $col = (!$non_responsive) ? 'col-12 col-sm-6 col-md-2-4 col-lg-2-4' : 'col-2-4'; break; // be careful
+            case '6': $col = (!$non_responsive) ? 'col-6 col-sm-4 col-md-2 col-lg-2' : 'col-2'; break;
+            case '12': $col= (!$non_responsive) ? 'col-4 col-sm-3 col-md-1 col-lg-1' : 'col-1'; break;
+
+            default: $col = false; break;
+        }
+        return $col;
+    }
+
 	function load_assets($type, $template, $style_path){
     	$affix = (is_wp_debug()) ? '' : '.min';
 
@@ -261,13 +279,35 @@ class MediaOutput extends DT_MediaBlocks
     	return $out;
     }
     function render_gallery( $type, $mblock, $attachments, $not_init_script = false ){
-    	echo "<div class='row'>";
+        $o = $this->settings_from_file($mblock->ID, 'gallery');
+        $php_to_js_params = apply_filters( 'array_options_before_view',
+            $this->settings_from_file($mblock->ID, $type, 'gallery') );
+        extract($o);
+
+        _isset_default( $columns, 4 );
+        _isset_default( $pr_width, 300 );
+        _isset_default( $pr_height, 300 );
+        _isset_default( $lb_class, 'zoom' );
+
+        $column_class = $this->get_column_class($columns) . " mgallery {$type}ed";
+
+        $result = array();
+    	$result[] = "<div class='row'>";
     	foreach ($attachments as $attachment_id) {
-    		echo '<div class="col-3">';
-    		echo wp_get_attachment_image( $attachment_id );
-    		echo '</div>';
+            $thumb = wp_get_attachment_image_src( $attachment_id, array($pr_width, $pr_height) );
+            $image = wp_get_attachment_image_src( $attachment_id, $full_size );
+
+    		$result[] = '<div class="columns-'. $columns .' '. $column_class .'">';
+            $result[] = "  <a href='".$image[0]."' rel='gallery-{$mblock->ID}' class='{$lb_class}'>";
+            $result[] = "    <img src='".$thumb[0]."' alt=''>";
+            $result[] = "  </a>";
+            $result[] = "</div>";
+
     	}
-    	echo "</div>";
+    	$result[] = "</div>";
+
+        $out = implode("\n", $result);
+        return $out;
     }
 
     /**

@@ -171,7 +171,6 @@ class isAdminView extends DT_MediaBlocks
 		elseif(! $type = $this->meta_field($post_id, 'type') )
 			$type = 'owl-carousel';
 
-		var_dump($type);
 		DTForm::render( $this->get_settings( $type, $main_type ), $this->meta_field($post_id, $type.'_opt'), true, false );
 	}
 
