@@ -1,21 +1,15 @@
 <?php
-// ver 1.2.7
+// ver 1.2.8
 
 if(! function_exists('_isset_false') ){
   function _isset_false(&$var, $unset = false){
-    $result = $var = isset($var) ? $var : false;
-    if($unset)
-      $var = FALSE;
-    return $result;
+    return _isset_default( $var, false, $unset );
   }
 }
 
 if(! function_exists('_isset_empty') ){
   function _isset_empty(&$var, $unset = false){
-    $result = $var = isset($var) ? $var : '';
-    if($unset)
-      $var = FALSE;
-    return $result;
+    return _isset_default( $var, '', $unset );
   }
 }
 
@@ -171,7 +165,8 @@ class DTForm
   
   public static function render_checkbox( $input, $checked, $is_table, $label = '' ){
     $result = '';
-    if( !isset($input['value']) )
+
+    if( !isset($input['value']) || $input['value'] === false )
       $input['value'] = 'on';
 
     if( $checked )

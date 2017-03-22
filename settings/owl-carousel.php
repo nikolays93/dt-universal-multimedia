@@ -67,6 +67,7 @@ $Pagination = array(
     'id' => 'pagination',
     'label' => 'Pagination',
     'desc' => 'Display pagination.',
+    'default' => 'on',
     'type' => 'checkbox',
     'data-show' => 'paginationNumbers, paginationSpeed'
     ),

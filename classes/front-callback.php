@@ -132,8 +132,8 @@ class MediaOutput extends DT_MediaBlocks
         extract($o);
         
         // load assets
-        _isset_false($template);
-        _isset_false($style_path);
+        _isset_false( $template );
+        _isset_false( $style_path );
     	$this->load_assets($type, $template, $style_path);
 
         if(! isset($sl_width) )
@@ -193,18 +193,28 @@ class MediaOutput extends DT_MediaBlocks
     	$php_to_js_params = apply_filters( 'array_options_before_view',
     		$this->settings_from_file($mblock->ID, $type, 'sync-slider') );
 
+        $o = $this->settings_from_file($mblock->ID, 'sync-slider');
+        extract($o);
+
     	$slider_params = array(
     		'singleItem' => "on",
-    		"navigation" => "false",
+    		"navigation" => _isset_default( $sl_arrows, 'false' ),
     		"pagination" => "false",
     		"afterAction" => "%position%"
     		);
-    	foreach ($php_to_js_params as $key => $value) {
+
+        if( isset($sl_arr_prev) )
+            $slider_params['navigationTextPrev'] = $sl_arr_prev;
+        if( isset($sl_arr_next) )
+            $slider_params['navigationTextNext'] = $sl_arr_next;
+
+        foreach ($php_to_js_params as $key => $value) {
     		if(in_array( $key, array("autoPlay", "stopOnHover", "rewindNav", "rewindSpeed", "autoHeight") ))
     			$slider_params[$key] = $value;
     	}
     	$php_to_js_params['afterInit'] = '%addFirstActive%';
 
+        $slider_params = apply_filters( 'array_options_before_view', $slider_params );
     	$slider_script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($slider_params) ) );
     	$script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($php_to_js_params) ) );
     	?>

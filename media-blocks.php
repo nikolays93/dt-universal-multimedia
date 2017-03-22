@@ -3,7 +3,7 @@
 Plugin Name: Мультимедия блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.4.1 alpha
+Version: 1.4.2 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -142,36 +142,39 @@ class DT_MediaBlocks
      * Filters
      */
     function setup_filters(){
-      add_filter( 'array_options_before_view',  array($this, 'owl_nextprev'), 10, 1 );
+      add_filter( 'array_options_before_view',  array($this, 'split_array'), 10, 3 );
       add_filter( 'json_change_values',       array($this, 'str_to_bool'), 10, 1 );
       add_filter( 'json_change_values',       array($this, 'json_function_names'), 15, 1 );
-      add_filter( 'dash_to_underscore',       array($this, 'dash_to_underscore_filter'), 10, 1 );
+      add_filter( 'dash_to_underscore',       array($this, 'dash_to_underscore'), 10, 1 );
     }
 
-    function owl_nextprev( $metas_arr ){
-      if(isset($metas_arr['navigationTextNext']) || isset($metas_arr['navigationTextPrev'])){
-        if(isset($metas_arr['navigationTextPrev'])){
-          $prev = $metas_arr['navigationTextPrev'];
-          unset($metas_arr['navigationTextPrev']);
-        }
-        else {
-          $prev = 'prev';
-        }
-        if(isset($metas_arr['navigationTextNext'])){
-          $next = $metas_arr['navigationTextNext'];
-          unset($metas_arr['navigationTextNext']);
-        }
-        else {
-          $next = 'next';
-        }
+    function split_array( $arr, $keys = array('navigationTextPrev', 'navigationTextNext'), $result_key =  'navigationText'){
 
-        $metas_arr['navigationText'] = array($prev, $next);
+      if(isset($arr[ $keys[0] ])){
+        $prev = $arr[ $keys[0] ];
+        unset($arr[ $keys[0] ]);
       }
-      return $metas_arr;
+      else {
+        $prev = 'prev';
+      }
+
+      if(isset($arr[ $keys[1] ])){
+        $next = $arr[ $keys[1] ];
+        unset($arr[ $keys[1] ]);
+      }
+      else {
+        $next = 'next';
+      }
+
+      $arr[$result_key] = array($prev, $next);
+
+      return $arr;
     }
     function str_to_bool( $json ){
+      $json = str_replace('"true"',  'true',  $json);
       $json = str_replace('"on"',  'true',  $json);
       $json = str_replace('"false"', 'false', $json);
+      $json = str_replace('"off"', 'false', $json);
       return $json;
     }
     function json_function_names( $json ){
@@ -179,8 +182,7 @@ class DT_MediaBlocks
       $json = str_replace( '%"', '', $json );
       return $json;
     }
-    
-    function dash_to_underscore_filter( $str ){
+    function dash_to_underscore( $str ){
       $str = str_replace('-', '_', $str);
       return $str;
     }
