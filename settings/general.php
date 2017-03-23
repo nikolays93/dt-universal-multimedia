@@ -28,7 +28,7 @@ $inputs = array(
 		'default' => $type,
 		'disabled' => 'disable',
 		'options' => array(
-			'owl-carousel' => 'Совинная карусель',
+			'owl-carousel' => 'Сова карусель',
 			'slick-slider' => 'Скользкий слайдер'
 			)
 		),
@@ -51,7 +51,7 @@ $inputs = array(
 		'default' => $type,
 		'disabled' => 'disable',
 		'options' => array(
-			'none' => 'Не найден',
+			'cloud9carousel' => 'Облачная карусель',
 			)
 		),
 	);

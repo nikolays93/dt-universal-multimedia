@@ -3,7 +3,7 @@
 Plugin Name: Мульти блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.4.3 alpha
+Version: 1.4.5 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -46,7 +46,7 @@ if(!function_exists('cpJsonStr')){
 class DT_MediaBlocks
 {
   const VERSION = 1.4;
-  const CLASSES_DIR = '/classes/';
+  const CLASSES_DIR = '/include/';
   
   protected $errors = array();
 
@@ -216,6 +216,8 @@ class DT_MediaBlocks
         return include( $path );
       else
         $this->set_notice('Файл настроек не найден!');
+
+      return false;
     }
 
     /**
@@ -260,6 +262,10 @@ class DT_MediaBlocks
       $values = ($block_values) ? $block_values : $this->meta_field( $post_id, $settings_name.'_opt' );
       $settings_type = $this->get_settings( $settings_name, $settings_maintype );
 
+      if( ! $settings_type )
+        return false;
+
+      
       foreach ( $settings_type as $param ){
         // Если не указан name принимаем id, иначе '';
         if( !isset($param['name']) )
@@ -285,8 +291,6 @@ class DT_MediaBlocks
           if( isset($values[$pn]) && ($values[$pn] != '' || $param['type'] == 'select') )
               $result[$pn] = $values[$pn];
         }
-
-
         // $debug[] = $pn .' => '. $values[$pn] . '(' . $param['type'] . ')';
       }
 
