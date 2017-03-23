@@ -28,6 +28,21 @@ jQuery(function($){
 	}
 
 	imgsContainer.sortable();
+
+  function getSizeUrl( image ){
+    if( 'thumbnail' in image.sizes )
+      return image.sizes.thumbnail.url;
+
+    if( 'medium' in image.sizes )
+      return image.sizes.medium.url;
+
+    if( 'large' in image.sizes )
+      return image.sizes.large.url;
+
+    if( 'full' in image.sizes )
+      return image.sizes.full.url;
+  }
+
   // add atachments
   addImgLink.on( 'click', function( event ){
     event.preventDefault();
@@ -46,15 +61,10 @@ jQuery(function($){
     frame.on( 'select', function() {
       var attachments = frame.state().get('selection');
       var image = attachments.toJSON();//attachments.models;
-      
-      for(var i = 0; i < attachments.length; i++){
-      	var url = image[i].url;
-      	if( typeof(image[i].sizes.medium) !== undefined ){
-      		var url = image[i].sizes.medium.url;
-        }
 
-      	console.log( image[i] );
-      	
+      for(var i = 0; i < attachments.length; i++){
+        var url = getSizeUrl(image[i]);
+
       	var imgHTML    = '<img src="'+url+'" alt="'+image[i].alt+'" class="'+image[i].orientation+'" />';
       	var titleHTML  = '<input type="text" name="attachment_text['+image[i].id+']" value="'+image[i].caption+'">';
       	var descHTML   = '<textarea>'+image[i].description+'</textarea>';

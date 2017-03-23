@@ -111,7 +111,7 @@ class MediaOutput extends DT_MediaBlocks
 	    			$script[]   = "<script type='text/javascript'>";
 	    			$script[] = " jQuery(function($){";
 	            	// todo: rewrite it
-	            	//$script[] = "     $('#mediablock-".$id."').owlCarousel(".$script_options.");";
+	            	$script[] = "     $('#mediablock-".$id."').owlCarousel(".$script_options.");";
 	    			$script[] = " });";
 	    			$script[] = "</script>";
 	    			break;
@@ -288,6 +288,9 @@ class MediaOutput extends DT_MediaBlocks
     	$out .= ob_get_clean();
     	return $out;
     }
+    function slider_3d( $type, $mblock, $attachments, $not_init_script = false ){
+        
+    }
     function render_gallery( $type, $mblock, $attachments, $not_init_script = false ){
         $o = $this->settings_from_file($mblock->ID, 'gallery');
         $php_to_js_params = apply_filters( 'array_options_before_view',
@@ -330,20 +333,22 @@ class MediaOutput extends DT_MediaBlocks
 
     	$mblock = get_post( $id );
     	if('publish' !== $mblock->post_status){
-    		if(is_wp_debug()) echo 'Блок не опубликован';
+    		if( is_wp_debug() ) echo 'Блок не опубликован';
     		return;
     	}
 
-    	$attachments = explode(',', $this->meta_field($id, 'media_imgs') );
-    	if( sizeof($attachments) == 0 )
+    	if(! $attachments = explode(',', $this->meta_field($id, 'media_imgs') ) )
     		return ( is_wp_debug() ) ? 'Файлов не найдено' : false;
-
+        
     	$result[] = '<section id="mblock">';
-    	if($this->meta_field( $id, 'show_title' ) && $mblock->post_title != '')
+
+    	if( $this->meta_field( $id, 'show_title' ) && $mblock->post_title != '' )
     		$result[] = '<h3>'. $mblock->post_title .'</h3>';
-    	if($mblock->post_excerpt != '')
+        
+    	if( $mblock->post_excerpt )
     		$result[] = '<div class="excerpt">' .apply_filters('the_content', $mblock->post_excerpt). "</div>";
 
+        // Item output
     	$func = 'render_' . apply_filters( 'dash_to_underscore', $this->meta_field( $id, 'main_type' ) );
     	$result[] = $this->$func($this->meta_field( $id, 'type' ), $mblock, $attachments);
 

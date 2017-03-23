@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Мультимедия блоки
+Plugin Name: Мульти блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.4.2 alpha
+Version: 1.4.3 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -132,7 +132,15 @@ class DT_MediaBlocks
         'show_ui' => true,
         'supports' => array('title', 'custom-fields', 'excerpt'),
         'labels' => array(
-          'name' => 'Медиа блоки'
+          'name' => 'Мульти Блоки',
+          'singular_name'      => 'Мульти Блок',
+          'add_new'            => 'Добавить блок',
+          'add_new_item'       => 'Добавление блок',
+          'edit_item'          => 'Редактирование блока',
+          'new_item'           => 'Новый блок',
+          'view_item'          => 'Смотреть МультиБлок',
+          'search_items'       => 'Искать МультиБлок',
+          'menu_name'          => 'Мульти Блоки',
           )
         )
       );
@@ -150,23 +158,25 @@ class DT_MediaBlocks
 
     function split_array( $arr, $keys = array('navigationTextPrev', 'navigationTextNext'), $result_key =  'navigationText'){
 
-      if(isset($arr[ $keys[0] ])){
-        $prev = $arr[ $keys[0] ];
-        unset($arr[ $keys[0] ]);
-      }
-      else {
-        $prev = 'prev';
-      }
+      if( sizeof($arr) ){
+        if(isset($arr[ $keys[0] ])){
+          $prev = $arr[ $keys[0] ];
+          unset($arr[ $keys[0] ]);
+        }
+        else {
+          $prev = 'prev';
+        }
 
-      if(isset($arr[ $keys[1] ])){
-        $next = $arr[ $keys[1] ];
-        unset($arr[ $keys[1] ]);
-      }
-      else {
-        $next = 'next';
-      }
+        if(isset($arr[ $keys[1] ])){
+          $next = $arr[ $keys[1] ];
+          unset($arr[ $keys[1] ]);
+        }
+        else {
+          $next = 'next';
+        }
 
-      $arr[$result_key] = array($prev, $next);
+        $arr[$result_key] = array($prev, $next);
+      }
 
       return $arr;
     }
