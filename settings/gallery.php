@@ -2,7 +2,7 @@
 defined( 'ABSPATH' ) or die();
 
 $sizes = get_intermediate_image_sizes();
-$view_sizes = array();
+$view_sizes = array('' => 'Не использовать');
 foreach ($sizes as $value) {
   $view_sizes[$value] = $value;
 }

@@ -148,7 +148,10 @@ class MediaOutput extends DT_MediaBlocks
     	$result[] = $slider_wrap[0];
     	foreach ($attachments as $attachment) {
     		$href = wp_get_attachment_url( $attachment );
-    		$link =  ( isset($lightbox) ) ?
+
+            
+
+    		$link =  ( isset($lightbox) && $lightbox != '' ) ?
     			array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$lightbox.'">', '</a>') : array('', '');
 
     		$caption = (isset($image_captions)) ? '<p id="caption">'.get_the_excerpt( $attachment ).'</p>' : '';
@@ -310,12 +313,15 @@ class MediaOutput extends DT_MediaBlocks
     	$result[] = "<div class='row'>";
     	foreach ($attachments as $attachment_id) {
             $thumb = wp_get_attachment_image_src( $attachment_id, array($pr_width, $pr_height) );
-            $image = wp_get_attachment_image_src( $attachment_id, $full_size );
+            $image = ($full_size) ? wp_get_attachment_image_src( $attachment_id, $full_size ) : false;
 
     		$result[] = '<div class="columns-'. $columns .' '. $column_class .'">';
-            $result[] = "  <a href='".$image[0]."' rel='gallery-{$mblock->ID}' class='{$lb_class}'>";
+            if($image)
+                $result[] = "  {$lb_class}<a href='".$image[0]."' rel='gallery-{$mblock->ID}' class='{$lb_class}'>";
             $result[] = "    <img src='".$thumb[0]."' alt=''>";
-            $result[] = "  </a>";
+            if($image)
+                $result[] = "  </a>";
+
             $result[] = "</div>";
 
     	}
@@ -358,11 +364,3 @@ class MediaOutput extends DT_MediaBlocks
         return implode("\n", $result);
     }
 }
-
-function render_block(){
-
-}
-
-JSсript::init( '.navbar-brand', 'slideUp', array('key' => array('value', 'value2') ) );
-
-// Get jscript options
