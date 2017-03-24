@@ -3,7 +3,7 @@
 Plugin Name: Мульти блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.4.5 alpha
+Version: 1.4.6 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */

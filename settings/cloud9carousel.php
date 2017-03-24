@@ -74,14 +74,37 @@ $settings = array(
     'type' => 'number',
     'default' => '4000'
     ),
+  array(
+    'id' => 'mouseWheel',
+    'label' => 'mouseWheel',
+    'desc' => 'Spin the carousel using the mouse wheel. Requires a "mousewheel" event, provided by this mousewheel plugin. However, see: known issues',
+    'type' => 'checkbox',
+    ),
+  array(
+    'id' => 'bringToFront',
+    'label' => 'bringToFront',
+    'desc' => 'Clicking an item will rotate it to the front',
+    'type' => 'checkbox',
+    ),
+  array(
+    'id' => 'buttonLeft',
+    'label' => 'buttonLeft',
+    'desc' => 'jQuery collection of element(s) intended to spin the carousel so as to bring the item to the left of the frontmost item to the front, i.e., spin it counterclockwise, when clicked. E.g., $("#button-left")',
+    'type' => 'text',
+    ),
+  array(
+    'id' => 'buttonRight',
+    'label' => 'buttonRight',
+    'desc' => 'jQuery collection of element(s) intended to spin the carousel so as to bring the item to the right of the frontmost item to the front, i.e., spin it clockwise, when clicked. E.g., $("#button-right")',
+    'type' => 'text',
+    ),
+  array(
+    'id' => 'itemClass',
+    'label' => 'itemClass',
+    'desc' => 'Class attribute of the item elements inside the carousel container  "cloud9-item"
+    handle  The string handle you can use to interact with the carousel. E.g., $("#carousel").data("carousel").go(1)',
+    'type' => 'text',
+    ),
 );
-  
 
-  
-  
-mouseWheel  Spin the carousel using the mouse wheel. Requires a "mousewheel" event, provided by this mousewheel plugin. However, see: known issues  false
-bringToFront  Clicking an item will rotate it to the front  false
-buttonLeft  jQuery collection of element(s) intended to spin the carousel so as to bring the item to the left of the frontmost item to the front, i.e., spin it counterclockwise, when clicked. E.g., $("#button-left") none
-buttonRight jQuery collection of element(s) intended to spin the carousel so as to bring the item to the right of the frontmost item to the front, i.e., spin it clockwise, when clicked. E.g., $("#button-right")  none
-itemClass Class attribute of the item elements inside the carousel container  "cloud9-item"
-handle  The string handle you can use to interact with the carousel. E.g., $("#carousel").data("carousel").go(1)
+return $settings;

@@ -55,4 +55,5 @@ $inputs = array(
 			)
 		),
 	);
+
 return $inputs;

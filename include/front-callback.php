@@ -288,8 +288,10 @@ class MediaOutput extends DT_MediaBlocks
     	$out .= ob_get_clean();
     	return $out;
     }
-    function slider_3d( $type, $mblock, $attachments, $not_init_script = false ){
-        
+    function render_slider_3d( $type, $mblock, $attachments, $not_init_script = false ){
+
+        $o = $this->settings_from_file( $mblock->ID, 'slider-3d' );
+        var_dump($o);
     }
     function render_gallery( $type, $mblock, $attachments, $not_init_script = false ){
         $o = $this->settings_from_file($mblock->ID, 'gallery');
@@ -356,3 +358,11 @@ class MediaOutput extends DT_MediaBlocks
         return implode("\n", $result);
     }
 }
+
+function render_block(){
+
+}
+
+JSсript::init( '.navbar-brand', 'slideUp', array('key' => array('value', 'value2') ) );
+
+// Get jscript options
