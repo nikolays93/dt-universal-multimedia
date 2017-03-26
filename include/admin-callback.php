@@ -23,7 +23,7 @@ class isAdminView extends DT_MediaBlocks
 
 		add_action( 'wp_enqueue_scripts', array($this, 'dtmb_add_ajax_data'), 99 );
 		
-		add_action( 'wp_ajax_main_settings', array($this, 'main_settings_callback') );
+		add_action( 'wp_ajax_main_settings', array($this, 'sub_settings_callback') );
 		add_action( 'wp_ajax_main_settings', array($this, 'side_settings_callback') );
 	}
 
@@ -53,7 +53,7 @@ class isAdminView extends DT_MediaBlocks
 
 	function blocks_meta_boxes( $post_type ){
 		add_meta_box('attachments', 'Мультимедиа', array( $this, 'attachments_callback' ), DTM_TYPE, 'normal', 'high');
-		add_meta_box('main_settings', 'Настройки', array( $this, 'main_settings_callback' ), DTM_TYPE, 'normal');
+		add_meta_box('main_settings', 'Настройки', array( $this, 'sub_settings_callback' ), DTM_TYPE, 'normal');
 		add_meta_box('side_settings', 'Настройки', array( $this, 'side_settings_callback' ), DTM_TYPE, 'side');
 		add_meta_box('mb_postexcerpt', __( 'Сообщение блока' ), array($this, 'excerpt_box'), DTM_TYPE, 'normal');
 	}
@@ -161,7 +161,7 @@ class isAdminView extends DT_MediaBlocks
 		<?php
 	}
 
-	function main_settings_callback( $post ) {
+	function sub_settings_callback( $post ) {
 		$post_id = ( isset($post->ID) ) ? $post->ID : intval( $_POST['post_id'] );
 
 		$main_type = _isset_default( $_POST['main_type'], $this->meta_field($post_id, 'main_type') );

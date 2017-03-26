@@ -100,11 +100,11 @@ $settings = array(
     ),
   array(
     'id' => 'itemClass',
-    'label' => 'itemClass',
-    'desc' => 'Class attribute of the item elements inside the carousel container  "cloud9-item"
-    handle  The string handle you can use to interact with the carousel. E.g., $("#carousel").data("carousel").go(1)',
-    'type' => 'text',
+    // 'label' => 'itemClass',
+    // 'desc' => 'Class attribute of the item elements inside the carousel container',
+    'type' => 'hidden',
+    'value' => 'item'
     ),
 );
-
+// handle  The string handle you can use to interact with the carousel. E.g., $("#carousel").data("carousel").go(1)
 return $settings;

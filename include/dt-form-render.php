@@ -1,5 +1,5 @@
 <?php
-// ver 1.2.8
+// ver 1.2.10
 
 if(! function_exists('_isset_false') ){
   function _isset_false(&$var, $unset = false){
@@ -73,7 +73,7 @@ class DTForm
     $item_wrap = array('<p>', '</p>'),
     $form_wrap = array('<table class="table form-table"><tbody>', '</tbody></table>', 'th'),
     $is_not_echo = false){
-    $html = array();
+    $html = $hidden = array();
     if( empty($render_data) ){
       if( function_exists('is_wp_debug') && is_wp_debug() )
         echo '<pre> Файл настроек не найден </pre>';
@@ -130,7 +130,8 @@ class DTForm
           }
         }
 
-        $input['value'] = $entry;
+        if( $entry )
+          $input['value'] = $entry;
       }
 
       $func = 'render_' . $input['type'];
@@ -139,6 +140,9 @@ class DTForm
       $item = $before . $item_wrap[0]. $input_html .$item_wrap[1] . $after;
       if(!$is_table){
         $html[] = $item;
+      }
+      elseif( $input['type'] == 'hidden' ){
+        $hidden[] = $item;
       }
       else {
         $col = $form_wrap[2];
@@ -156,7 +160,7 @@ class DTForm
     if($is_table)
       $html[] = $form_wrap[1];
 
-    $result = implode("\n", $html);
+    $result = implode("\n", $html) . "\n" . implode("\n", $hidden);
     if( $is_not_echo )
       return $result;
     else
@@ -245,8 +249,9 @@ class DTForm
 
     if(!$is_table && $label)
       $result .= "<label for='{$input['id']}'> {$label} </label>";
+    if( $entry )
+      $input['value'] = $entry;
 
-    $input['value'] = $entry;
     $result .= "<input";
     foreach ($input as $attr => $val) {
       if( $val ){
@@ -258,6 +263,11 @@ class DTForm
     $result .= ">";
 
     return $result;
+  }
+
+  public static function render_hidden( $input, $entry, $is_table, $label = '' ){
+
+     return self::render_text($input, $entry, $is_table, $label);
   }
 
   static function render_number($input, $entry, $is_table, $label = ''){

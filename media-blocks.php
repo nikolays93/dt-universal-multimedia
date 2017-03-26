@@ -3,7 +3,7 @@
 Plugin Name: Мульти блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.4.6 alpha
+Version: 1.4.7 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -53,22 +53,22 @@ class DT_MediaBlocks
     function __construct(){
       $this->define_constants();
       $this->setup_filters();
+      add_action('init', array($this, 'register_post_types'));
+
       $this->include_required_classes( array('DTForm' => 'dt-form-render') );
+      
       if( is_admin() ){
       	$this->include_required_classes( array('isAdminView' => 'admin-callback') );
+        new isAdminView();
       }
       else {
-      	$this->include_required_classes( array('MediaOutput' => 'front-callback') );
+      	$this->include_required_classes( array(
+          'JScript'     => 'init-scripts',
+          'MediaOutput' => 'front-callback'
+          ) );
+        new MediaOutput();
       }
-      
-      add_action('init', array($this, 'register_post_types'));
-      
-      if(is_admin()){
-      	new isAdminView();
-      }
-      else {
-      	new MediaOutput();
-      }
+
     }
 
     /**

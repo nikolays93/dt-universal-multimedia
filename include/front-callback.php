@@ -35,7 +35,6 @@ class MediaOutput extends DT_MediaBlocks
     		wp_enqueue_style( 'owl-carousel-core', DT_MULTIMEDIA_ASSETS_URL.'owl-carousel/owl.carousel.css', array(), self::VERSION );
     	}
 
-
     	if( $template === "" )
     		return false;
 
@@ -57,14 +56,56 @@ class MediaOutput extends DT_MediaBlocks
     		array(), self::VERSION );
     }
     
+    function render_attachments( $main_type, $type, $mblock, $attachments, $double = false ){
+        $result = array();
+        
+        // Options
+        $id = (int)$mblock->ID;
+        $o = $this->settings_from_file( $id, $main_type);
+        extract($o);
+
+        _isset_default( $items_size, 'medium');
+
+        $item_wrap = array("<div id='mediablock-{$id}' class='media-block {$main_type} {$type}'>", "</div>");
+        $columns = _isset_default($items, 4);
+        $item_class = '';// $this->get_column_class( $columns );
+        $item = array("<div class='item {$item_class}'>", "</div>");
+
+        // Load assets
+        if( isset($template) ){
+            _isset_false($style_path);
+            $this->load_assets($type, $template, $style_path);
+        }
+
+        $result[] = $item_wrap[0];
+        foreach ($attachments as $attachment) {
+            $href = wp_get_attachment_url( $attachment );
+            $link =  ( isset($lightbox) ) ?
+                array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$lightbox.'">', '</a>') : array('', '');
+
+            $caption = (isset($image_captions)) ? '<p id="caption">'.get_the_excerpt( $attachment ).'</p>' : '';
+
+            $result[] = $item[0];
+            $result[] = '   '.$link[0];
+            $result[] = '   '. wp_get_attachment_image( $attachment, $items_size ); //,null,array(attrs)
+            $result[] = '   '.$caption;
+            $result[] = '   '.$link[1];
+            $result[] = $item[1];
+
+        }
+        $result[] = $item_wrap[1];
+
+        $out = implode("\n", $result);
+        return $out;
+    }
     /**
      * Render media blocks
      * 
-     * @param  string sub_type ( fancy, owl, slick.. )
-     * @param  WP_Post
-     * @param  [type]
-     * @param  boolean print initialize script
-     * @return html output
+     * @param  $type            string sub_type ( fancy, owl, slick.. )
+     * @param  $mblock          WP_Post
+     * @param  $attachments     string att ids split ","
+     * @param  $not_init_script boolean print initialize script
+     * @return $sync            html output
      */
     function render_carousel( $type, $mblock, $attachments, $not_init_script = false, $sync = false ){
     	$result = array();
@@ -72,8 +113,7 @@ class MediaOutput extends DT_MediaBlocks
     	
     	// parse type[0] settings
     	$main_type = ($sync) ? 'sync-slider' : 'carousel';
-    	$o = $this->settings_from_file($id, $main_type);
-        extract($o);
+        extract($this->settings_from_file($id, $main_type));
 
         // load assets
         _isset_false($template);
@@ -293,8 +333,14 @@ class MediaOutput extends DT_MediaBlocks
     }
     function render_slider_3d( $type, $mblock, $attachments, $not_init_script = false ){
 
-        $o = $this->settings_from_file( $mblock->ID, 'slider-3d' );
-        var_dump($o);
+        echo "<style>#mediablock-309 {width: 600px;height:400px;} </style>";
+
+        wp_enqueue_script( 'cloud9carousel', DT_MULTIMEDIA_ASSETS_URL.'cloud9carousel/jquery.cloud9carousel.js', array('jquery'), '', true );
+
+        $init_settings = $this->settings_from_file($mblock->ID, $type);
+        JScript::init( "#mediablock-".$mblock->ID, 'Cloud9Carousel', $init_settings );
+
+        return $this->render_attachments('slider-3d', $type, $mblock, $attachments, $not_init_script);
     }
     function render_gallery( $type, $mblock, $attachments, $not_init_script = false ){
         $o = $this->settings_from_file($mblock->ID, 'gallery');
@@ -338,6 +384,9 @@ class MediaOutput extends DT_MediaBlocks
     	$result = array();
     	$atts = shortcode_atts( array('id' => false), $atts );
     	$id = intval($atts['id']);
+
+        if( !$id )
+            return false;
 
     	$mblock = get_post( $id );
     	if('publish' !== $mblock->post_status){
