@@ -3,7 +3,7 @@
 Plugin Name: Мульти блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.4.7 alpha
+Version: 1.5.0 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -45,7 +45,7 @@ if(!function_exists('cpJsonStr')){
 
 class DT_MediaBlocks
 {
-  const VERSION = 1.4;
+  const VERSION = 1.5;
   const CLASSES_DIR = '/include/';
   
   protected $errors = array();
@@ -206,7 +206,7 @@ class DT_MediaBlocks
      * @param  string type returned settings
      * @return array settings
      */
-    protected function get_settings( $file = false, $main_type = 'carousel' ) {
+    protected function get_settings_file( $file = false, $main_type = 'carousel' ) {
       if( empty($file) )
         return false;
 
@@ -248,8 +248,8 @@ class DT_MediaBlocks
      * Get or Set values to meta from settings file
      * 
      * @param  int    $post_id
-     * @param  string $settings_name      settings filename
-     * @param  string $settings_maintype  sub_type settinigs (owl-carousel, slick, fancy..)
+     * @param  string $settings_name      settings filename (subtype if ($settings_maintype))
+     * @param  string $settings_maintype  main_type settinigs (carousel, gallery..)
      * @param  values $block_values       to record, get installed values if 'false'
      * @return is get (array) else (null)
      */
@@ -260,13 +260,13 @@ class DT_MediaBlocks
 
       $result = array();
       $values = ($block_values) ? $block_values : $this->meta_field( $post_id, $settings_name.'_opt' );
-      $settings_type = $this->get_settings( $settings_name, $settings_maintype );
+      $filename = ($settings_maintype) ? 'sub/'.$settings_name : 'main/'.$settings_name;
+      $settings = $this->get_settings_file( $filename, $settings_maintype );
 
-      if( ! $settings_type )
+      if( ! $settings )
         return false;
-
       
-      foreach ( $settings_type as $param ){
+      foreach ( $settings as $param ){
         // Если не указан name принимаем id, иначе '';
         if( !isset($param['name']) )
           $param['name'] = isset($param['id']) ? $param['id'] : '';

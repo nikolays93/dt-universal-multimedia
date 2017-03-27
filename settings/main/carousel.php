@@ -8,8 +8,20 @@ foreach ($sizes as $value) {
 }
 
 $settings = array(
-  array(
-    'id'  => 'block_template',
+  array('id' => 'lightbox',
+    'label' => 'LightBox class',
+    'desc' => 'Add class for lightbox links',
+    'type' => 'text',
+    'placeholder' => 'zoom',
+     // 'default' => 'fancybox',
+    ),
+  array('id' => 'items_size',
+    'label' => 'Image size',
+    'desc' => '',
+    'type' => 'select',
+    'options' => $view_sizes
+    ),
+  array('id' => 'block_template',
     'label' => 'Template',
     'desc' => 'include CSS template',
     'type' => 'select',
@@ -21,24 +33,15 @@ $settings = array(
       'custom'=>'Personal'
       )
     ),
-  array(
-    'id' => 'style_path',
+  array('id' => 'style_path',
     'label' => 'Custom path',
     'desc' => '',
     'type' => 'text',
     ),
-  // $image_size = 'thumbnail';
-  array(
-    'id' => 'sl_width',
-    'label' => 'Width',
+  array('id' => 'image_captions',
+    'label' => 'Show image captions',
     'desc' => '',
-    'type' => 'text',
-    ),
-  array(
-    'id' => 'sl_height',
-    'label' => 'Height',
-    'desc' => '',
-    'type' => 'text',
+    'type' => 'checkbox',
     )
   );
   return $settings;

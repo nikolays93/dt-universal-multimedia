@@ -150,7 +150,7 @@ class isAdminView extends DT_MediaBlocks
 			</div>
 			<label>Тип мультимедия: </label>
 			<?php
-				DTForm::render( $this->get_settings('general'), array(
+				DTForm::render( $this->get_settings_file('general'), array(
 					'main_type' => $this->meta_field( $post->ID, 'main_type' ),
 					'type'      => $this->meta_field( $post->ID, 'type' )
 					), false, false);
@@ -171,7 +171,7 @@ class isAdminView extends DT_MediaBlocks
 		elseif(! $type = $this->meta_field($post_id, 'type') )
 			$type = 'owl-carousel';
 
-		DTForm::render( $this->get_settings( $type, $main_type ), $this->meta_field($post_id, $type.'_opt'), true, false );
+		DTForm::render( $this->get_settings_file( 'sub/'.$type, $main_type ), $this->meta_field($post_id, $type.'_opt'), true, false );
 	}
 
 	function side_settings_callback( $post ){
@@ -182,7 +182,7 @@ class isAdminView extends DT_MediaBlocks
 		elseif(! $type = $this->meta_field($post->ID, 'main_type') )
 			$type = 'carousel';
 
-		DTForm::render( $this->get_settings( $type ), $this->meta_field($post->ID, $type.'_opt'), true, false, 
+		DTForm::render( $this->get_settings_file( 'main/'.$type ), $this->meta_field($post->ID, $type.'_opt'), true, false, 
 			array('<table class="table side-settings"><tbody>', '</tbody></table>', 'td') );
 	}
 

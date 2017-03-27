@@ -8,8 +8,7 @@ foreach ($sizes as $value) {
 }
 
 $settings = array(
-  array(
-    'id' => 'items_size',
+  array('id' => 'items_size',
     'label' => 'Image size',
     'desc' => '',
     'type' => 'select',

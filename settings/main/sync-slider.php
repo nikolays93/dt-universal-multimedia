@@ -8,54 +8,42 @@ foreach ($sizes as $value) {
 }
 
 $settings = array(
-  array(
-    'id' => 'sl_width',
+  array('id' => 'width',
     'label' => 'Width',
     'desc' => '',
     'type' => 'number',
     ),
-  array(
-    'id' => 'sl_height',
+  array('id' => 'height',
     'label' => 'Height',
     'desc' => '',
     'type' => 'number',
     ),
-  array(
-    'id' => 'sl_arrows',
-    'label' => 'Use slider arrows',
-    'desc' => '',
-    'type' => 'checkbox',
-    'data-show' => 'sl_arr_prev, sl_arr_next'
-    ),
-  array(
-    'id' => 'sl_arr_prev',
+  array('id' => 'arr_prev',
     'label' => 'Prev',
     'desc' => '',
     'type' => 'text',
+    'default' => 'prev'
     ),
-  array(
-    'id' => 'sl_arr_next',
+  array('id' => 'arr_next',
     'label' => 'Next',
     'desc' => '',
     'type' => 'text',
+     'default' => 'next'
     ),
-  array(
-    'id' => 'lightbox',
-    'label' => 'Use lightbox',
-    'desc' => 'Add class for lightbox links',
-    'type' => 'text',
-    'default' => 'zoom',
-     // 'default' => 'fancybox',
-    ),
-  array(
-    'id' => 'carousel_size',
+  array('id' => 'items_size',
     'label' => 'Carousel size',
     'desc' => '',
     'type' => 'select',
     'options' => $view_sizes
     ),
-  array(
-    'id'  => 'block_template',
+  array('id' => 'lightbox',
+    'label' => 'LightBox class',
+    'desc' => 'Add class for lightbox links',
+    'type' => 'text',
+    'default' => 'zoom',
+     // 'default' => 'fancybox',
+    ),
+  array('id' => 'block_template',
     'label' => 'Template',
     'desc' => 'include CSS template',
     'type' => 'select',
@@ -67,8 +55,7 @@ $settings = array(
       'custom'=>'Personal'
       )
     ),
-  array(
-    'id' => 'style_path',
+  array('id' => 'style_path',
     'label' => 'Custom path',
     'desc' => '',
     'type' => 'text',

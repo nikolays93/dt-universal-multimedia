@@ -2,43 +2,39 @@
 defined( 'ABSPATH' ) or die();
 
 $sizes = get_intermediate_image_sizes();
-$view_sizes = array('' => 'Не использовать');
+$view_sizes = array('' => 'Custom');
 foreach ($sizes as $value) {
   $view_sizes[$value] = $value;
 }
 
 $settings = array(
-  array(
-    'id' => 'pr_width',
+  array('id' => 'items_size',
+    'label' => 'Image size',
+    'desc' => '',
+    'type' => 'select',
+    'options' => $view_sizes
+    ),
+  array('id' => 'width',
     'label' => 'Width',
     'desc' => '',
-    'type' => 'text',
+    'type' => 'number',
     ),
-  array(
-    'id' => 'pr_height',
+  array('id' => 'height',
     'label' => 'Height',
     'desc' => '',
-    'type' => 'text',
+    'type' => 'number',
     ),
-  array(
-    'id' => 'columns',
+  array('id' => 'columns',
     'label' => 'Columns',
     'default' => '4',
     'type' => 'number',
     ),
-  array(
-    'id' => 'full_size',
-    'label' => 'Lightbox Size',
-    'desc' => '',
-    'type' => 'select',
-    'default' => 'large',
-    'options' => $view_sizes
-    ),
-  array(
-    'id' => 'lb_class',
-    'label' => 'Lightbox class',
-    'default' => 'zoom',
+  array('id' => 'lightbox',
+    'label' => 'LightBox class',
+    'desc' => 'Add class for lightbox links',
     'type' => 'text',
+    'default' => 'zoom',
+     // 'default' => 'fancybox',
     ),
   // array(
   //   'id'  => 'block_template',

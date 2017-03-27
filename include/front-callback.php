@@ -61,29 +61,43 @@ class MediaOutput extends DT_MediaBlocks
         
         // Options
         $id = (int)$mblock->ID;
-        $o = $this->settings_from_file( $id, $main_type);
+        $o = $this->settings_from_file( $id, $main_type );
         extract($o);
+        // lightbox
+        // items_size
+        // block_template
+        // style_path
+        // image_captions
+        
+        if($main_type == 'slider') $columns = 1;
+        _isset_default( $columns, 4 );
+        _isset_default( $items_size, 'medium' );
 
-        _isset_default( $items_size, 'medium');
-
-        $item_wrap = array("<div id='mediablock-{$id}' class='media-block {$main_type} {$type}'>", "</div>");
-        $columns = _isset_default($items, 4);
-        $item_class = '';// $this->get_column_class( $columns );
+        $item_wrap = array(
+            "<div id='mediablock-{$id}' class='media-block row {$main_type} {$type}'>", "</div>");
+        $item_class = $this->get_column_class( $columns );
         $item = array("<div class='item {$item_class}'>", "</div>");
 
         // Load assets
-        if( isset($template) ){
+        if( isset($block_template) ){
             _isset_false($style_path);
-            $this->load_assets($type, $template, $style_path);
+            $this->load_assets($type, $block_template, $style_path);
         }
 
         $result[] = $item_wrap[0];
         foreach ($attachments as $attachment) {
-            $href = wp_get_attachment_url( $attachment );
-            $link =  ( isset($lightbox) ) ?
-                array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$lightbox.'">', '</a>') : array('', '');
+            $att = get_post( $attachment );
+            
+            $caption = ( isset($image_captions) ) ?
+                '<p id="caption">'.apply_filters( 'the_content', $att->post_excerpt ).'</p>' : '';
 
-            $caption = (isset($image_captions)) ? '<p id="caption">'.get_the_excerpt( $attachment ).'</p>' : '';
+            if( isset($lightbox) && !$double ){
+                $href = $att->guid; // wp_get_attachment_url( $attachment )
+                $link = array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$lightbox.'">', '</a>');
+            }
+            else {
+                $link = array('', '');
+            }
 
             $result[] = $item[0];
             $result[] = '   '.$link[0];
@@ -91,7 +105,6 @@ class MediaOutput extends DT_MediaBlocks
             $result[] = '   '.$caption;
             $result[] = '   '.$link[1];
             $result[] = $item[1];
-
         }
         $result[] = $item_wrap[1];
 
@@ -108,59 +121,21 @@ class MediaOutput extends DT_MediaBlocks
      * @return $sync            html output
      */
     function render_carousel( $type, $mblock, $attachments, $not_init_script = false, $sync = false ){
-    	$result = array();
-    	$id = $mblock->ID;
-    	
-    	// parse type[0] settings
     	$main_type = ($sync) ? 'sync-slider' : 'carousel';
-        extract($this->settings_from_file($id, $main_type));
 
-        // load assets
-        _isset_false($template);
-        _isset_false($style_path);
-    	$this->load_assets($type, $template, $style_path);
+        $trigger = '#mediablock-'.$mblock->ID;
+    	$php_array_params = $this->settings_from_file( $mblock->ID, $type, $main_type );
+		switch ( $type ) {
+			case 'owl-carousel':
+                $init = 'owlCarousel';
+    			break;
+		}
 
-    	$slider_wrap = array("<div id='mediablock-{$id}' class='media-block carousel {$type}'>", "</div>");
-    	$item = array("<div class='item'>", "</div>");
-    	
-    	$result[] = $slider_wrap[0];
-    	foreach ($attachments as $attachment) {
-    		$href = wp_get_attachment_url( $attachment );
-    		$link =  (isset($lightbox) && !$sync) ?
-    			array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$lightbox.'">', '</a>') : array('', '');
+        jScript::init($trigger, 'removeClass', 'row');
+        jScript::init($trigger . ' .item', 'attr', 'class", "item');
+        jScript::init($trigger, $init, $php_array_params);
 
-    		$caption = (isset($image_captions)) ? '<p id="caption">'.get_the_excerpt( $attachment ).'</p>' : '';
-
-    		$result[] = $item[0];
-    		$result[] = '   '.$link[0];
-            $result[] = '   '. wp_get_attachment_image( $attachment, $carousel_size ); //,null,array(attrs)
-            $result[] = '   '.$caption;
-            $result[] = '   '.$link[1];
-            $result[] = $item[1];
-        }
-
-        $script = array();
-        if(! $not_init_script ){
-	        // parse sub_type settings
-	    	$php_to_js_params = apply_filters( 'array_options_before_view',
-	    		$this->settings_from_file($id, $type) );
-	    	$script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($php_to_js_params) ) );
-    		switch ( $type ) {
-    			case 'owl-carousel':
-	                // $image_meta = wp_get_attachment_metadata( $attachment );
-	    			$script[]   = "<script type='text/javascript'>";
-	    			$script[] = " jQuery(function($){";
-	            	// todo: rewrite it
-	            	$script[] = "     $('#mediablock-".$id."').owlCarousel(".$script_options.");";
-	    			$script[] = " });";
-	    			$script[] = "</script>";
-	    			break;
-    		}
-    	}
-        $result[] = $slider_wrap[1];
-
-        $out = implode("\n", $result) . implode("\n", $script);
-        return $out;
+        return $this->render_attachments($main_type, $type, $mblock, $attachments, $sync);
     }
     function render_slider( $type, $mblock, $attachments, $not_init_script = false, $sync = false ){
     	$result = array();
@@ -343,9 +318,9 @@ class MediaOutput extends DT_MediaBlocks
         return $this->render_attachments('slider-3d', $type, $mblock, $attachments, $not_init_script);
     }
     function render_gallery( $type, $mblock, $attachments, $not_init_script = false ){
-        $o = $this->settings_from_file($mblock->ID, 'gallery');
+        $o = $this->settings_from_file($mblock->ID, 'main/gallery');
         $php_to_js_params = apply_filters( 'array_options_before_view',
-            $this->settings_from_file($mblock->ID, $type, 'gallery') );
+            $this->settings_from_file($mblock->ID, $type, 'main/gallery') );
         extract($o);
 
         _isset_default( $columns, 4 );
