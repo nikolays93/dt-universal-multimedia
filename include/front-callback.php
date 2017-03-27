@@ -62,6 +62,7 @@ class MediaOutput extends DT_MediaBlocks
         // Options
         $id = (int)$mblock->ID;
         $o = $this->settings_from_file( $id, $main_type );
+        if( $o )
         extract($o);
         // lightbox
         // items_size
@@ -85,9 +86,10 @@ class MediaOutput extends DT_MediaBlocks
                 $items_size = 'medium';
             }
         }
-
+        
+        $class_type = ($type == 'fancybox') ? 'fancy' : $type;
         $item_wrap = array(
-            "<div id='mediablock-{$id}' class='media-block row {$main_type} {$type}'>", "</div>");
+            "<div id='mediablock-{$id}' class='media-block row {$main_type} {$class_type}'>", "</div>");
         $item_class = $this->get_column_class( $columns );
         $item = array("<div class='item {$item_class}'>", "</div>");
 
@@ -288,50 +290,20 @@ class MediaOutput extends DT_MediaBlocks
     	$out .= ob_get_clean();
     	return $out;
     }
-    function render_slider_3d( $type, $mblock, $attachments, $not_init_script = false ){
+    function render_carousel_3d( $type, $mblock, $attachments ){
 
-        echo "<style>#mediablock-309 { min-height:400px; } </style>";
+        echo "<style> .cloud9carousel { min-height:400px; } </style>";
 
         wp_enqueue_script( 'cloud9carousel', DT_MULTIMEDIA_ASSETS_URL.'cloud9carousel/jquery.cloud9carousel.js', array('jquery'), '', true );
 
-        $init_settings = $this->settings_from_file($mblock->ID, $type);
+        $init_settings = $this->settings_from_file($mblock->ID, $type, 'carousel_3d');
         JScript::init( "#mediablock-".$mblock->ID, 'Cloud9Carousel', $init_settings );
 
-        return $this->render_attachments('slider-3d', $type, $mblock, $attachments, $not_init_script);
+        return $this->render_attachments('slider-3d', $type, $mblock, $attachments);
     }
-    function render_gallery( $type, $mblock, $attachments, $not_init_script = false ){
-        $o = $this->settings_from_file($mblock->ID, 'main/gallery');
-        $php_to_js_params = apply_filters( 'array_options_before_view',
-            $this->settings_from_file($mblock->ID, $type, 'main/gallery') );
-        extract($o);
+    function render_gallery( $type, $mblock, $attachments ){
 
-        _isset_default( $columns, 4 );
-        _isset_default( $pr_width, 300 );
-        _isset_default( $pr_height, 300 );
-        _isset_default( $lb_class, 'zoom' );
-
-        $column_class = $this->get_column_class($columns) . " mgallery {$type}ed";
-
-        $result = array();
-    	$result[] = "<div class='row'>";
-    	foreach ($attachments as $attachment_id) {
-            $thumb = wp_get_attachment_image_src( $attachment_id, array($pr_width, $pr_height) );
-            $image = ($full_size) ? wp_get_attachment_image_src( $attachment_id, $full_size ) : false;
-
-    		$result[] = '<div class="columns-'. $columns .' '. $column_class .'">';
-            if($image)
-                $result[] = "  {$lb_class}<a href='".$image[0]."' rel='gallery-{$mblock->ID}' class='{$lb_class}'>";
-            $result[] = "    <img src='".$thumb[0]."' alt=''>";
-            if($image)
-                $result[] = "  </a>";
-
-            $result[] = "</div>";
-
-    	}
-    	$result[] = "</div>";
-
-        $out = implode("\n", $result);
-        return $out;
+        return $this->render_attachments('gallery', $type, $mblock, $attachments);
     }
 
     /**
