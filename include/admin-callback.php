@@ -171,7 +171,9 @@ class isAdminView extends DT_MediaBlocks
 		elseif(! $type = $this->meta_field($post_id, 'type') )
 			$type = 'owl-carousel';
 
+		echo "<div class='sub-settings-wrp'>";
 		DTForm::render( $this->get_settings_file( 'sub/'.$type, $main_type ), $this->meta_field($post_id, $type.'_opt'), true, false );
+		echo "</div>";
 	}
 
 	function side_settings_callback( $post ){
@@ -182,8 +184,10 @@ class isAdminView extends DT_MediaBlocks
 		elseif(! $type = $this->meta_field($post->ID, 'main_type') )
 			$type = 'carousel';
 
+		echo "<div class='settings-wrp'>";
 		DTForm::render( $this->get_settings_file( 'main/'.$type ), $this->meta_field($post->ID, $type.'_opt'), true, false, 
 			array('<table class="table side-settings"><tbody>', '</tbody></table>', 'td') );
+		echo "</div>";
 	}
 
 	function excerpt_box(){

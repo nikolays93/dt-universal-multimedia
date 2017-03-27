@@ -169,6 +169,11 @@ $advanced   = array(
 switch ($main_type) {
     case 'slider':
       $settings = array_merge( $autoPlay, $Pagination, $Navigation, $advanced );
+      $settings[] = array(
+        'id' => 'singleItem',
+        'type' => 'hidden',
+        'value' => 'on'
+        );
       break;
 
     case 'sync-slider':

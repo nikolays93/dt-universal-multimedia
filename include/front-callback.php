@@ -65,13 +65,26 @@ class MediaOutput extends DT_MediaBlocks
         extract($o);
         // lightbox
         // items_size
+        // width
+        // height
         // block_template
         // style_path
         // image_captions
         
         if($main_type == 'slider') $columns = 1;
         _isset_default( $columns, 4 );
-        _isset_default( $items_size, 'medium' );
+        
+        if( !isset($items_size) || !$items_size ){
+            if( isset($width) || isset($height) ){
+                _isset_default($width, 1110);
+                _isset_default($height, 450);
+                
+                $items_size = array( $width, $height );
+            }
+            else {
+                $items_size = 'medium';
+            }
+        }
 
         $item_wrap = array(
             "<div id='mediablock-{$id}' class='media-block row {$main_type} {$type}'>", "</div>");
@@ -120,91 +133,54 @@ class MediaOutput extends DT_MediaBlocks
      * @param  $not_init_script boolean print initialize script
      * @return $sync            html output
      */
-    function render_carousel( $type, $mblock, $attachments, $not_init_script = false, $sync = false ){
-    	$main_type = ($sync) ? 'sync-slider' : 'carousel';
-
-        $trigger = '#mediablock-'.$mblock->ID;
+    function render_carousel( $type, $mblock, $attachments, $double = false ){
+    	$main_type = ($double) ? 'sync-slider' : 'carousel';
+        $trigger = '#mediablock-'.$mblock->ID.'.'.$main_type;
     	$php_array_params = $this->settings_from_file( $mblock->ID, $type, $main_type );
-		switch ( $type ) {
+		
+        switch ( $type ) {
 			case 'owl-carousel':
                 $init = 'owlCarousel';
     			break;
-		}
-
-        jScript::init($trigger, 'removeClass', 'row');
-        jScript::init($trigger . ' .item', 'attr', 'class", "item');
-        jScript::init($trigger, $init, $php_array_params);
-
-        return $this->render_attachments($main_type, $type, $mblock, $attachments, $sync);
-    }
-    function render_slider( $type, $mblock, $attachments, $not_init_script = false, $sync = false ){
-    	$result = array();
-    	$id = $mblock->ID;
-    	
-    	// parse type[0] settings
-    	$main_type = ($sync) ? 'sync-slider' : 'carousel';
-    	$o = $this->settings_from_file($id, $main_type);
-        extract($o);
-        
-        // load assets
-        _isset_false( $template );
-        _isset_false( $style_path );
-    	$this->load_assets($type, $template, $style_path);
-
-        if(! isset($sl_width) )
-        	$sl_width = 1110;
-        
-        if(! isset($sl_height) )
-        	$sl_height = 500;
-
-    	$slider_wrap = array("<div id='mediablock-{$id}' class='media-block slider {$type}'>", "</div>");
-    	$item = array("<div class='item'>", "</div>");
-    	
-    	$result[] = $slider_wrap[0];
-    	foreach ($attachments as $attachment) {
-    		$href = wp_get_attachment_url( $attachment );
-
-            
-
-    		$link =  ( isset($lightbox) && $lightbox != '' ) ?
-    			array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$lightbox.'">', '</a>') : array('', '');
-
-    		$caption = (isset($image_captions)) ? '<p id="caption">'.get_the_excerpt( $attachment ).'</p>' : '';
-
-    		$result[] = $item[0];
-    		$result[] = '   '.$link[0];
-            $result[] = '       '. wp_get_attachment_image( $attachment, array((int)$sl_width, (int)$sl_height) ); //,null,array(attrs)
-            $result[] = '       '.$caption;
-            $result[] = '   '.$link[1];
-            $result[] = $item[1];
+            default:
+                $init = $type;
+                break;
         }
 
-        $script = array();
-        if(! $not_init_script ){
-	        // parse sub_type settings
-	    	$php_to_js_params = apply_filters( 'array_options_before_view',
-	    		$this->settings_from_file($id, $type) );
-	    	$script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($php_to_js_params) ) );
-    		switch ( $type ) {
-    			case 'owl-carousel':
-	                // $image_meta = wp_get_attachment_metadata( $attachment );
-	    			$script[]   = "<script type='text/javascript'>";
-	    			$script[] = " jQuery(function($){";
-	            	// todo: rewrite it
-	            	//$script[] = "     $('#mediablock-".$id."').owlCarousel(".$script_options.");";
-	    			$script[] = " });";
-	    			$script[] = "</script>";
-	    			break;
-    		}
-    	}
-        $result[] = $slider_wrap[1];
+        if( ! $double ){
+           jScript::init($trigger, 'removeClass', 'row');
+           jScript::init($trigger . ' .item', 'attr', 'class", "item');
+           jScript::init($trigger, $init, $php_array_params);
+        }
 
-        $out = implode("\n", $result) . implode("\n", $script);
-        return $out;
+        return $this->render_attachments('carousel', $type, $mblock, $attachments, $double);
+    }
+    function render_slider( $type, $mblock, $attachments, $double = false ){
+        $main_type = ($double) ? 'sync-slider' : 'slider';
+        $trigger = '#mediablock-'.$mblock->ID.'.'.$main_type;
+        $php_array_params = $this->settings_from_file( $mblock->ID, $type, $main_type );
+
+        switch ( $type ) {
+            case 'owl-carousel':
+                $init = 'owlCarousel';
+                break;
+            default:
+                $init = $type;
+                break;
+        }
+
+        if( !$double ){
+            jScript::init($trigger, 'removeClass', 'row');
+            jScript::init($trigger . ' .item', 'attr', 'class", "item');
+            jScript::init($trigger, $init, $php_array_params);
+        }
+        
+
+        return $this->render_attachments('slider', $type, $mblock, $attachments, $double);
     }
     function render_sync_slider( $type, $mblock, $attachments ){
-        $out = $this->render_slider( $type, $mblock, $attachments, true, true );
-    	$out .= $this->render_carousel( $type, $mblock, $attachments, true, true );
+        $out = $this->render_slider( $type, $mblock, $attachments, true );
+    	$out .= $this->render_carousel( $type, $mblock, $attachments, true );
 
     	ob_start();
 
@@ -216,15 +192,15 @@ class MediaOutput extends DT_MediaBlocks
 
     	$slider_params = array(
     		'singleItem' => "on",
-    		"navigation" => _isset_default( $sl_arrows, 'false' ),
+    		"navigation" => _isset_default( $arrows, 'false' ),
     		"pagination" => "false",
     		"afterAction" => "%position%"
     		);
 
-        if( isset($sl_arr_prev) )
-            $slider_params['navigationTextPrev'] = $sl_arr_prev;
-        if( isset($sl_arr_next) )
-            $slider_params['navigationTextNext'] = $sl_arr_next;
+        if( isset($arr_prev) )
+            $slider_params['navigationTextPrev'] = $arr_prev;
+        if( isset($arr_next) )
+            $slider_params['navigationTextNext'] = $arr_next;
 
         foreach ($php_to_js_params as $key => $value) {
     		if(in_array( $key, array("autoPlay", "stopOnHover", "rewindNav", "rewindSpeed", "autoHeight") ))
@@ -233,18 +209,24 @@ class MediaOutput extends DT_MediaBlocks
     	$php_to_js_params['afterInit'] = '%addFirstActive%';
 
         $slider_params = apply_filters( 'array_options_before_view', $slider_params );
-    	$slider_script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($slider_params) ) );
-    	$script_options = apply_filters( 'json_change_values', cpJsonStr( json_encode($php_to_js_params) ) );
+    	$slider_script_options = apply_filters( 'jscript_php_to_json', $slider_params );
+    	$script_options = apply_filters( 'jscript_php_to_json', $php_to_js_params );
     	?>
     	<script type="text/javascript">
 			jq = jQuery.noConflict();
 			jq(function( $ ) {
 				//on.load
 			  $(function(){
-			  	var $sync1 = $("#mediablock-<?php echo $mblock->ID; ?>.slider");
+                var sync1Selector = "#mediablock-<?php echo $mblock->ID; ?>.slider";
+			  	var $sync1 = $(sync1Selector);
 			    var sync2Selector = "#mediablock-<?php echo $mblock->ID; ?>.carousel";
 			    var $sync2 = $(sync2Selector);
-			    var activeClass = "inslide";
+			    var activeClass = "inside";
+
+                $(sync1Selector).removeClass('row');
+                $(sync1Selector + ' .item').attr('class', 'item');
+                $(sync2Selector).removeClass('row');
+                $(sync2Selector + ' .item').attr('class', 'item');
 
 			  	function center(number){
 			      var sync2visible = $sync2.data("owlCarousel").owl.visibleItems;
@@ -285,11 +267,11 @@ class MediaOutput extends DT_MediaBlocks
 			    }
 
 			    function addFirstActive(el){
+
 			    	el.find(".owl-item").eq(0).addClass(activeClass);
 			    }
 
 			    $sync1.owlCarousel(<?php echo $slider_script_options; ?>);
-
 			    $sync2.owlCarousel(<?php echo $script_options; ?>);
 			   
 			    $(sync2Selector).on("click", ".owl-item", function(e){
@@ -308,7 +290,7 @@ class MediaOutput extends DT_MediaBlocks
     }
     function render_slider_3d( $type, $mblock, $attachments, $not_init_script = false ){
 
-        echo "<style>#mediablock-309 {width: 600px;height:400px;} </style>";
+        echo "<style>#mediablock-309 { min-height:400px; } </style>";
 
         wp_enqueue_script( 'cloud9carousel', DT_MULTIMEDIA_ASSETS_URL.'cloud9carousel/jquery.cloud9carousel.js', array('jquery'), '', true );
 

@@ -201,12 +201,12 @@ jQuery(function($){
       },
       success: function(response){
         var $response = $(response);
-        console.log($response);
+        // console.log($response);
 
         $('#main_settings.postbox .inside').html( $response[0] );
-        $('#side_settings.postbox .inside').html( $response[2] );
+        $('#side_settings.postbox .inside').html( $response[1] );
         checkHiddens();
       }
-    }).fail(function() { console.log('Ajax error!'); });
+    }).fail(function() { console.log('Ajax Error!'); });
   });
 });
