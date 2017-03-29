@@ -68,12 +68,12 @@ class isAdminView extends DT_MediaBlocks
 	 * Enqueue Assets
 	 */
 	function admin_asssets(){
-		if ( ! did_action( 'wp_enqueue_media' ) ) 
-			wp_enqueue_media();
-
 		$screen = get_current_screen();
 		if( $screen->post_type != DTM_TYPE)
 			return false;
+
+		if ( ! did_action( 'wp_enqueue_media' ) ) 
+			wp_enqueue_media();
 
 		wp_enqueue_style( 'dt-style',   DT_MULTIMEDIA_ASSETS_URL.'/core/style.css', array(), DT_MediaBlocks::VERSION);
 		wp_enqueue_script('dt-preview', DT_MULTIMEDIA_ASSETS_URL.'/core/preview.js', array('jquery'), DT_MediaBlocks::VERSION, true);
