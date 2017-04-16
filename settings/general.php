@@ -29,7 +29,7 @@ $inputs = array(
 		'disabled' => 'disable',
 		'options' => array(
 			'owl-carousel' => 'Сова карусель',
-			'slick-slider' => 'Скользкий слайдер'
+			'slick' => 'Скользкий слайдер'
 			)
 		),
 	array(

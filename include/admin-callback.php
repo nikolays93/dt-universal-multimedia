@@ -1,4 +1,6 @@
 <?php
+namespace MB;
+
 class isAdminView extends DT_MediaBlocks
 {
 	protected $settings;
@@ -14,7 +16,6 @@ class isAdminView extends DT_MediaBlocks
 		add_action( 'edit_form_after_title', array( $this, 'after_title' ) );
 		add_action( 'add_meta_boxes', array( $this, 'blocks_meta_boxes' ) );
 		add_action( 'add_meta_boxes' , array( $this, 'remove_default_divs' ), 99 );
-		
 
 		add_action( 'save_post', array( $this, 'validate_main_settings' ) );
 
@@ -43,7 +44,7 @@ class isAdminView extends DT_MediaBlocks
 		echo "<div class='wrap-sc'>";
 		echo "<label> "._('Show title');
 		$value = array( $show_input['id'] => $this->meta_field($post->ID, $show_input['id']) );
-		DTForm::render( $show_input, $value, false, false );
+		WPForm::render( $show_input, $value, false, array('item_wrap' => array('<span>', '</span>'), ) );
 		echo "</label>";
 
 		echo 'Вставьте шорткод в любую запись Вашего сайта';
@@ -75,15 +76,10 @@ class isAdminView extends DT_MediaBlocks
 		if ( ! did_action( 'wp_enqueue_media' ) ) 
 			wp_enqueue_media();
 
-		wp_enqueue_style( 'dt-style',   DT_MULTIMEDIA_ASSETS_URL.'/core/style.css', array(), DT_MediaBlocks::VERSION);
-		wp_enqueue_script('dt-preview', DT_MULTIMEDIA_ASSETS_URL.'/core/preview.js', array('jquery'), DT_MediaBlocks::VERSION, true);
+		JQScript::style( 'dtm-style',   DT_MULTIMEDIA_ASSETS_URL.'/core/style.css',  DT_MediaBlocks::VERSION, 'all' );
+		JQScript::script('dtm-preview', DT_MULTIMEDIA_ASSETS_URL.'/core/preview.js', DT_MediaBlocks::VERSION, true );
 
-		wp_localize_script('dt-preview', 'settings',
-			array(
-				'url' => admin_url('admin-ajax.php'),
-				'nonce' => wp_create_nonce( 'any_secret_string' ),
-			)
-		); 
+		wp_localize_script('dtm-preview', 'settings', array( 'nonce' => wp_create_nonce( 'any_secret_string' ) ) ); 
 	}
 
 	/**
@@ -150,10 +146,10 @@ class isAdminView extends DT_MediaBlocks
 			</div>
 			<label>Тип мультимедия: </label>
 			<?php
-				DTForm::render( $this->get_settings_file('general'), array(
+				WPForm::render( $this->get_settings_file('general'), array(
 					'main_type' => $this->meta_field( $post->ID, 'main_type' ),
 					'type'      => $this->meta_field( $post->ID, 'type' )
-					), false, false);
+					), false, array('item_wrap' => array('<span>', '</span>')));
 			?>
 			<?php $this->get_admin_wrap_attachments($post); ?>
 			<div class="clear"></div>
@@ -172,7 +168,7 @@ class isAdminView extends DT_MediaBlocks
 			$type = 'owl-carousel';
 
 		echo "<div class='sub-settings-wrp'>";
-		DTForm::render( $this->get_settings_file( 'sub/'.$type, $main_type ), $this->meta_field($post_id, $type.'_opt'), true, false );
+		WPForm::render( $this->get_settings_file( 'sub/'.$type, $main_type ), $this->meta_field($post_id, $type.'_opt'), true );
 		echo "</div>";
 	}
 
@@ -184,9 +180,13 @@ class isAdminView extends DT_MediaBlocks
 		elseif(! $type = $this->meta_field($post->ID, 'main_type') )
 			$type = 'carousel';
 
+		$args = array(
+			'label_tag' => 'td',
+			//'clear_value' => 'true'
+			);
+
 		echo "<div class='settings-wrp'>";
-		DTForm::render( $this->get_settings_file( 'main/'.$type ), $this->meta_field($post->ID, $type.'_opt'), true, false, 
-			array('<table class="table side-settings"><tbody>', '</tbody></table>', 'td') );
+		WPForm::render( $this->get_settings_file( 'main/'.$type ), $this->meta_field($post->ID, $type.'_opt'), true, $args );
 		echo "</div>";
 	}
 
@@ -239,12 +239,34 @@ class isAdminView extends DT_MediaBlocks
 		if( !isset($_POST['main_type']) || !isset($_POST['type']) )
 			return $post_id;
 
-		$this->meta_field($post_id, 'main_type', $_POST['main_type']);
-		$this->meta_field($post_id, 'type', $_POST['type']);
-		
-		$this->settings_from_file($post_id, $_POST['main_type'], false, $_POST );
-		$this->settings_from_file($post_id, $_POST['type'], $_POST['main_type'], $_POST );
+		$main_type = $_POST['main_type'];
+		$type = $_POST['type'];
 
-		// file_put_contents(__DIR__ . '/../post.log', print_r($_POST, 1));
+		$this->meta_field($post_id, 'main_type', $main_type);
+		$this->meta_field($post_id, 'type', $type);
+		
+		$this->settings_from_file($post_id, $main_type, false, $_POST );
+		$this->settings_from_file($post_id, $type, $main_type, $_POST );
+
+		$asset = $this->get_assets_list();
+		if( ! isset($asset[ $type ]) )
+			return false;
+
+		$file = get_template_directory() . 'assets/blocks/block-'.$post_id.'.css';
+		if ( ! file_exists( $file ) )
+			$file = DT_MULTIMEDIA_PATH . 'assets/' . $asset[ $type ]['theme'];
+
+		$out_file = DT_MULTIMEDIA_PATH . 'assets/block-'.$post_id.'.css';
+
+		if ( file_exists( $file ) ){
+			$scss = new \scssc();
+			$scss->setFormatter('scss_formatter_compressed');
+			$compiled = $scss->compile( apply_filters( 'remove_cyrillic', '#mediablock-'.$post_id.' {' . file_get_contents($file) . '}' ) );
+
+			if(!empty($compiled))
+				file_put_contents( $out_file, $compiled );
+		}
+
+		// file_put_contents(__DIR__ . '/save.log', print_r($compiled, 1));
 	}
 }
