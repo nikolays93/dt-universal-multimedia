@@ -66,7 +66,7 @@ class MediaOutput extends DT_MediaBlocks
     $result = array();
     $id = (int)$this->mblock->ID;
     
-    // width / height / items_size / columns / lightbox / image_captions / load_styles / load_assets /
+    // width / height / items_size / columns / lightbox / image_captions / exclude_styles / exclude_assets /
     $settings = $this->settings_from_file( $id, $main_type );
     if( $settings )
       extract( $settings );
@@ -103,11 +103,11 @@ class MediaOutput extends DT_MediaBlocks
     $item_wrap = array("<div id='{$tag_id}' class='media-block row {$main_type} {$class_type}'>", "</div>");
     $item = array("<div class='item {$item_class}'>", "</div>");
 
-    if( !empty($load_styles) )
+    if( empty($exclude_styles) )
       $this->load_style();
     
-    if( !empty($load_styles) )
-      $this->load_assets( $type );
+    if( empty($exclude_assets) )
+      $this->load_assets( $this->type );
 
     /**
      * Output Attachments
@@ -118,7 +118,7 @@ class MediaOutput extends DT_MediaBlocks
         
         $caption = '';
         if( isset($image_captions) )
-          $caption = '<p id="caption">'.apply_filters( 'the_content', $att->post_excerpt ).'</p>';
+          $caption = '<div id="caption">'.apply_filters( 'the_content', $att->post_excerpt ).'</div>';
         
         $link = array('', '');
         if( ! empty($lightbox) && ($columns == 1 || ! $double) )
@@ -153,10 +153,10 @@ class MediaOutput extends DT_MediaBlocks
     switch ( $type ) {
       case 'owl-carousel':
         $init = 'owlCarousel';
-      break;
+        break;
       default:
         $init = $type;
-      break;
+        break;
     }
 
     if( ! $double ){
@@ -166,7 +166,7 @@ class MediaOutput extends DT_MediaBlocks
      JQScript::init($trigger, $init, $php_array_params);
    }
 
-   return $this->render_attachments('carousel', $type, $mblock, $attachments, $double);
+   return $this->render_attachments('carousel', $double);
   }
   function render_slider( $double = false ){
       $main_type = ($double) ? 'sync-slider' : 'slider';
@@ -187,9 +187,8 @@ class MediaOutput extends DT_MediaBlocks
           JQScript::init($trigger . ' .item', 'attr', 'class", "item');
           JQScript::init($trigger, $init, $php_array_params);
       }
-      
 
-      return $this->render_attachments('slider', $type, $mblock, $attachments, $double);
+      return $this->render_attachments('slider', $double);
   }
   # todo : get variables from class props
   function render_sync_slider(){
@@ -301,24 +300,26 @@ class MediaOutput extends DT_MediaBlocks
     $out .= ob_get_clean();
     return $out;
   }
-  # todo : FIX CODE!
+  # todo : REWRITE CODE!
   function render_carousel_3d(){
     $init_settings = $this->settings_from_file($this->mblock->ID, $this->type, 'carousel_3d');
-    $trigger = "#mediablock-".$this->mblock->ID;
-    echo "<style> {$trigger} { height:300px; } </style>";
-
-    $this->load_assets();
+    $trigger = '#mediablock-'.$this->mblock->ID.'.carousel-3d';
 
     JQScript::init($trigger, 'removeClass', 'row');
     JQScript::init($trigger . ' .item', 'attr', 'class", "item');
+    
     switch ($this->type) {
+      case 'cloud9carousel':
+        $init = 'Cloud9Carousel';
+        break;
       default:
-        JQScript::init($trigger, $this->type, $init_settings );
+        $init = $this->type;
         break;
     }
-    
 
-    return $this->render_attachments('slider-3d');
+    JQScript::init($trigger, $init, $init_settings );
+
+    return $this->render_attachments('carousel-3d');
   }
   function render_gallery(){
 

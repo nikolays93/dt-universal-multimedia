@@ -27,6 +27,13 @@ $settings = array(
     'label' => 'Show image captions',
     'desc' => '',
     'type' => 'checkbox',
+    ),
+  
+  array(
+    'id' => 'exclude_assets',
+    'label' => 'Exclude Assets',
+    'desc' => '',
+    'type' => 'checkbox',
     )
   );
   return $settings;

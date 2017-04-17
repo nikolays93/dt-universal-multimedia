@@ -30,18 +30,16 @@ $settings = array(
     ),
 
   array(
-    'id' => 'load_styles',
-    'label' => 'Include Template',
+    'id' => 'exclude_styles',
+    'label' => 'Exclude Template',
     'desc' => '',
     'type' => 'checkbox',
-    'default' => 'on',
     ),
   array(
-    'id' => 'load_assets',
-    'label' => 'Include Assets',
+    'id' => 'exclude_assets',
+    'label' => 'Exclude Assets',
     'desc' => '',
     'type' => 'checkbox',
-    'default' => 'on',
     )
   
   );
