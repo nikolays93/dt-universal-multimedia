@@ -2,44 +2,53 @@
 defined( 'ABSPATH' ) or die();
 
 $sizes = get_intermediate_image_sizes();
-$view_sizes = array('' => 'Custom');
+$view_sizes = array(); // array('' => 'Custom');
 foreach ($sizes as $value) {
   $view_sizes[$value] = $value;
 }
 
 $settings = array(
-  array('id' => 'items_size',
+  array(
+    'id' => 'width',
+    'label' => 'Width',
+    'desc' => '',
+    'type' => 'number',
+    ),
+  array(
+    'id' => 'height',
+    'label' => 'Height',
+    'desc' => '',
+    'type' => 'number',
+    ),
+  array(
+    'id' => 'items_size',
     'label' => 'Image size',
     'desc' => '',
     'type' => 'select',
     'options' => $view_sizes
     ),
-  array('id' => 'width',
-    'label' => 'Width',
+  array(
+    'id' => 'image_captions',
+    'label' => 'Show image captions',
     'desc' => '',
-    'type' => 'number',
+    'type' => 'checkbox',
     ),
-  array('id' => 'height',
-    'label' => 'Height',
+
+  array(
+    'id' => 'load_styles',
+    'label' => 'Include Template',
     'desc' => '',
-    'type' => 'number',
+    'type' => 'checkbox',
+    'default' => 'on',
     ),
-  array('id' => 'block_template',
-    'label' => 'Template',
-    'desc' => 'include CSS template',
-    'type' => 'select',
-    'default' => 'plugin',
-    'options' => array(
-      ''=>'Не использовать',
-      'default'=>'Standart',
-      'plugin'=>'Changed',
-      'custom'=>'Personal'
-      )
-    ),
-  array('id' => 'style_path',
-    'label' => 'Custom path',
+  array(
+    'id' => 'load_assets',
+    'label' => 'Include Assets',
     'desc' => '',
-    'type' => 'text',
-    ),
+    'type' => 'checkbox',
+    'default' => 'on',
+    )
+
   );
-  return $settings;
+
+return $settings;

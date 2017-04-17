@@ -253,10 +253,12 @@ class isAdminView extends DT_MediaBlocks
 		if( ! isset($asset[ $type ]) )
 			return false;
 
+		if( ! isset($_POST['use_template']) )
+			return false;
+
 		$file = get_template_directory() . 'assets/blocks/block-'.$post_id.'.css';
 		if ( ! file_exists( $file ) )
 			$file = DT_MULTIMEDIA_PATH . 'assets/' . $asset[ $type ]['theme'];
-
 		$out_file = DT_MULTIMEDIA_PATH . 'assets/block-'.$post_id.'.css';
 
 		if ( file_exists( $file ) ){

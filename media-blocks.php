@@ -65,14 +65,14 @@ class DT_MediaBlocks {
     
     if( is_admin() ){
     	$this->include_required_classes( array(
-        'scssc'       => 'scss.inc',
-        'MB\WPForm'   => 'class-wp-form-render',
-        'isAdminView' => 'is-admin-callback'
+        'scssc'          => 'scss.inc',
+        'MB\WPForm'      => 'class-wp-form-render',
+        'MB\isAdminView' => 'is-admin-callback'
         ) );
       new isAdminView();
     }
     else {
-    	$this->include_required_classes( array('MediaOutput' => 'front-callback') );
+    	$this->include_required_classes( array('MB\MediaOutput' => 'front-callback') );
       new MediaOutput();
     }
   }

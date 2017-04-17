@@ -8,57 +8,63 @@ foreach ($sizes as $value) {
 }
 
 $settings = array(
-  array('id' => 'width',
+  array(
+    'id' => 'width',
     'label' => 'Width',
     'desc' => '',
     'type' => 'number',
     ),
-  array('id' => 'height',
+  array(
+    'id' => 'height',
     'label' => 'Height',
     'desc' => '',
     'type' => 'number',
     ),
-  array('id' => 'arr_prev',
-    'label' => 'Prev',
-    'desc' => '',
-    'type' => 'text',
-    'default' => 'prev'
-    ),
-  array('id' => 'arr_next',
-    'label' => 'Next',
-    'desc' => '',
-    'type' => 'text',
-     'default' => 'next'
-    ),
-  array('id' => 'items_size',
+  array(
+    'id' => 'items_size',
     'label' => 'Carousel size',
     'desc' => '',
     'type' => 'select',
     'options' => $view_sizes
     ),
-  array('id' => 'lightbox',
+  array(
+    'id' => 'lightbox',
     'label' => 'LightBox class',
     'desc' => 'Add class for lightbox links',
     'type' => 'text',
     'default' => 'zoom',
-     // 'default' => 'fancybox',
     ),
-  array('id' => 'block_template',
-    'label' => 'Template',
-    'desc' => 'include CSS template',
-    'type' => 'select',
-    'default' => 'plugin',
-    'options' => array(
-      ''=>'Не использовать',
-      'default'=>'Standart',
-      'plugin'=>'Changed',
-      'custom'=>'Personal'
-      )
-    ),
-  array('id' => 'style_path',
-    'label' => 'Custom path',
+
+  array(
+    'id' => 'arr_prev',
+    'label' => 'Prev',
     'desc' => '',
     'type' => 'text',
+    'default' => 'prev'
     ),
+  array(
+    'id' => 'arr_next',
+    'label' => 'Next',
+    'desc' => '',
+    'type' => 'text',
+    'default' => 'next'
+    ),
+  
+  array(
+    'id' => 'load_styles',
+    'label' => 'Include Template',
+    'desc' => '',
+    'type' => 'checkbox',
+    'default' => 'on',
+    ),
+  array(
+    'id' => 'load_assets',
+    'label' => 'Include Assets',
+    'desc' => '',
+    'type' => 'checkbox',
+    'default' => 'on',
+    )
+
   );
-  return $settings;
+
+return $settings;

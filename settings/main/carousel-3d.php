@@ -8,17 +8,12 @@ foreach ($sizes as $value) {
 }
 
 $settings = array(
-  array('id' => 'items_size',
+  array(
+    'id' => 'items_size',
     'label' => 'Image size',
     'desc' => '',
     'type' => 'select',
     'options' => $view_sizes
-    ),
-  array(
-    'id' => 'image_captions',
-    'label' => 'Show image captions',
-    'desc' => '',
-    'type' => 'checkbox',
     ),
   array(
     'id' => 'height',
@@ -27,5 +22,11 @@ $settings = array(
     'type' => 'number',
     'default' => '300'
     ),
+  array(
+    'id' => 'image_captions',
+    'label' => 'Show image captions',
+    'desc' => '',
+    'type' => 'checkbox',
+    )
   );
   return $settings;
