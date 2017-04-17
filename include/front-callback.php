@@ -169,7 +169,7 @@ class MediaOutput extends DT_MediaBlocks
 
    return $this->render_attachments('carousel', $type, $mblock, $attachments, $double);
   }
-  function render_slider( $type, $mblock, $attachments, $double = false ){
+  function render_slider( $double = false ){
       $main_type = ($double) ? 'sync-slider' : 'slider';
       $trigger = '#mediablock-'.$mblock->ID.'.'.$main_type;
       $php_array_params = $this->settings_from_file( $mblock->ID, $type, $main_type );
@@ -192,9 +192,10 @@ class MediaOutput extends DT_MediaBlocks
 
       return $this->render_attachments('slider', $type, $mblock, $attachments, $double);
   }
-  function render_sync_slider( $type, $mblock, $attachments ){
-    $out = $this->render_slider( $type, $mblock, $attachments, true );
-    $out .= $this->render_carousel( $type, $mblock, $attachments, true );
+  # todo : get variables from class props
+  function render_sync_slider(){
+    $out = $this->render_slider( true );
+    $out .= $this->render_carousel( true );
 
     ob_start();
 
@@ -301,9 +302,10 @@ class MediaOutput extends DT_MediaBlocks
     $out .= ob_get_clean();
     return $out;
   }
-  function render_carousel_3d( $type, $mblock, $attachments ){
+  # todo : FIX CODE!
+  function render_carousel_3d(){
     $init_settings = $this->settings_from_file($mblock->ID, $this->type, 'carousel_3d');
-    $trigger = "#mediablock-".$mblock->ID;
+    $trigger = "#mediablock-".$this->mblock->ID;
     echo "<style> {$trigger} { height:300px; } </style>";
 
     $this->load_assets();
@@ -319,9 +321,9 @@ class MediaOutput extends DT_MediaBlocks
 
     return $this->render_attachments('slider-3d', $this->type, $mblock, $attachments);
   }
-  function render_gallery( $type, $mblock, $attachments ){
+  function render_gallery(){
 
-    return $this->render_attachments('gallery', $type, $mblock, $attachments);
+    return $this->render_attachments('gallery');
   }
 
   /**
