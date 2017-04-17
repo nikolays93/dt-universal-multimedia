@@ -4,7 +4,7 @@ namespace MB;
 Plugin Name: Мульти блоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.5.1 alpha
+Version: 1.6 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -89,8 +89,6 @@ class DT_MediaBlocks {
 
         if ( is_readable( $path ) && ! class_exists( $class_name ) ) 
           require_once( $path );
-        else
-          wp_die( 'NOT READBLE : '.$path );
       }
   }
   function register_post_types(){
@@ -117,23 +115,39 @@ class DT_MediaBlocks {
       )
     );
   }
-  static protected function get_assets_list(){
+  static protected function get_assets_list( $type = false ){
     $affix = (is_wp_debug()) ? '' : '.min';
 
     $assets = array(
       'owl-carousel' => array(
-        'js' => 'owl-carousel/owl.carousel'.$affix.'.js',
-        'core' => 'owl-carousel/owl.carousel'.$affix.'.css',
-        'theme' => 'owl-carousel/owl.theme.css',
+        'js' => 'owl.carousel'.$affix.'.js',
+        'core' => 'owl.carousel'.$affix.'.css',
+        'theme' => 'owl.theme.css',
         'ver' => '1.3.3'
         ),
       'slick' => array(
-        'js' => 'slick/slick.js',
-        'core' => 'slick/slick.css',
-        'theme' => 'slick/slick-theme.css',
+        'js' => 'slick.js',
+        'core' => 'slick.css',
+        'theme' => 'slick-theme.css',
         'ver' => '1.6.0'
+        ),
+      'cloud9carousel' => array(
+        'js' => 'jquery.cloud9carousel'.$affix.'.js',
+        'ver' => '2.1.0'
+        ),
+      'waterwheelCarousel' => array(
+        'js' => 'jquery.waterwheelCarousel'.$affix.'.js',
+        'ver' => '2.3.0'
         )
     );
+    
+    if( $type ){
+      if( isset($assets[$type]) )
+        return $assets[$type];
+      else 
+        return false;
+    }
+
     return $assets;
   }
 

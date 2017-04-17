@@ -193,7 +193,7 @@ jQuery(function($){
    */
   $('#main_type, #type').on('change', function(){
     $.ajax({
-      type: 'POST', url: settings.url, data: {
+      type: 'POST', url: ajaxurl, data: {
         action: 'main_settings',
         nonce: settings.nonce,
         main_type: $('#main_type').val(),
@@ -201,7 +201,7 @@ jQuery(function($){
       },
       success: function(response){
         var $response = $(response);
-        // console.log($response);
+        console.log(response);
 
         $('#main_settings.postbox .inside').html( $response[0] );
         $('#side_settings.postbox .inside').html( $response[1] );

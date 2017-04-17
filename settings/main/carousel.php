@@ -21,22 +21,12 @@ $settings = array(
     'type' => 'select',
     'options' => $view_sizes
     ),
-  array('id' => 'block_template',
-    'label' => 'Template',
+  array(
+    'id' => 'use_template',
+    'label' => 'Include Template',
     'desc' => 'include CSS template',
-    'type' => 'select',
-    'default' => 'plugin',
-    'options' => array(
-      ''=>'Не использовать',
-      'default'=>'Standart',
-      'plugin'=>'Changed',
-      'custom'=>'Personal'
-      )
-    ),
-  array('id' => 'style_path',
-    'label' => 'Custom path',
-    'desc' => '',
-    'type' => 'text',
+    'type' => 'checkbox',
+    'default' => 'on',
     ),
   array('id' => 'image_captions',
     'label' => 'Show image captions',

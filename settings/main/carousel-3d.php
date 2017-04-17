@@ -14,11 +14,18 @@ $settings = array(
     'type' => 'select',
     'options' => $view_sizes
     ),
-  // array(
-  //   'id' => 'image_captions',
-  //   'label' => 'Show image captions',
-  //   'desc' => '',
-  //   'type' => 'checkbox',
-  //   ),
+  array(
+    'id' => 'image_captions',
+    'label' => 'Show image captions',
+    'desc' => '',
+    'type' => 'checkbox',
+    ),
+  array(
+    'id' => 'height',
+    'label' => 'wrapper height',
+    'desc' => '',
+    'type' => 'number',
+    'default' => '300'
+    ),
   );
   return $settings;

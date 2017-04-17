@@ -52,6 +52,7 @@ $inputs = array(
 		'disabled' => 'disable',
 		'options' => array(
 			'cloud9carousel' => 'Облачная карусель',
+			'waterwheelCarousel' => 'Водяное колесо'
 			)
 		),
 	);

@@ -48,11 +48,14 @@ class MediaOutput extends DT_MediaBlocks
 
   function load_assets( $type = null ){
     $url = DT_MULTIMEDIA_ASSETS_URL;
-    $asset = $this->get_assets_list();
-
-    if( isset($asset[$this->type]) ){
-      wp_enqueue_script( $this->type, $url.$asset['js'], array('jquery'), $asset['ver'], true );
-      wp_enqueue_style ( $this->type.'-core', $url.$asset['core'], array(), $asset['ver'], 'all' );
+    $dir = $this->type . '/';
+    
+    $asset = $this->get_assets_list( $this->type );
+    if( $asset ){
+      if( isset($asset['js']) )
+        wp_enqueue_script( $this->type, $url.$dir.$asset['js'], array('jquery'), $asset['ver'], true );
+      if( isset($asset['core']) )
+        wp_enqueue_style ( $this->type.'-core', $url.$dir.$asset['core'], array(), $asset['ver'], 'all' );
     }
   }
     
@@ -69,7 +72,16 @@ class MediaOutput extends DT_MediaBlocks
       // block_template
       // style_path
       // image_captions
-      
+
+    if( !isset($height) || ! (int)$height  )
+      $height = 300;
+
+    if($main_type == 'carousel-3d') {
+      $trigger = "#mediablock-".$mblock->ID;
+      echo "<style> {$trigger} { height:{$height}px; } </style>";
+    }
+    
+
       if($main_type == 'slider') $columns = 1;
       _isset_default( $columns, 4 );
       
@@ -92,7 +104,7 @@ class MediaOutput extends DT_MediaBlocks
       $item = array("<div class='item {$item_class}'>", "</div>");
 
       // Load assets
-      if( isset($block_template) )
+      // if( isset($block_template) )
           $this->load_assets( $type );
 
       $result[] = $item_wrap[0];
@@ -286,15 +298,22 @@ class MediaOutput extends DT_MediaBlocks
     return $out;
   }
   function render_carousel_3d( $type, $mblock, $attachments ){
+    $init_settings = $this->settings_from_file($mblock->ID, $this->type, 'carousel_3d');
+    $trigger = "#mediablock-".$mblock->ID;
+    echo "<style> {$trigger} { height:300px; } </style>";
 
-    echo "<style> .cloud9carousel { min-height:400px; } </style>";
+    $this->load_assets();
 
-    wp_enqueue_script( 'cloud9carousel', DT_MULTIMEDIA_ASSETS_URL.'cloud9carousel/jquery.cloud9carousel.js', array('jquery'), '', true );
+    JQScript::init($trigger, 'removeClass', 'row');
+    JQScript::init($trigger . ' .item', 'attr', 'class", "item');
+    switch ($this->type) {
+      default:
+        JQScript::init($trigger, $this->type, $init_settings );
+        break;
+    }
+    
 
-    $init_settings = $this->settings_from_file($mblock->ID, $type, 'carousel_3d');
-    JQScript::init( "#mediablock-".$mblock->ID, 'Cloud9Carousel', $init_settings );
-
-    return $this->render_attachments('slider-3d', $type, $mblock, $attachments);
+    return $this->render_attachments('slider-3d', $this->type, $mblock, $attachments);
   }
   function render_gallery( $type, $mblock, $attachments ){
 

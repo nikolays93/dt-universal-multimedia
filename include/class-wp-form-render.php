@@ -138,7 +138,7 @@ class WPForm {
       'form_wrap' => array('<table class="table form-table"><tbody>', '</tbody></table>'),
       'label_tag' => 'th',
       'hide_desc' => false,
-      'clear_value' => 'false'
+      'clear_value' => ''
       );
     $args = array_merge($default_args, $args);
 

@@ -70,15 +70,16 @@ class isAdminView extends DT_MediaBlocks
 	 */
 	function admin_asssets(){
 		$screen = get_current_screen();
-		if( $screen->post_type != DTM_TYPE)
+		if( $screen->post_type != DTM_TYPE )
 			return false;
 
 		if ( ! did_action( 'wp_enqueue_media' ) ) 
 			wp_enqueue_media();
 
-		JQScript::style( 'dtm-style',   DT_MULTIMEDIA_ASSETS_URL.'/core/style.css',  DT_MediaBlocks::VERSION, 'all' );
-		JQScript::script('dtm-preview', DT_MULTIMEDIA_ASSETS_URL.'/core/preview.js', DT_MediaBlocks::VERSION, true );
-
+		$url = DT_MULTIMEDIA_ASSETS_URL;
+		wp_enqueue_style( 'dtm-style', $url.'core/style.css', array(), DT_MediaBlocks::VERSION, 'all' );
+		wp_enqueue_script( 'dtm-preview', $url.'core/preview.js', array('jquery'), DT_MediaBlocks::VERSION, true );
+		
 		wp_localize_script('dtm-preview', 'settings', array( 'nonce' => wp_create_nonce( 'any_secret_string' ) ) ); 
 	}
 

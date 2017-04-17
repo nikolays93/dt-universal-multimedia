@@ -4,31 +4,31 @@ defined( 'ABSPATH' ) or die();
 $settings = array(
   array(
     'id' => 'xOrigin',
-    'label' => 'X coordinate',
+    'label' => 'xOrigin',
     'desc' => 'Center of the carousel (container width / 2)',
     'type' => 'number',
     ),
   array(
     'id' => 'yOrigin',
-    'label' => 'Y coordinate',
+    'label' => 'yOrigin',
     'desc' => 'Center of the carousel (container height / 10)',
     'type' => 'number',
     ),
   array(
     'id' => 'xRadius',
-    'label' => 'Y coordinate',
+    'label' => 'xRadius',
     'desc' => 'Half the width of the carousel (container height / 6)',
     'type' => 'number',
     ),
   array(
     'id' => 'yRadius',
-    'label' => 'Y coordinate',
+    'label' => 'yRadius',
     'desc' => 'Half the height of the carousel (container height / 6)',
     'type' => 'number',
     ),
   array(
     'id' => 'farScale',
-    'label' => 'Y coordinate',
+    'label' => 'farScale',
     'desc' => 'Scale of an item at its farthest point (range: 0 to 1)',
     'type' => 'number',
     'default' => '0.5'
