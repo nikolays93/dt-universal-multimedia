@@ -67,7 +67,7 @@ class DT_MediaBlocks {
     	$this->include_required_classes( array(
         'scssc'       => 'scss.inc',
         'MB\WPForm'   => 'class-wp-form-render',
-        'isAdminView' => 'admin-callback'
+        'isAdminView' => 'is-admin-callback'
         ) );
       new isAdminView();
     }

@@ -18,7 +18,7 @@ $settings = array(
     ),
   array(
     'id'      => 'separationMultiplier',
-    'type'    => 'number',
+    'type'    => 'text',
     'label'   => 'Separation Multiplier',
     'desc'    => 'Multiplied by \'separation\' exponentially to determine item separation for all items (a value of 0.5 will reduce the distance by half for each item as they span out).',
     'default' => '0.6'
@@ -32,21 +32,21 @@ $settings = array(
     ),
   array(
     'id'      => 'horizonOffsetMultiplier',
-    'type'    => 'number',
+    'type'    => 'text',
     'label'   => 'Horizon Offset Multiplier',
     'desc'    => 'Multiplied by \'horizonOffset\' exponentially to determine horizon offset for all items.',
     'default' => '0.7'
     ),
   array(
     'id'      => 'sizeMultiplier',
-    'type'    => 'number',
+    'type'    => 'text',
     'label'   => 'Size Multiplier',
     'desc'    => 'How much the items should increase/decrease by as they span out (a value of 0.5 will reduce each items size by half).',
     'default' => '0.7'
     ),
   array(
     'id'      => 'opacityMultiplier',
-    'type'    => 'number',
+    'type'    => 'text',
     'label'   => 'Opacity Multiplier',
     'desc'    => 'How drastically the opacity of each item decreases. Applied exponentially. ',
     'default' => '0.8'

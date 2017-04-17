@@ -60,10 +60,10 @@ class MediaOutput extends DT_MediaBlocks
   }
     
   function render_attachments( $main_type, $type, $mblock, $attachments, $double = false ){
-      $result = array();
-      // Options
-      $id = (int)$mblock->ID;
-      if( $o = $this->settings_from_file( $id, $main_type ) )
+    $result = array();
+    // Options
+    $id = (int)$mblock->ID;
+    if( $o = $this->settings_from_file( $id, $main_type ) )
       extract($o);
       // lightbox
       // items_size
@@ -80,59 +80,58 @@ class MediaOutput extends DT_MediaBlocks
       $trigger = "#mediablock-".$mblock->ID;
       echo "<style> {$trigger} { height:{$height}px; } </style>";
     }
-    
 
-      if($main_type == 'slider') $columns = 1;
-      _isset_default( $columns, 4 );
-      
-      if( !isset($items_size) || !$items_size ){
-          if( isset($width) || isset($height) ){
-              _isset_default($width, 1110);
-              _isset_default($height, 450);
-              
-              $items_size = array( $width, $height );
-          }
-          else {
-              $items_size = 'medium';
-          }
+    if($main_type == 'slider') $columns = 1;
+    _isset_default( $columns, 4 );
+
+    if( !isset($items_size) || !$items_size ){
+      if( isset($width) || isset($height) ){
+        _isset_default($width, 1110);
+        _isset_default($height, 450);
+
+        $items_size = array( $width, $height );
       }
-      
-      $class_type = ($type == 'fancybox') ? 'fancy' : $type;
-      $item_wrap = array(
-          "<div id='mediablock-{$id}' class='media-block row {$main_type} {$class_type}'>", "</div>");
-      $item_class = $this->get_column_class( $columns );
-      $item = array("<div class='item {$item_class}'>", "</div>");
-
-      // Load assets
-      // if( isset($block_template) )
-          $this->load_assets( $type );
-
-      $result[] = $item_wrap[0];
-      foreach ($attachments as $attachment) {
-          $att = get_post( $attachment );
-          
-          $caption = ( isset($image_captions) ) ?
-              '<p id="caption">'.apply_filters( 'the_content', $att->post_excerpt ).'</p>' : '';
-
-          if( isset($lightbox) && !$double ){
-              $href = $att->guid; // wp_get_attachment_url( $attachment )
-              $link = array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$lightbox.'">', '</a>');
-          }
-          else {
-              $link = array('', '');
-          }
-
-          $result[] = $item[0];
-          $result[] = '   '.$link[0];
-          $result[] = '   '. wp_get_attachment_image( $attachment, $items_size ); //,null,array(attrs)
-          $result[] = '   '.$caption;
-          $result[] = '   '.$link[1];
-          $result[] = $item[1];
+      else {
+        $items_size = 'medium';
       }
-      $result[] = $item_wrap[1];
+    }
+      
+    $class_type = str_replace('fancybox', 'fancy', $type);
+    $item_wrap = array(
+      "<div id='mediablock-{$id}' class='media-block row {$main_type} {$class_type}'>", "</div>");
+    $item_class = $this->get_column_class( $columns );
+    $item = array("<div class='item {$item_class}'>", "</div>");
 
-      $out = implode("\n", $result);
-      return $out;
+    // Load assets
+    // if( isset($block_template) )
+    $this->load_assets( $type );
+
+    $result[] = $item_wrap[0];
+    foreach ($attachments as $attachment) {
+        $att = get_post( $attachment );
+        
+        $caption = ( isset($image_captions) ) ?
+            '<p id="caption">'.apply_filters( 'the_content', $att->post_excerpt ).'</p>' : '';
+
+        if( isset($lightbox) && !$double ){
+            $href = $att->guid; // wp_get_attachment_url( $attachment )
+            $link = array('<a rel="group-'.$id.'" href="'.$href.'" class="'.$lightbox.'">', '</a>');
+        }
+        else {
+            $link = array('', '');
+        }
+
+        $result[] = $item[0];
+        $result[] = '   '.$link[0];
+        $result[] = '   '. wp_get_attachment_image( $attachment, $items_size ); //,null,array(attrs)
+        $result[] = '   '.$caption;
+        $result[] = '   '.$link[1];
+        $result[] = $item[1];
+    }
+    $result[] = $item_wrap[1];
+
+    $out = implode("\n", $result);
+    return $out;
   }
   /**
    * Render media blocks
@@ -342,7 +341,7 @@ class MediaOutput extends DT_MediaBlocks
     if(! $attachments = explode(',', $this->meta_field($id, 'media_imgs') ) )
       return ( is_wp_debug() ) ? 'Файлов не найдено' : false;
       
-    $result[] = '<section id="mblock">';
+    $result[] = '<section id="mblock-'.$mblock->ID.'">';
 
     if( $this->meta_field( $id, 'show_title' ) && $mblock->post_title != '' )
       $result[] = '<h3>'. $mblock->post_title .'</h3>';
