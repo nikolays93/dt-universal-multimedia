@@ -85,11 +85,11 @@ class MediaOutput extends DT_MediaBlocks
     }
     _isset_default($height, $default_height);
 
+    $tag_id = "mediablock-" . $this->mblock->ID;
     if( $main_type == 'slider' ){
       $columns = 1;
     }
     elseif( $main_type == 'carousel-3d' ){
-      $tag_id = "mediablock-" . $this->mblock->ID;
       echo "<style> #{$tag_id} { height:{$height}px; } </style>";
     }
     _isset_default( $columns, 4 );
@@ -98,10 +98,9 @@ class MediaOutput extends DT_MediaBlocks
     $item_class = $this->get_column_class( $columns );
 
     // .fancybox usually use for modal trigger
-    $class_type = str_replace('fancybox', 'fancy', $type);
+    $class_type = str_replace('fancybox', 'fancy', $this->type);
     
-    $item_wrap = array("<div id='{$tag_id}' class='media-block row {$main_type} {$class_type}'>",
-      "</div>");
+    $item_wrap = array("<div id='{$tag_id}' class='media-block row {$main_type} {$class_type}'>", "</div>");
     $item = array("<div class='item {$item_class}'>", "</div>");
 
     if( !empty($load_styles) )
@@ -114,7 +113,7 @@ class MediaOutput extends DT_MediaBlocks
      * Output Attachments
      */
     $result[] = $item_wrap[0];
-    foreach ($attachments as $attachment) {
+    foreach ($this->attachments as $attachment) {
         $att = get_post( $attachment );
         
         $caption = '';
@@ -304,7 +303,7 @@ class MediaOutput extends DT_MediaBlocks
   }
   # todo : FIX CODE!
   function render_carousel_3d(){
-    $init_settings = $this->settings_from_file($mblock->ID, $this->type, 'carousel_3d');
+    $init_settings = $this->settings_from_file($this->mblock->ID, $this->type, 'carousel_3d');
     $trigger = "#mediablock-".$this->mblock->ID;
     echo "<style> {$trigger} { height:300px; } </style>";
 
@@ -319,7 +318,7 @@ class MediaOutput extends DT_MediaBlocks
     }
     
 
-    return $this->render_attachments('slider-3d', $this->type, $mblock, $attachments);
+    return $this->render_attachments('slider-3d');
   }
   function render_gallery(){
 
