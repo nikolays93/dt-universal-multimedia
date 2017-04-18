@@ -150,12 +150,12 @@ class MediaOutput extends DT_MediaBlocks
     $trigger = '#mediablock-'.$this->mblock->ID.'.'.$main_type;
     $php_array_params = $this->settings_from_file( $this->mblock->ID, $this->type, $main_type );
 
-    switch ( $type ) {
+    switch ( $this->type ) {
       case 'owl-carousel':
         $init = 'owlCarousel';
         break;
       default:
-        $init = $type;
+        $init = $this->type;
         break;
     }
 
@@ -170,15 +170,15 @@ class MediaOutput extends DT_MediaBlocks
   }
   function render_slider( $double = false ){
       $main_type = ($double) ? 'sync-slider' : 'slider';
-      $trigger = '#mediablock-'.$mblock->ID.'.'.$main_type;
-      $php_array_params = $this->settings_from_file( $mblock->ID, $type, $main_type );
+      $trigger = '#mediablock-'.$this->mblock->ID.'.'.$main_type;
+      $php_array_params = $this->settings_from_file( $this->mblock->ID, $this->type, $main_type );
 
-      switch ( $type ) {
+      switch ( $this->type ) {
           case 'owl-carousel':
               $init = 'owlCarousel';
               break;
           default:
-              $init = $type;
+              $init = $this->type;
               break;
       }
 
@@ -198,104 +198,135 @@ class MediaOutput extends DT_MediaBlocks
     ob_start();
 
     $php_to_js_params = apply_filters( 'array_options_before_view',
-      $this->settings_from_file($mblock->ID, $type, 'sync-slider') );
+      $this->settings_from_file($this->mblock->ID, $this->type, 'sync-slider') );
 
-    $o = $this->settings_from_file($mblock->ID, 'sync-slider');
+    $o = $this->settings_from_file($this->mblock->ID, 'sync-slider');
     extract($o);
 
-    $slider_params = array(
-      'singleItem' => "on",
-      "navigation" => _isset_default( $arrows, 'false' ),
-      "pagination" => "false",
-      "afterAction" => "%position%"
-      );
-
-    if( isset($arr_prev) )
-      $slider_params['navigationTextPrev'] = $arr_prev;
-    if( isset($arr_next) )
-      $slider_params['navigationTextNext'] = $arr_next;
-
-    foreach ($php_to_js_params as $key => $value) {
-      if(in_array( $key, array("autoPlay", "stopOnHover", "rewindNav", "rewindSpeed", "autoHeight") ))
-        $slider_params[$key] = $value;
-    }
-    $php_to_js_params['afterInit'] = '%addFirstActive%';
-
-    $slider_params = apply_filters( 'array_options_before_view', $slider_params );
-    $slider_script_options = apply_filters( 'jscript_php_to_json', $slider_params );
-    $script_options = apply_filters( 'jscript_php_to_json', $php_to_js_params );
+    var_dump($o);
+    echo "<hr>";
+    var_dump($php_to_js_params);
     ?>
-      <script type="text/javascript">
-        jq = jQuery.noConflict();
-        jq(function( $ ) {
-          //on.load
-          $(function(){
-            var sync1Selector = "#mediablock-<?php echo $mblock->ID; ?>.slider";
-            var $sync1 = $(sync1Selector);
-            var sync2Selector = "#mediablock-<?php echo $mblock->ID; ?>.carousel";
-            var $sync2 = $(sync2Selector);
-            var activeClass = "inside";
+    <script type="text/javascript">
+          jq = jQuery.noConflict();
+          jq(function( $ ) {
+            //on.load
+            $(function(){
+              var sync1Selector = "#mediablock-<?php echo $this->mblock->ID; ?>.slider";
+              var $sync1 = $(sync1Selector);
+              var sync2Selector = "#mediablock-<?php echo $this->mblock->ID; ?>.carousel";
+              var $sync2 = $(sync2Selector);
 
-            $(sync1Selector).removeClass('row');
-            $(sync1Selector + ' .item').attr('class', 'item');
-            $(sync2Selector).removeClass('row');
-            $(sync2Selector + ' .item').attr('class', 'item');
+              $(sync1Selector).removeClass('row');
+              $(sync1Selector + ' .item').attr('class', 'item');
+              $(sync2Selector).removeClass('row');
+              $(sync2Selector + ' .item').attr('class', 'item');
+    <?php
+    switch ($this->type) {
+      case 'slick':
+        ?>
+        $(sync1Selector).slick({
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          arrows: false,
+          fade: true,
+          asNavFor: sync2Selector
+        });
+        $(sync2Selector).slick({
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          asNavFor: sync1Selector,
+          dots: true,
+          centerMode: true,
+          focusOnSelect: true
+        });
+        <?php
+        break;
+      
+      default:
+      $slider_params = array(
+        'singleItem' => "on",
+        "navigation" => _isset_default( $arrows, 'false' ),
+        "pagination" => "false",
+        "afterAction" => "%position%"
+        );
 
-            function center(number){
-              var sync2visible = $sync2.data("owlCarousel").owl.visibleItems;
-              var num = number;
-              var found = false;
-              for(var i in sync2visible){
-                if(num === sync2visible[i]){
-                  var found = true;
+      if( isset($arr_prev) )
+        $slider_params['navigationTextPrev'] = $arr_prev;
+      if( isset($arr_next) )
+        $slider_params['navigationTextNext'] = $arr_next;
+
+      foreach ($php_to_js_params as $key => $value) {
+        if(in_array( $key, array("autoPlay", "stopOnHover", "rewindNav", "rewindSpeed", "autoHeight") ))
+          $slider_params[$key] = $value;
+      }
+      $php_to_js_params['afterInit'] = '%addFirstActive%';
+
+      $slider_params = apply_filters( 'array_options_before_view', $slider_params );
+      $slider_script_options = apply_filters( 'jscript_php_to_json', $slider_params );
+      $script_options = apply_filters( 'jscript_php_to_json', $php_to_js_params );
+        ?>
+          var activeClass = "inside";
+
+          function center(number){
+            var sync2visible = $sync2.data("owlCarousel").owl.visibleItems;
+            var num = number;
+            var found = false;
+            for(var i in sync2visible){
+              if(num === sync2visible[i]){
+                var found = true;
+              }
+            }
+
+            if(found===false){
+              if(num>sync2visible[sync2visible.length-1]){
+                $sync2.trigger("owl.goTo", num - sync2visible.length+2)
+              }else{
+                if(num - 1 === -1){
+                  num = 0;
                 }
+                $sync2.trigger("owl.goTo", num);
               }
-
-              if(found===false){
-                if(num>sync2visible[sync2visible.length-1]){
-                  $sync2.trigger("owl.goTo", num - sync2visible.length+2)
-                }else{
-                  if(num - 1 === -1){
-                    num = 0;
-                  }
-                  $sync2.trigger("owl.goTo", num);
-                }
-              } else if(num === sync2visible[sync2visible.length-1]){
-                $sync2.trigger("owl.goTo", sync2visible[1])
-              } else if(num === sync2visible[0]){
-                $sync2.trigger("owl.goTo", num-1)
-              }
+            } else if(num === sync2visible[sync2visible.length-1]){
+              $sync2.trigger("owl.goTo", sync2visible[1])
+            } else if(num === sync2visible[0]){
+              $sync2.trigger("owl.goTo", num-1)
             }
+          }
 
-            function position(el){
-              var current = this.currentItem;
-              $(sync2Selector)
-                .find(".owl-item")
-                .removeClass(activeClass)
-                .eq(current)
-                .addClass(activeClass)
-              if( $sync2.data("owlCarousel") !== undefined ){
-                center(current)
-              }
+          function position(el){
+            var current = this.currentItem;
+            $(sync2Selector)
+              .find(".owl-item")
+              .removeClass(activeClass)
+              .eq(current)
+              .addClass(activeClass)
+            if( $sync2.data("owlCarousel") !== undefined ){
+              center(current)
             }
+          }
 
-            function addFirstActive(el){
+          function addFirstActive(el){
 
-              el.find(".owl-item").eq(0).addClass(activeClass);
+            el.find(".owl-item").eq(0).addClass(activeClass);
+          }
+
+          $sync1.owlCarousel(<?php echo $slider_script_options; ?>);
+          $sync2.owlCarousel(<?php echo $script_options; ?>);
+         
+          $(sync2Selector).on("click", ".owl-item", function(e){
+            if(!$(this).hasClass(activeClass)){
+              e.preventDefault();
+              $sync1.trigger("owl.goTo", $(this).data("owlItem") );
             }
-
-            $sync1.owlCarousel(<?php echo $slider_script_options; ?>);
-            $sync2.owlCarousel(<?php echo $script_options; ?>);
-           
-            $(sync2Selector).on("click", ".owl-item", function(e){
-              if(!$(this).hasClass(activeClass)){
-                e.preventDefault();
-                $sync1.trigger("owl.goTo", $(this).data("owlItem") );
-              }
+          });
+      <?php
+        break;
+    }
+    ?>
             });
           });
-        });
-      </script>
+          </script>
     <?php
     $out .= ob_get_clean();
     return $out;

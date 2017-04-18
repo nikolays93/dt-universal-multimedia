@@ -1,6 +1,27 @@
 <?php
 namespace MB;
 
+/**
+ * Metabox
+ */
+add_action( 'load-post.php',     'MB\metabox_action' );
+add_action( 'load-post-new.php', 'MB\metabox_action' );
+
+function metabox_action(){
+    $screen = get_current_screen();
+    if( !isset($screen->post_type) || $screen->post_type != DTM_TYPE )
+        return false;
+
+    $boxes = new WPPostBoxes();
+    $boxes->add_box('Тест', 'MB\metabox_render', false, 'high' );
+    $boxes->add_fields( RQ_META_NAME );
+}
+function metabox_render($post, $data){
+	echo "Some test";
+	// WPForm::render( $fields, get_post_meta( $post->ID, RQ_META_NAME, true ), true );
+    // wp_nonce_field( $data['args'][0], $data['args'][0].'_nonce' );
+}
+
 class isAdminView extends DT_MediaBlocks
 {
 	protected $settings;
