@@ -75,6 +75,10 @@ select.button {
 	height: auto;
 }
 
+.dt-media .attachments .attachment input,
+.dt-media .attachments .attachment textarea {
+	border: 1px solid #ccc;
+}
 /* tile */
 .dt-media .attachments.tile .attachment:hover input,
 .dt-media .attachments.tile .attachment input:focus {
@@ -90,9 +94,11 @@ select.button {
 .dt-media .attachments.tile .attachment input {
 	width: 100%;
 	outline: none;
-	border: 0;
 	opacity: 0.6;
 	margin: -1px 0 0;
+}
+.dt-media .attachments.tile .attachment input.item-link {
+	display: none;
 }
 .dt-media .attachments.tile .attachment textarea {
 	display: none;

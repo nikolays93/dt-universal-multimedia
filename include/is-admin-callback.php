@@ -1,27 +1,6 @@
 <?php
 namespace MB;
 
-/**
- * Metabox
- */
-add_action( 'load-post.php',     'MB\metabox_action' );
-add_action( 'load-post-new.php', 'MB\metabox_action' );
-
-function metabox_action(){
-    $screen = get_current_screen();
-    if( !isset($screen->post_type) || $screen->post_type != DTM_TYPE )
-        return false;
-
-    $boxes = new WPPostBoxes();
-    $boxes->add_box('Тест', 'MB\metabox_render', false, 'high' );
-    $boxes->add_fields( RQ_META_NAME );
-}
-function metabox_render($post, $data){
-	echo "Some test";
-	// WPForm::render( $fields, get_post_meta( $post->ID, RQ_META_NAME, true ), true );
-    // wp_nonce_field( $data['args'][0], $data['args'][0].'_nonce' );
-}
-
 class isAdminView extends DT_MediaBlocks
 {
 	protected $settings;
@@ -50,7 +29,23 @@ class isAdminView extends DT_MediaBlocks
 	}
 
 	/**
-	 * Replace Meta Boxes
+	 * Custom Meta Box Actions
+	 */
+	function blocks_meta_boxes( $post_type ){
+		add_meta_box('attachments', 'Мультимедиа', array( $this, 'attachments_callback' ), DTM_TYPE, 'normal', 'high');
+		add_meta_box('main_settings', 'Настройки', array( $this, 'sub_settings_callback' ), DTM_TYPE, 'normal');
+		add_meta_box('side_settings', 'Настройки', array( $this, 'side_settings_callback' ), DTM_TYPE, 'side');
+		add_meta_box('mb_postexcerpt', __( 'Контент после заголовка' ), array($this, 'excerpt_box'), DTM_TYPE, 'normal');
+	}
+
+	function remove_default_divs() {
+		remove_meta_box( 'slugdiv',		 DTM_TYPE, 'normal' ); // ярлык записи,
+		remove_meta_box( 'postcustom',	 DTM_TYPE, 'normal' ); // Произвольные поля
+		remove_meta_box( 'postexcerpt' , DTM_TYPE, 'normal' );
+	}
+
+	/**
+	 * Meta Box Render Callbacks
 	 */
 	function after_title() {
 		global $post, $wp_meta_boxes;
@@ -73,40 +68,6 @@ class isAdminView extends DT_MediaBlocks
 		echo "</div>";
 	}
 
-	function blocks_meta_boxes( $post_type ){
-		add_meta_box('attachments', 'Мультимедиа', array( $this, 'attachments_callback' ), DTM_TYPE, 'normal', 'high');
-		add_meta_box('main_settings', 'Настройки', array( $this, 'sub_settings_callback' ), DTM_TYPE, 'normal');
-		add_meta_box('side_settings', 'Настройки', array( $this, 'side_settings_callback' ), DTM_TYPE, 'side');
-		add_meta_box('mb_postexcerpt', __( 'Сообщение блока' ), array($this, 'excerpt_box'), DTM_TYPE, 'normal');
-	}
-
-	function remove_default_divs() {
-		remove_meta_box( 'slugdiv',		 DTM_TYPE, 'normal' ); // ярлык записи,
-		remove_meta_box( 'postcustom',	 DTM_TYPE, 'normal' ); // Произвольные поля
-		remove_meta_box( 'postexcerpt' , DTM_TYPE, 'normal' );
-	}
-
-	/**
-	 * Enqueue Assets
-	 */
-	function admin_asssets(){
-		$screen = get_current_screen();
-		if( $screen->post_type != DTM_TYPE )
-			return false;
-
-		if ( ! did_action( 'wp_enqueue_media' ) ) 
-			wp_enqueue_media();
-
-		$url = DT_MULTIMEDIA_ASSETS_URL;
-		wp_enqueue_style( 'dtm-style', $url.'core/style.css', array(), DT_MediaBlocks::VERSION, 'all' );
-		wp_enqueue_script( 'dtm-preview', $url.'core/preview.js', array('jquery'), DT_MediaBlocks::VERSION, true );
-		
-		wp_localize_script('dtm-preview', 'settings', array( 'nonce' => wp_create_nonce( 'any_secret_string' ) ) ); 
-	}
-
-	/**
-	 * Meta Box Render Callbacks
-	 */
 	protected function get_admin_wrap_attachments($post){
 		$ids = $this->meta_field( $post->ID, 'media_imgs' );
 		$ids_arr = explode( ',', esc_attr($ids) );
@@ -121,20 +82,21 @@ class isAdminView extends DT_MediaBlocks
 					$attrs = ( $meta['image_meta']['orientation'] == 1 ) ? array('class' => 'portrait') : array();
 				?>
 				<div class="item">
-				<?php
-					// wp_get_attachment_metadata( $id )
-					$attachment = get_post( $id );
-				?>
+					<?php
+						// wp_get_attachment_metadata( $id )
+						$attachment = get_post( $id );
+						$image = wp_get_attachment_image($id, 'medium', null, $attrs);
+						$link = get_post_meta( $id, 'mb_link', true );
+					?>
 					<span class="dashicons dashicons-no remove"></span>
-					<div class="crop">
-						<?php
-							echo wp_get_attachment_image($id, 'medium', null, $attrs);
-						?>
-					</div>
-					<input type="text" name="attachment_text[<?php echo $id; ?>]" value="<?php echo $attachment->post_excerpt; ?>">
-					<textarea name="" id="" cols="90" rows="4"><?php echo $attachment->post_content; ?></textarea>
-					<!-- <input type="text"> -->
+
+					<div class="crop"><?=$image;?></div>
+
+					<input class="item-excerpt" type="text" name="attachment_text[<?php echo $id; ?>]" value="<?php echo $attachment->post_excerpt; ?>">
+					<textarea class="item-content" name="" id="" cols="90" rows="4"><?php echo $attachment->post_content; ?></textarea>
+					<input class="item-link" type="text" name="attachment_link[<?php echo $id; ?>]" placeholder="#permalink(4)" value="<?=$link;?>">
 					<input type="hidden" id="dt-ids" name="attachment_id[]" value="<?php echo $id; ?>">
+
 				</div>
 			</div>
 			<?php
@@ -220,18 +182,36 @@ class isAdminView extends DT_MediaBlocks
 	}
 
 	/**
+	 * Enqueue Assets
+	 */
+	function admin_asssets(){
+		$screen = get_current_screen();
+		if( $screen->post_type != DTM_TYPE )
+			return false;
+
+		if ( ! did_action( 'wp_enqueue_media' ) ) 
+			wp_enqueue_media();
+
+		$url = DT_MULTIMEDIA_ASSETS_URL;
+		wp_enqueue_style( 'dtm-style', $url.'core/style.css', array(), DT_MediaBlocks::VERSION, 'all' );
+		wp_enqueue_script( 'dtm-preview', $url.'core/preview.js', array('jquery'), DT_MediaBlocks::VERSION, true );
+		
+		wp_localize_script('dtm-preview', 'settings', array( 'nonce' => wp_create_nonce( 'any_secret_string' ) ) ); 
+	}
+
+	/**
 	 * Validate Post's Data
 	 */
 	private function check_security( $post_id ){
 		// if ( ! isset( $_POST['wp_developer_page_nonce'] ) )
-		// return $post_id;
+		// return FALSE;
 		// $nonce = $_POST['wp_developer_page_nonce'];
 		// if ( ! wp_verify_nonce( $nonce, 'dp_addImages_nonce' ) )
-		// 	return $post_id;
+		// 	return FALSE;
 
 		// Если это автосохранение ничего не делаем.
 		// if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
-		// 	return $post_id;
+		// 	return FALSE;
 	}
 	private function validate_media_attachments( $post_id ){
 		if( !isset($_POST['attachment_id']) || !is_array($_POST['attachment_id']))
@@ -244,9 +224,17 @@ class isAdminView extends DT_MediaBlocks
 		if( !isset($_POST['attachment_text']) || !is_array($_POST['attachment_text']))
 			return $post_id;
 
-		foreach ($_POST['attachment_text'] as $id => $meta) {
-			wp_update_post( array('ID' => $id, 'post_excerpt' => $meta ) );
+		foreach ($_POST['attachment_text'] as $id => $value) {
+			wp_update_post( array('ID' => $id, 'post_excerpt' => $value ) );
 		}
+
+		if( !isset($_POST['attachment_link']) || !is_array($_POST['attachment_link']))
+			return $post_id;
+
+		foreach ($_POST['attachment_link'] as $id => $meta_value) {
+			update_post_meta( $id, 'mb_link', $meta_value );
+		}
+		
 	}
 
 	function validate_main_settings( $post_id ){
@@ -270,11 +258,11 @@ class isAdminView extends DT_MediaBlocks
 		$this->settings_from_file($post_id, $main_type, false, $_POST );
 		$this->settings_from_file($post_id, $type, $main_type, $_POST );
 
+		/**
+		 * Create TEMP Style File
+		 */
 		$asset = $this->get_assets_list();
 		if( ! isset($asset[ $type ]) )
-			return false;
-
-		if( ! isset($_POST['use_template']) )
 			return false;
 
 		$file = get_template_directory() . 'assets/blocks/block-'.$post_id.'.css';
@@ -294,3 +282,24 @@ class isAdminView extends DT_MediaBlocks
 		// file_put_contents(__DIR__ . '/save.log', print_r($compiled, 1));
 	}
 }
+
+/**
+ * Metabox
+ */
+// add_action( 'load-post.php',     'MB\metabox_action' );
+// add_action( 'load-post-new.php', 'MB\metabox_action' );
+
+// function metabox_action(){
+//     $screen = get_current_screen();
+//     if( !isset($screen->post_type) || $screen->post_type != DTM_TYPE )
+//         return false;
+
+//     $boxes = new WPPostBoxes();
+//     $boxes->add_box('Тест', 'MB\metabox_render', false, 'high' );
+//     $boxes->add_fields( 'RQ_META_NAME' );
+// }
+// function metabox_render($post, $data){
+// 	echo "Some test";
+// 	// WPForm::render( $fields, get_post_meta( $post->ID, RQ_META_NAME, true ), true );
+//     // wp_nonce_field( $data['args'][0], $data['args'][0].'_nonce' );
+// }

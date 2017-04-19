@@ -120,9 +120,27 @@ class MediaOutput extends DT_MediaBlocks
         if( isset($image_captions) )
           $caption = '<div id="caption">'.apply_filters( 'the_content', $att->post_excerpt ).'</div>';
         
+
         $link = array('', '');
-        if( ! empty($lightbox) && ($columns == 1 || ! $double) )
-            $link = array('<a rel="group-'.$id.'" href="'.$att->guid.'" class="'.$lightbox.'">', '</a>');
+
+        $metalink = esc_attr( get_post_meta( $attachment, 'mb_link', true ) );
+        if( $metalink ){
+            $url = ( preg_match("/permalink\(([0-9]{1,40})\)/i", $metalink, $output) && isset($output[1]) ) ?
+              get_permalink( (int)$output[1] ) : $metalink;
+
+              $link = array("<a href='{$url}' class='mb_link'>", "</a>");
+        }
+        
+        if( ! empty($lightbox) && ($columns == 1 || ! $double) ){
+          $url = $att->guid;
+
+          if(($link[1] != '')){
+            $link[0] = "<a rel='group-{$id}' href='{$url}' class='{$lightbox}'></a>" . $link[0];
+          }
+          else {
+            $link = array("<a rel='group-{$id}' href='{$url}' class='{$lightbox}'>", "</a>");
+          }
+        }
 
         $result[] = $item[0];
         $result[] = '   '.$link[0];
@@ -130,6 +148,8 @@ class MediaOutput extends DT_MediaBlocks
         $result[] = '   '.$caption;
         $result[] = '   '.$link[1];
         $result[] = $item[1];
+
+        unset($link);
     }
     $result[] = $item_wrap[1];
 
