@@ -92,8 +92,10 @@ class isAdminView extends DT_MediaBlocks
 
 					<div class="crop"><?=$image;?></div>
 
-					<input class="item-excerpt" type="text" name="attachment_text[<?php echo $id; ?>]" value="<?php echo $attachment->post_excerpt; ?>">
-					<textarea class="item-content" name="" id="" cols="90" rows="4"><?php echo $attachment->post_content; ?></textarea>
+					<input class="item-excerpt" type="text" name="attachment_excerpt[<?php echo $id; ?>]" value="<?php echo $attachment->post_excerpt; ?>">
+
+					<textarea class="item-content" name="attachment_content[<?php echo $id; ?>]" id="" cols="90" rows="4"><?php echo $attachment->post_content; ?></textarea>
+
 					<input class="item-link" type="text" name="attachment_link[<?php echo $id; ?>]" placeholder="#permalink(4)" value="<?=$link;?>">
 					<input type="hidden" id="dt-ids" name="attachment_id[]" value="<?php echo $id; ?>">
 
@@ -221,20 +223,21 @@ class isAdminView extends DT_MediaBlocks
 		$attachment_ids = implode(',', $attachment_ids);
 		$this->meta_field( $post_id, 'media_imgs', $attachment_ids );
 
-		if( !isset($_POST['attachment_text']) || !is_array($_POST['attachment_text']))
-			return $post_id;
+		foreach ($_POST['attachment_excerpt'] as $id => $excerpt) {
+			$update = array( 'ID' => $id	);
 
-		foreach ($_POST['attachment_text'] as $id => $value) {
-			wp_update_post( array('ID' => $id, 'post_excerpt' => $value ) );
+			if($excerpt)
+				$update['post_excerpt'] = $excerpt;
+
+			if($_POST['attachment_content'][$id])
+				$update['post_content'] = $_POST['attachment_content'][$id];
+
+			if($_POST['attachment_link'][$id])
+				update_post_meta( $id, 'mb_link', $_POST['attachment_link'][$id] );
+
+			if( sizeof($update > 1) )
+				wp_update_post( $update );
 		}
-
-		if( !isset($_POST['attachment_link']) || !is_array($_POST['attachment_link']))
-			return $post_id;
-
-		foreach ($_POST['attachment_link'] as $id => $meta_value) {
-			update_post_meta( $id, 'mb_link', $meta_value );
-		}
-		
 	}
 
 	function validate_main_settings( $post_id ){
@@ -279,7 +282,7 @@ class isAdminView extends DT_MediaBlocks
 				file_put_contents( $out_file, $compiled );
 		}
 
-		// file_put_contents(__DIR__ . '/save.log', print_r($compiled, 1));
+		//file_put_contents(__DIR__ . '/save.log', print_r($_POST, 1));
 	}
 }
 
