@@ -209,4 +209,10 @@ jQuery(function($){
       }
     }).fail(function() { console.log('Ajax Error!'); });
   });
+
+
+  $('#query_select').on('change', function(event) {
+    $('#dt-media-query').slideToggle();
+  });
+  
 });

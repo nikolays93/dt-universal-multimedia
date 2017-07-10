@@ -43,7 +43,7 @@ if(!function_exists('is_wp_debug')){
     return false;
   }
 }
-if(!function_exists('_isset_default')){
+if(!function_exists('MB\_isset_default')){
   function _isset_default(&$var, $default, $unset = false){
     $result = $var = isset($var) ? $var : $default;
     if($unset)

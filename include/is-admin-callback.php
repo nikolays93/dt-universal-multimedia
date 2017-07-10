@@ -26,6 +26,8 @@ class isAdminView extends DT_MediaBlocks
 		
 		add_action( 'wp_ajax_main_settings', array($this, 'sub_settings_callback') );
 		add_action( 'wp_ajax_main_settings', array($this, 'side_settings_callback') );
+
+		add_action('before_admin_wrap_attachments', array($this, 'get_admin_pre_wrap_attachments'), 10, 1 );
 	}
 
 	/**
@@ -68,7 +70,102 @@ class isAdminView extends DT_MediaBlocks
 		echo "</div>";
 	}
 
-	protected function get_admin_wrap_attachments($post){
+	function get_admin_pre_wrap_attachments( $post ){
+		?>
+			<div id="dt-media-query" style="padding: 5px 15px;display: none;">
+				<div class="col-2" style="width: 50%; float: left;">
+					<?php
+					$public_args = array('public' => 1, 'show_ui' => 1);
+
+					$public_tax = get_taxonomies( $public_args );
+					$tax_inc_type = get_object_taxonomies( 'product' );
+
+					$types = array('all' => 'all taxanomies');
+					foreach ($public_tax as $tax_key => $tax_name) {
+						if(in_array($tax_name, $tax_inc_type))
+							$types[$tax_key] = $tax_name;
+					}
+
+					$m_query = array(
+						array(
+							'id' => '0',
+							'label' => 'Тип запроса',
+							'type' => 'select',
+							'options' => array(
+								'Типы записей' => get_post_types( $public_args ),
+								//'Таксаномии'   => $public_tax,
+								),
+							),
+						array(
+							'id' => '0',
+							'label' => 'Таксаномия',
+							'type' => 'select',
+							'options' => $types,
+							),
+						array(
+							'id' => '0',
+							'label' => 'Сначала бестселлеры',
+							'type' => 'checkbox',
+							),
+						array(
+							'id' => '0',
+							'label' => 'Сортировка',
+							'type' => 'select',
+							'options' => array(
+								'ASC'  => 'ASC',
+								'DESC' => 'DESC',
+								),
+							),
+						array(
+							'id' => '0',
+							'label' => 'Количество',
+							'type' => 'number',
+							'default' => '5',
+							),
+						);
+					WPForm::render( $m_query, array(), true, array('item_wrap' => array('<span>', '</span>'), ) );
+					?>
+				</div>
+				<div class="col-2" style="width: 50%; float: left;">
+					Термины:
+					<?php
+
+					$args = array(
+						'taxonomy'     => 'product_cat',
+						'hide_empty'   => false,
+						'hierarchical' => false,
+						);
+
+					$terms = get_terms( $args );
+					$terms_arr = array();
+					if( !is_wp_error( $terms ) ){
+						foreach ($terms as $term) {
+							$terms_arr[] = array(
+								'type'  => 'checkbox',
+								'id'    => $term->id,
+								'label' => $term->name,
+								);
+						}
+					}
+
+					$right_side = array(
+						// array(
+						// 	'id' => '0',
+						// 	'label' => 'Термины',
+						// 	'type' => 'fieldset',
+						// 	'fields' => $terms_arr,
+						// 	),
+						);
+
+					WPForm::render( $terms_arr, array(), false );
+					?>
+				</div>
+			</div>
+			<div class="clear"></div>
+			<h3>Превью:</h3>
+		<?php
+	}
+	protected function get_admin_wrap_attachments( $post ){
 		$ids = $this->meta_field( $post->ID, 'media_imgs' );
 		$ids_arr = explode( ',', esc_attr($ids) );
 		$style = $this->meta_field($post->ID, 'detail_view') ? 'list' : 'tile';
@@ -131,7 +228,7 @@ class isAdminView extends DT_MediaBlocks
 				</button>
 				
 				<div>
-					Использовать запрос к записям <input type="checkbox">
+					Использовать запрос к записям <input type="checkbox" id="query_select">
 				</div>
 			</div>
 			<label>Тип мультимедия: </label>
@@ -141,65 +238,9 @@ class isAdminView extends DT_MediaBlocks
 					'type'      => $this->meta_field( $post->ID, 'type' )
 					), false, array('item_wrap' => array('<span>', '</span>')));
 			?>
+			<?php do_action( 'before_admin_wrap_attachments', $post ); ?>
 			<div class="clear"></div>
-			<?php //  $this->get_admin_wrap_attachments($post); ?>
-			<div class="attachments" id="dt-media-query" style="padding: 5px 15px;">
-				<?php
-				$public_tax = get_taxonomies( array('public'=>1, 'show_ui'=>1));
-				$tax_inc_type = get_object_taxonomies( 'product' );
-
-				$types = array('all' => 'all taxanomies');
-				foreach ($public_tax as $tax_key => $tax_name) {
-					if(in_array($tax_name, $tax_inc_type))
-						$types[$tax_key] = $tax_name;
-				}
-				
-
-				// 'product_shipping_class'
-				// array(5) { [0]=> string(12) "product_type" [1]=> string(18) "product_visibility" [2]=> string(11) "product_cat" [3]=> string(11) "product_tag" [4]=> string(22) "product_shipping_class" }
-
-				$m_query = array(
-					array(
-						'id' => '0',
-						'label' => 'Тип записи',
-						'type' => 'select',
-						'options' => get_post_types( array('public' => 1, 'show_ui' => 1) ),
-						),
-					array(
-						'id' => '0',
-						'label' => 'Таксаномия',
-						'type' => 'select',
-						'options' => $types,
-						),
-					array(
-						'id' => '0',
-						'label' => 'Термин',
-						'type' => 'select',
-						'options' => $types,
-						),
-					array(
-						'id' => '0',
-						'label' => 'Сортировка',
-						'type' => 'select',
-						'options' => array(
-							'ASC'  => 'ASC',
-							'DESC' => 'DESC',
-							),
-						),
-					array(
-						'id' => '0',
-						'label' => 'Количество',
-						'type' => 'number',
-						),
-					array(
-						'id' => '0',
-						'label' => 'Сначала бестселлеры',
-						'type' => 'checkbox',
-						),
-					);
-				WPForm::render( $m_query, array(), true, array('item_wrap' => array('<span>', '</span>'), ) );
-				?>
-			</div>
+			<?php $this->get_admin_wrap_attachments($post); ?>
 			<div class="clear"></div>
 		</div>
 		<?php

@@ -4,42 +4,28 @@ namespace MB;
  * Class Name: WPForm ( :: render )
  * Class URI: https://github.com/nikolays93/WPForm
  * Description: render forms as wordpress fields
- * Version: 1.1
+ * Version: 1.4
  * Author: NikolayS93
  * Author URI: https://vk.com/nikolays_93
  * License: GNU General Public License v2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  */
 
-/**
- * change names for wordpress options
- * @param  array  $inputs      rendered inputs
- * @param  string $option_name name of wordpress option ( @see get_option() )
- * @return array               filtred inputs
- */
-if( ! has_filter( 'dt_admin_options' ) ){
-  function admin_page_options_filter( $inputs, $option_name = false ){
-    if( ! $option_name )
-      $option_name = _isset_false($_GET['page']);
+if ( ! defined( 'ABSPATH' ) )
+  exit; // disable direct access
 
-    if( ! $option_name )
-      return $inputs;
-
-    if( isset($inputs['id']) )
-        $inputs = array($inputs);
-
-    foreach ( $inputs as &$input ) {
-      if( isset($input['name']) )
-        $input['name'] = "{$option_name}[{$input['name']}]";
-      else
-        $input['name'] = "{$option_name}[{$input['id']}]";
-      
-      $input['check_active'] = 'id';
-    }
-    return $inputs;
+if( ! function_exists('MB\_isset_default') ){
+  function _isset_default(&$var, $default, $unset = false){
+    $result = $var = isset($var) ? $var : $default;
+    if($unset) $var = FALSE;
+    return $result;
   }
-  add_filter( 'dt_admin_options', 'MB\admin_page_options_filter', 10, 2 );
+  function _isset_false(&$var, $unset = false){ return _isset_default( $var, false, $unset ); }
+  function _isset_empty(&$var, $unset = false){ return _isset_default( $var, '', $unset ); }
 }
+
+if( class_exists('WPForm') )
+  return;
 
 class WPForm {
   static protected $clear_value;
@@ -69,17 +55,42 @@ class WPForm {
   }
   
   /**
-   * EXPEREMENTAL! todo: add recursive handle
-   * @param  string  $option_name      
-   * @param  string  $sub_name         $option_name[$sub_name]
-   * @param  boolean $is_admin_options recursive split value array key with main array
-   * @return array                     installed options
+   * @todo: add recursive handle
+   * 
+   * @param  string   $option_name      
+   * @param  string   $sub_name         $option_name[$sub_name]
+   * @param  boolean  $is_admin_options recursive split value array key with main array
+   * @param  int|bool $postmeta         int = post_id for post meta, true = get post_id from global post
+   * @return array                      installed options
    */
-  public static function active($option_name, $sub_name = false, $is_admin_options = false){
-    $active = get_option( $option_name, array() );
+  public static function active($option_name, $sub_name = false, $is_admin_options = false, $postmeta = false){
+    
+    global $post;
+
+    /** get active values */
+    if( $postmeta ){
+      if( !is_int($postmeta) && !isset($post->ID) )
+        return false;
+
+      $post_id = is_int($postmeta) ? $postmeta : $post->ID;
+
+      $active = get_post_meta( $post_id, $option_name, true );
+    }
+    else {
+      $active = get_option( $option_name, array() );
+    }
+
+    /** get subvalue */
     if( $sub_name && isset($active[$sub_name]) && is_array($active[$sub_name]) )
       $active = $active[$sub_name];
+    elseif( $sub_name && !isset($active[$sub_name]) )
+      return false;
 
+    /** if active not found */
+    if( !isset($active) || !is_array($active) )
+        return false;
+
+    /** sanitize admin values */
     if( $is_admin_options === true ){
       $result = array();
       foreach ($active as $key => $value) {
@@ -94,16 +105,81 @@ class WPForm {
       }
 
       return $result;
-      // function self_function($active){
-      //   foreach ($active as &$key => &$value) {
-      //     if( is_array($value) ){
-      //       $key = 
-      //     }
-      //   }
-      // }
     }
 
     return $active;
+  }
+
+  protected static function set_defaults( $args, $is_table ){
+    $default_args = array(
+      'admin_page'  => false, // set true for auto detect
+      'item_wrap'   => array('<p>', '</p>'),
+      'form_wrap'   => array('<table class="table form-table"><tbody>', '</tbody></table>'),
+      'label_tag'   => 'th',
+      'hide_desc'   => false,
+      'clear_value' => 'false'
+      );
+    $args = array_merge($default_args, $args);
+
+    self::$clear_value = $args['clear_value'];
+
+    if( $args['item_wrap'] === false )
+      $args['item_wrap'] = array('', '');
+
+    if($args['form_wrap'] === false)
+      $args['form_wrap'] = array('', '');
+
+    if( $args['label_tag'] == 'th' && $is_table == false )
+      $args['label_tag'] = 'label';
+
+    return $args;
+  }
+
+  /**
+   * EXPEREMENTAL!
+   * change names for wordpress options
+   * @param  array  $inputs      rendered inputs
+   * @param  string $option_name name of wordpress option ( @see get_option() )
+   * @return array               filtred inputs
+   */
+  protected static function admin_page_options( $inputs, $option_name = false ){
+    if( ! is_string( $option_name ) && !empty($_GET['page']) )
+      $option_name = $_GET['page'];
+
+    if( ! $option_name )
+      return $inputs;
+
+    foreach ( $inputs as &$input ) {
+      if( isset($input['name']) )
+        $input['name'] = "{$option_name}[{$input['name']}]";
+      else
+        $input['name'] = "{$option_name}[{$input['id']}]";
+
+      $input['check_active'] = 'id';
+    }
+    return $inputs;
+  }
+
+  protected static function get_function_name( $type ){
+    switch ( $type ) {
+      case 'text':
+      case 'hidden':
+      case 'submit':
+      case 'button':
+      case 'number':
+      case 'email':
+        $func = 'render_text';
+      break;
+
+      case 'fieldset':
+        $func = 'render_fieldset';
+      break;
+
+      default:
+        $func = 'render_' . $type;
+      break;
+    }
+    return $func;
   }
 
   /**
@@ -126,33 +202,20 @@ class WPForm {
 
     if( empty($render_data) ){
       if( function_exists('is_wp_debug') && is_wp_debug() )
-        echo '<pre> Файл настроек не найден </pre>';
+        echo '<pre> Параметры формы не были переданы </pre>';
       return false;
     }
     
     if( isset($render_data['id']) )
         $render_data = array($render_data);
 
-    $default_args = array(
-      'item_wrap' => array('<p>', '</p>'),
-      'form_wrap' => array('<table class="table form-table"><tbody>', '</tbody></table>'),
-      'label_tag' => 'th',
-      'hide_desc' => false,
-      'clear_value' => ''
-      );
-    $args = array_merge($default_args, $args);
+    if($active === false)
+      $active = array();
+    
+    $args = self::set_defaults( $args, $is_table );
+    if( $args['admin_page'] )
+      $render_data = self::admin_page_options( $render_data, $args['admin_page'] );
 
-    self::$clear_value = esc_attr( $args['clear_value'] );
-
-    if( $args['item_wrap'] === false )
-      $args['item_wrap'] = array('', '');
-
-    if($args['form_wrap'] === false)
-      $args['form_wrap'] = array('', '');
-
-    if( $args['label_tag'] == 'th' && $is_table == false ){
-      $args['label_tag'] = 'label';
-    }
     /**
      * Template start
      */
@@ -170,17 +233,9 @@ class WPForm {
       if( $input['type'] != 'checkbox' && $input['type'] != 'radio' )
         _isset_default( $input['placeholder'], $default );
 
-      if( isset($input['desc']) ){
-        $desc = $input['desc'];
-        $input['desc'] = false;
-      }
-      elseif( isset( $input['description'] ) ) {
-        $desc = $input['description'];
-        $input['description'] = false;
-      }
-      else {
-        $desc = false;
-      }
+      $desc = _isset_false($input['desc'], 1);
+      if( ! $desc )
+        $desc = _isset_false($input['description'], 1);
 
       if( !isset($input['name']) )
           $input['name'] = _isset_empty($input['id']);
@@ -191,7 +246,7 @@ class WPForm {
        * set values
        */
       $active_name = $check_active ? $input[$check_active] : str_replace('[]', '', $input['name']);
-      $active_value = ( is_array($active) && isset($active[$active_name]) ) ?
+      $active_value = ( is_array($active) && sizeof($active) > 0 && isset($active[$active_name]) ) ?
          $active[$active_name] : false;
 
       $entry = '';
@@ -207,28 +262,15 @@ class WPForm {
         $placeholder = $default;
       }
 
-      switch ($input['type']) {
-        case 'text':
-        case 'hidden':
-        case 'submit':
-        case 'button':
-        case 'number':
-        case 'email':
-          $func = 'render_text';
-          break;
-        
-        default:
-          $func = 'render_' . $input['type'];
-          break;
-      }
-      
+      $func = self::get_function_name( $input['type'] );
       $input_html = self::$func($input, $entry, $is_table, $label);
 
       if( $desc ){
+        // todo: set tooltip
         if( isset($args['hide_desc']) && $args['hide_desc'] === true )
           $desc_html = "<div class='description' style='display: none;'>{$desc}</div>";
         else
-          $desc_html = "<div class='description'>{$desc}</div>";
+          $desc_html = "<span class='description'>{$desc}</span>";
       } else {
         $desc_html = '';
       }
@@ -238,6 +280,11 @@ class WPForm {
       }
       elseif( $input['type'] == 'hidden' ){
         $hidden[] = $before . $input_html . $after;
+      }
+      elseif( $input['type'] == 'html' ){
+        $html[] = $args['form_wrap'][1];
+        $html[] = $before . $input_html . $after;
+        $html[] = $args['form_wrap'][0];
       }
       else {
         $item = $before . $args['item_wrap'][0]. $input_html .$args['item_wrap'][1] . $after;
@@ -270,6 +317,9 @@ class WPForm {
    * @return boolean       checked or not
    */
   private static function is_checked( $value, $active, $default ){
+    if( $active === false && $value )
+      return true;
+
     $checked = ( $active === false ) ? false : true;
     if( $active === 'false' || $active === 'off' || $active === '0' )
       $active = false;
@@ -326,6 +376,23 @@ class WPForm {
     return $result;
   }
 
+  public static function render_fieldset( $input, $entry, $is_table, $label = '' ){
+    $result = '';
+
+    // <legend>Работа со временем</legend>
+
+    foreach ($input['fields'] as $field) {
+      if( !isset($field['name']) )
+        $field['name'] = _isset_empty($field['id']);
+
+      $field['id'] = str_replace('][', '_', $field['id']);
+
+      $f_name = self::get_function_name($field['type']);
+      $result .= self::$f_name( $field, $entry, $is_table, $label );
+    }
+    return $result;
+  }
+
   public static function render_select( $input, $active_id, $is_table, $label = '' ){
     $result = '';
     $options = _isset_false($input['options'], 1);
@@ -346,7 +413,18 @@ class WPForm {
     $result .= ">";
     foreach ($options as $value => $option) {
       $active_str = ($active_id == $value) ? " selected": "";
-      $result .= "<option value='{$value}'{$active_str}>{$option}</option>";
+      if( !is_array($option) ){
+        $result .= "<option value='{$value}'{$active_str}>{$option}</option>";
+      }
+      else {
+        $result .= "<optgroup label='$value'>";
+        foreach ($option as $subvalue => $suboption) {
+          $active_str = ($active_id == $subvalue) ? " selected": "";
+          $result .= "<option value='{$subvalue}'{$active_str}>{$suboption}</option>";
+        }
+        $result .= "";
+        $result .= "</optgroup>";
+      }
     }
     $result .= "</select>";
 
@@ -394,5 +472,10 @@ class WPForm {
     $result .= ">";
 
     return $result;
+  }
+
+  public static function render_html( $input, $entry, $is_table, $label = '' ){
+
+    return $input['value'];
   }
 }
