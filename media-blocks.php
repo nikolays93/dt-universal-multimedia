@@ -308,13 +308,11 @@ function dash_to_underscore( $str ){
   $str = str_replace('-', '_', $str);
   return $str;
 }
-
 new DT_MediaBlocks();
 
 // function rewrite_flush() {
-//     DT_MultiMedia::register_post_types();
-//     flush_rewrite_rules();
+// $mb = new DT_MediaBlocks();
+// $mb->register_post_types();
+// flush_rewrite_rules();
 // }
 // register_activation_hook( __FILE__, 'rewrite_flush' );
-// 
-//

@@ -129,6 +129,10 @@ class isAdminView extends DT_MediaBlocks
 				<button id="upload-images" class="button add_media">
 					<span class="wp-media-buttons-icon"></span> Добавить медиафайл
 				</button>
+				
+				<div>
+					Использовать запрос к записям <input type="checkbox">
+				</div>
 			</div>
 			<label>Тип мультимедия: </label>
 			<?php
@@ -137,7 +141,65 @@ class isAdminView extends DT_MediaBlocks
 					'type'      => $this->meta_field( $post->ID, 'type' )
 					), false, array('item_wrap' => array('<span>', '</span>')));
 			?>
-			<?php $this->get_admin_wrap_attachments($post); ?>
+			<div class="clear"></div>
+			<?php //  $this->get_admin_wrap_attachments($post); ?>
+			<div class="attachments" id="dt-media-query" style="padding: 5px 15px;">
+				<?php
+				$public_tax = get_taxonomies( array('public'=>1, 'show_ui'=>1));
+				$tax_inc_type = get_object_taxonomies( 'product' );
+
+				$types = array('all' => 'all taxanomies');
+				foreach ($public_tax as $tax_key => $tax_name) {
+					if(in_array($tax_name, $tax_inc_type))
+						$types[$tax_key] = $tax_name;
+				}
+				
+
+				// 'product_shipping_class'
+				// array(5) { [0]=> string(12) "product_type" [1]=> string(18) "product_visibility" [2]=> string(11) "product_cat" [3]=> string(11) "product_tag" [4]=> string(22) "product_shipping_class" }
+
+				$m_query = array(
+					array(
+						'id' => '0',
+						'label' => 'Тип записи',
+						'type' => 'select',
+						'options' => get_post_types( array('public' => 1, 'show_ui' => 1) ),
+						),
+					array(
+						'id' => '0',
+						'label' => 'Таксаномия',
+						'type' => 'select',
+						'options' => $types,
+						),
+					array(
+						'id' => '0',
+						'label' => 'Термин',
+						'type' => 'select',
+						'options' => $types,
+						),
+					array(
+						'id' => '0',
+						'label' => 'Сортировка',
+						'type' => 'select',
+						'options' => array(
+							'ASC'  => 'ASC',
+							'DESC' => 'DESC',
+							),
+						),
+					array(
+						'id' => '0',
+						'label' => 'Количество',
+						'type' => 'number',
+						),
+					array(
+						'id' => '0',
+						'label' => 'Сначала бестселлеры',
+						'type' => 'checkbox',
+						),
+					);
+				WPForm::render( $m_query, array(), true, array('item_wrap' => array('<span>', '</span>'), ) );
+				?>
+			</div>
 			<div class="clear"></div>
 		</div>
 		<?php
