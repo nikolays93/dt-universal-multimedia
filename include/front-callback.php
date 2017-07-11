@@ -394,8 +394,35 @@ class MediaOutput extends DT_MediaBlocks
     if($mblock->post_status !== 'publish' )
       return false;
 
-    $this->attachments = $attachments = explode(',', $this->meta_field($id, 'media_imgs') );
-    if( ! $attachments )
+    $meta_query = get_post_meta( $id, '_'.DTM_PREFIX.'query', true );
+    if(isset($meta_query['enable']) && $meta_query['enable']){
+      $query = new \WP_Query( array(
+        'post_type' => $meta_query['type'], //post, page, post, product..
+        'posts_per_page' => $meta_query['qty'],
+        'tax_query' => array(
+          array(
+            'taxonomy' => $meta_query['tax'],
+            'terms'    => $meta_query['term'],
+            ),
+          ),
+        'order'   => $meta_query['sort'],
+      ) );
+
+      $attachments = array();
+      if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) { $query->the_post();
+          $attachments[] = get_post_thumbnail_id( get_the_id() );
+        }
+      }
+      wp_reset_postdata();
+
+      $this->attachments = $attachments;
+    }
+    else {
+      $this->attachments = explode(',', $this->meta_field($id, 'media_imgs') );
+    }
+    
+    if( ! $this->attachments || sizeof($this->attachments) < 1 )
       return ( is_wp_debug() ) ? 'Файлов не найдено' : false;
     
     /**

@@ -72,7 +72,7 @@ class WPForm {
       if( !is_int($postmeta) && !isset($post->ID) )
         return false;
 
-      $post_id = is_int($postmeta) ? $postmeta : $post->ID;
+      $post_id = ($postmeta === true) ? $post->ID : $postmeta;
 
       $active = get_post_meta( $post_id, $option_name, true );
     }
@@ -155,7 +155,8 @@ class WPForm {
       else
         $input['name'] = "{$option_name}[{$input['id']}]";
 
-      $input['check_active'] = 'id';
+      if( !isset($input['check_active']) )
+        $input['check_active'] = 'id';
     }
     return $inputs;
   }
@@ -229,7 +230,7 @@ class WPForm {
       $default = _isset_false($input['default'], 1);
       $value   = _isset_false($input['value']);
       $check_active = _isset_false($input['check_active'], 1);
-      
+
       if( $input['type'] != 'checkbox' && $input['type'] != 'radio' )
         _isset_default( $input['placeholder'], $default );
 
@@ -246,8 +247,14 @@ class WPForm {
        * set values
        */
       $active_name = $check_active ? $input[$check_active] : str_replace('[]', '', $input['name']);
-      $active_value = ( is_array($active) && sizeof($active) > 0 && isset($active[$active_name]) ) ?
-         $active[$active_name] : false;
+      
+      $active_value = false;
+      if( is_array($active) && sizeof($active) > 0 ){
+        if( isset($active[$active_name]) )
+          $active_value = $active[$active_name];
+        if( in_array($active_name, $active) )
+          $active_value = $active_name;
+      }
 
       $entry = '';
       if($input['type'] == 'checkbox' || $input['type'] == 'radio'){
@@ -317,8 +324,8 @@ class WPForm {
    * @return boolean       checked or not
    */
   private static function is_checked( $value, $active, $default ){
-    if( $active === false && $value )
-      return true;
+    // if( $active === false && $value )
+      // return true;
 
     $checked = ( $active === false ) ? false : true;
     if( $active === 'false' || $active === 'off' || $active === '0' )

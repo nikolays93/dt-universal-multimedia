@@ -68,7 +68,8 @@ class DT_MediaBlocks {
         'scssc'          => 'scss.inc',
         'MB\WPForm'      => 'class-wp-form-render',
         'MB\WPPostBoxes' => 'class-wp-post-boxes',
-        'MB\isAdminView' => 'is-admin-callback'
+        'MB\isAdminView' => 'is-admin-callback',
+        ''               => 'queries',
         ) );
       new isAdminView();
     }

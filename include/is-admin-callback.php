@@ -27,7 +27,7 @@ class isAdminView extends DT_MediaBlocks
 		add_action( 'wp_ajax_main_settings', array($this, 'sub_settings_callback') );
 		add_action( 'wp_ajax_main_settings', array($this, 'side_settings_callback') );
 
-		add_action('before_admin_wrap_attachments', array($this, 'get_admin_pre_wrap_attachments'), 10, 1 );
+		add_action( 'mb_media_buttons', array($this, 'default_media_buttons'), 10, 1 );
 	}
 
 	/**
@@ -70,101 +70,9 @@ class isAdminView extends DT_MediaBlocks
 		echo "</div>";
 	}
 
-	function get_admin_pre_wrap_attachments( $post ){
-		?>
-			<div id="dt-media-query" style="padding: 5px 15px;display: none;">
-				<div class="col-2" style="width: 50%; float: left;">
-					<?php
-					$public_args = array('public' => 1, 'show_ui' => 1);
-
-					$public_tax = get_taxonomies( $public_args );
-					$tax_inc_type = get_object_taxonomies( 'product' );
-
-					$types = array('all' => 'all taxanomies');
-					foreach ($public_tax as $tax_key => $tax_name) {
-						if(in_array($tax_name, $tax_inc_type))
-							$types[$tax_key] = $tax_name;
-					}
-
-					$m_query = array(
-						array(
-							'id' => '0',
-							'label' => 'Тип запроса',
-							'type' => 'select',
-							'options' => array(
-								'Типы записей' => get_post_types( $public_args ),
-								//'Таксаномии'   => $public_tax,
-								),
-							),
-						array(
-							'id' => '0',
-							'label' => 'Таксаномия',
-							'type' => 'select',
-							'options' => $types,
-							),
-						array(
-							'id' => '0',
-							'label' => 'Сначала бестселлеры',
-							'type' => 'checkbox',
-							),
-						array(
-							'id' => '0',
-							'label' => 'Сортировка',
-							'type' => 'select',
-							'options' => array(
-								'ASC'  => 'ASC',
-								'DESC' => 'DESC',
-								),
-							),
-						array(
-							'id' => '0',
-							'label' => 'Количество',
-							'type' => 'number',
-							'default' => '5',
-							),
-						);
-					WPForm::render( $m_query, array(), true, array('item_wrap' => array('<span>', '</span>'), ) );
-					?>
-				</div>
-				<div class="col-2" style="width: 50%; float: left;">
-					Термины:
-					<?php
-
-					$args = array(
-						'taxonomy'     => 'product_cat',
-						'hide_empty'   => false,
-						'hierarchical' => false,
-						);
-
-					$terms = get_terms( $args );
-					$terms_arr = array();
-					if( !is_wp_error( $terms ) ){
-						foreach ($terms as $term) {
-							$terms_arr[] = array(
-								'type'  => 'checkbox',
-								'id'    => $term->id,
-								'label' => $term->name,
-								);
-						}
-					}
-
-					$right_side = array(
-						// array(
-						// 	'id' => '0',
-						// 	'label' => 'Термины',
-						// 	'type' => 'fieldset',
-						// 	'fields' => $terms_arr,
-						// 	),
-						);
-
-					WPForm::render( $terms_arr, array(), false );
-					?>
-				</div>
-			</div>
-			<div class="clear"></div>
-			<h3>Превью:</h3>
-		<?php
-	}
+	/**
+	 * Main Block
+	 */
 	protected function get_admin_wrap_attachments( $post ){
 		$ids = $this->meta_field( $post->ID, 'media_imgs' );
 		$ids_arr = explode( ',', esc_attr($ids) );
@@ -204,6 +112,22 @@ class isAdminView extends DT_MediaBlocks
 		echo '</div>';
 	}
 
+	function default_media_buttons( $post ){
+		$is_detail_view = $this->meta_field($post->ID, 'detail_view');
+		?>
+			<input type="hidden" name="detail_view" value="<?=$is_detail_view;?>">
+			<button id="detail_view" class="button" type="button">
+				<span class="dashicons dashicons-screenoptions <?php
+					echo ($is_detail_view) ? '' : 'hidden'; ?>"></span>
+				<span class="dashicons dashicons-list-view <?php
+					echo ($is_detail_view) ? 'hidden' : ''; ?>"></span>
+			</button>
+			<button id="upload-images" class="button add_media">
+				<span class="wp-media-buttons-icon"></span> Добавить медиафайл
+			</button>
+		<?php
+	}
+
 	function attachments_callback( $post ) {
 		wp_enqueue_media();
 
@@ -212,24 +136,7 @@ class isAdminView extends DT_MediaBlocks
 		?>
 		<div class="dt-media">
 			<div class="hide-if-no-js wp-media-buttons">
-			<?php
-				//str
-				$is_detail_view = $this->meta_field($post->ID, 'detail_view');
-			?>
-				<input type="hidden" name="detail_view" value="<?=$is_detail_view;?>">
-				<button id="detail_view" class="button" type="button">
-					<span class="dashicons dashicons-screenoptions <?php
-						echo ($is_detail_view) ? '' : 'hidden'; ?>"></span>
-					<span class="dashicons dashicons-list-view <?php
-						echo ($is_detail_view) ? 'hidden' : ''; ?>"></span>
-				</button>
-				<button id="upload-images" class="button add_media">
-					<span class="wp-media-buttons-icon"></span> Добавить медиафайл
-				</button>
-				
-				<div>
-					Использовать запрос к записям <input type="checkbox" id="query_select">
-				</div>
+				<?php do_action( 'mb_media_buttons', $post ); ?>
 			</div>
 			<label>Тип мультимедия: </label>
 			<?php
@@ -306,6 +213,8 @@ class isAdminView extends DT_MediaBlocks
 
 	/**
 	 * Validate Post's Data
+	 *
+	 * @todo : set metas with array
 	 */
 	private function check_security( $post_id ){
 		// if ( ! isset( $_POST['wp_developer_page_nonce'] ) )
@@ -342,7 +251,6 @@ class isAdminView extends DT_MediaBlocks
 				wp_update_post( $update );
 		}
 	}
-
 	function validate_main_settings( $post_id ){
 		if( FALSE === $this->check_security($post_id) )
 			return $post_id;
@@ -360,6 +268,7 @@ class isAdminView extends DT_MediaBlocks
 
 		$this->meta_field($post_id, 'main_type', $main_type);
 		$this->meta_field($post_id, 'type', $type);
+		$this->meta_field($post_id, 'query', $_POST['query']);
 		
 		$this->settings_from_file($post_id, $main_type, false, $_POST );
 		$this->settings_from_file($post_id, $type, $main_type, $_POST );
@@ -388,24 +297,3 @@ class isAdminView extends DT_MediaBlocks
 		//file_put_contents(__DIR__ . '/save.log', print_r($_POST, 1));
 	}
 }
-
-/**
- * Metabox
- */
-// add_action( 'load-post.php',     'MB\metabox_action' );
-// add_action( 'load-post-new.php', 'MB\metabox_action' );
-
-// function metabox_action(){
-//     $screen = get_current_screen();
-//     if( !isset($screen->post_type) || $screen->post_type != DTM_TYPE )
-//         return false;
-
-//     $boxes = new WPPostBoxes();
-//     $boxes->add_box('Тест', 'MB\metabox_render', false, 'high' );
-//     $boxes->add_fields( 'RQ_META_NAME' );
-// }
-// function metabox_render($post, $data){
-// 	echo "Some test";
-// 	// WPForm::render( $fields, get_post_meta( $post->ID, RQ_META_NAME, true ), true );
-//     // wp_nonce_field( $data['args'][0], $data['args'][0].'_nonce' );
-// }
