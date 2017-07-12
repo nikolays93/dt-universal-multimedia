@@ -1,10 +1,10 @@
 <?php
 namespace MB;
 /*
-Plugin Name: Мульти блоки
+Plugin Name: Медиаблоки
 Plugin URI:
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.6 alpha
+Version: 1.7 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 */
@@ -89,6 +89,7 @@ class DT_MediaBlocks {
   
   public $required_classes = array(
     'MB\JQScript'    => 'class-wp-jqscript',
+    'MB\queries'    => 'queries',
     'scssc'          => 'scss.inc',
     'MB\WPForm'      => 'class-wp-form-render',
     'MB\WPPostBoxes' => 'class-wp-post-boxes',
@@ -96,7 +97,8 @@ class DT_MediaBlocks {
     );
   public $public_classes = array(
     'MB\JQScript'    => 'class-wp-jqscript',
-    'MB\MediaOutput' => 'front-callback',
+    'MB\queries'    => 'queries',
+    'MB\MediaBlock' => 'front-callback',
     );
 
   function __construct(){
@@ -108,7 +110,7 @@ class DT_MediaBlocks {
     }
     else {
     	$this->include_required_classes( apply_filters( 'get_public_classes', $this->public_classes ) );
-      new MediaOutput();
+      new MediaBlock();
     }
   }
 
@@ -135,17 +137,18 @@ class DT_MediaBlocks {
       'publicly_queryable' => false,
       'show_in_nav_menus' => false,
       'show_ui' => true,
+      'menu_icon' => 'dashicons-images-alt2',
       'supports' => array('title', 'custom-fields', 'excerpt'),
       'labels' => array(
-        'name' => 'Мульти Блоки',
-        'singular_name'      => 'Мульти Блок',
+        'name' => 'Медиаблоки',
+        'singular_name'      => 'Медиаблок',
         'add_new'            => 'Добавить блок',
         'add_new_item'       => 'Добавление блок',
         'edit_item'          => 'Редактирование блока',
         'new_item'           => 'Новый блок',
         'view_item'          => 'Смотреть МультиБлок',
         'search_items'       => 'Искать МультиБлок',
-        'menu_name'          => 'Мульти Блоки',
+        'menu_name'          => 'Медиаблоки',
         )
       )
     );

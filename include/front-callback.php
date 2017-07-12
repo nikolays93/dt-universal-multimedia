@@ -34,7 +34,7 @@ class MediaBlock extends DT_MediaBlocks {
    * Filter and Actions
    */
   function slider_default_columns( $columns ){
-    if($main_type == 'slider')
+    if($this->main_type == 'slider')
       return 1;
 
     return $columns;
@@ -44,6 +44,9 @@ class MediaBlock extends DT_MediaBlocks {
       case 'owl-carousel':
         $type = 'owlCarousel';
         break;
+      case 'cloud9carousel':
+        $type = 'Cloud9Carousel';
+        break;
     }
 
     return $type;
@@ -52,17 +55,32 @@ class MediaBlock extends DT_MediaBlocks {
   /**
    * Load Assets
    * @todo : previosly register assets
+   * @todo : add style for id ( from scss )
    */
   function load_block_assets(){
     $url = DT_MULTIMEDIA_ASSETS_URL;
-    $dir = $this->type . '/';
+    $dir = $this->sub_type . '/';
     
-    $asset = $this->get_assets_list( $this->type );
+    $asset = $this->get_assets_list( $this->sub_type );
     if( $asset ){
       if( isset($asset['js']) )
-        wp_enqueue_script( $this->type, $url.$dir.$asset['js'], array('jquery'), $asset['ver'], true );
+        wp_enqueue_script( $this->sub_type, $url.$dir.$asset['js'], array('jquery'), $asset['ver'], true );
       if( isset($asset['core']) )
-        wp_enqueue_style ( $this->type.'-core', $url.$dir.$asset['core'], array(), $asset['ver'], 'all' );
+        wp_enqueue_style ( $this->sub_type.'-core', $url.$dir.$asset['core'], array(), $asset['ver'], 'all' );
+    }
+
+    if( !in_array($this->main_type, array('sync-slider', 'gallery')) ){
+      $init = apply_filters('type_to_lib', $this->sub_type);
+      $filename = apply_filters( 'dash_to_underscore', $this->main_type );
+      $init_settings = $this->settings_from_file($this->id, $this->sub_type, $filename);
+      $trigger = "#mediablock-{$this->id}.{$this->main_type}";
+
+      JQScript::init($trigger, 'removeClass', 'row');
+      JQScript::init($trigger . ' .item', 'attr', 'class", "item');
+      JQScript::init($trigger, $init, $init_settings );
+    }
+    else {
+      JQScript::custom($this->double_script());
     }
   }
 
@@ -76,8 +94,8 @@ class MediaBlock extends DT_MediaBlocks {
     if( $this->meta_field( $this->id, 'show_title' ) && !empty($this->post->post_title) )
       $result[] = "<{$atts['tag_title']}>{$this->post->post_title}</{$atts['tag_title']}>";
 
-    if( $mblock->post_excerpt )
-      $result[] = '<div class="excerpt">' .apply_filters('the_content', $mblock->post_excerpt). "</div>";
+    if( $this->post->post_excerpt )
+      $result[] = '<div class="excerpt">' .apply_filters('the_content', $this->post->post_excerpt). "</div>";
 
     // Items output (call render_$type)
     $func = sanitize_text_field('render_' . apply_filters( 'dash_to_underscore', $this->main_type ));
@@ -117,7 +135,7 @@ class MediaBlock extends DT_MediaBlocks {
       $this->attachments = $attachments;
     }
     else {
-      $this->attachments = explode(',', $this->meta_field($id, 'media_imgs') );
+      $this->attachments = explode(',', $this->meta_field($this->id, 'media_imgs') );
     }
 
     if( !$this->attachments || sizeof($this->attachments) < 1 )
@@ -148,9 +166,9 @@ class MediaBlock extends DT_MediaBlocks {
     //   $this->load_style();
     
     if( empty($settings['exclude_assets']) )
-      $this->load_assets( $this->type );
+      $this->load_block_assets();
 
-    return $this->mblock_html();
+    return $this->mblock_html( $atts );
   }
 
   /**
@@ -193,10 +211,12 @@ class MediaBlock extends DT_MediaBlocks {
   }
 
   protected function check_items_size( $width, $height, $items_size ){
-    if( ! isset($items_size) || ! $items_size ){
-      if( isset($width) || isset($height) ){
-        _isset_default($width, apply_filters( 'default_att_width', $this->default_att_width) );
-        _isset_default($height, apply_filters( 'default_att_height', $this->default_att_height) );
+    if( ! $items_size ){
+      if( $width || $height ){
+        if( !$width )
+          $width = apply_filters( 'default_att_width', $this->default_att_width);
+        if( !$height )
+          $height = apply_filters( 'default_att_height', $this->default_att_height);
 
         $items_size = array( $width, $height );
       }
@@ -218,20 +238,20 @@ class MediaBlock extends DT_MediaBlocks {
       return false;
 
     $settings['items_size'] = $this->check_items_size(
-      $settings['width'],
-      $settings['height'],
-      $settings['items_size']);
+      _isset_false($settings['width']),
+      _isset_false($settings['height']),
+      _isset_false($settings['items_size']));
     
     _isset_default( $settings['columns'], apply_filters( 'default_columns', $this->default_columns ) );
 
     // need for gallery or "no js"
-    $item_class = $get_column_class( $settings['columns'] );
+    $item_class = get_column_class( $settings['columns'] );
 
     // .fancybox usually use for modal trigger
-    $class_type = str_replace('fancybox', 'fancy', $this->type);
+    $class_type = str_replace('fancybox', 'fancy', $this->sub_type);
     
     $item_wrap = array(
-      "<div id='mediablock-{$this->id}' class='media-block row {$main_type} {$class_type}'>",
+      "<div id='mediablock-{$this->id}' class='media-block row {$this->main_type} {$class_type}'>",
       "</div>");
     $item = array("<div class='item {$item_class}'>", "</div>");
 
@@ -240,7 +260,6 @@ class MediaBlock extends DT_MediaBlocks {
 
   /**
    * Render MBlocks Functions
-   * @todo : need refactoring
    * 
    * @param  $type            string sub_type ( fancy, owl, slick.. )
    * @param  $mblock          WP_Post
@@ -249,213 +268,161 @@ class MediaBlock extends DT_MediaBlocks {
    * @return $sync            html output
    */
   function render_carousel(){
-    if( ! $this->initialized ){
-      $init = apply_filters('type_to_lib', $this->type);
-
-      $this->main_type = 'carousel';
-      $trigger = "#mediablock-{$this->id}.{$this->main_type}";
-      $php_array_params = $this->settings_from_file( $this->id, $this->sub_type, $this->main_type );
-
-      JQScript::init($trigger, 'removeClass', 'row');
-      // clear class to 'item'
-      JQScript::init($trigger . ' .item', 'attr', 'class", "item');
-      JQScript::init($trigger, $init, $php_array_params);
-    }
-    else {
-      $this->main_type = 'sync-slider';
-    }
-
-    $this->initialized = true;
 
     return $this->render_attachments('carousel');
   }
 
   function render_slider(){
-      if( ! $this->initialized ){
-        $init = apply_filters('type_to_lib', $this->type);
-
-        $this->main_type = 'slider';
-        $trigger = "#mediablock-{$this->id}.{$this->main_type}";
-        $php_array_params = $this->settings_from_file( $this->id, $this->sub_type, $this->main_type );
-
-        JQScript::init($trigger, 'removeClass', 'row');
-        // clear class to 'item'
-        JQScript::init($trigger . ' .item', 'attr', 'class", "item');
-        JQScript::init($trigger, $init, $php_array_params);
-      }
-      else {
-        $this->main_type = 'sync-slider';
-      }
-
-      $this->initialized = true;
 
       return $this->render_attachments('slider');
   }
   
-  # todo : get variables from class props
+  # @todo : get variables from class props
   function render_sync_slider(){
-    $out = $this->render_slider( true );
-    $out .= $this->render_carousel( true );
+    $this->main_type = 'sync-slider';
 
+    $out = $this->render_slider();
+    $out .= $this->render_carousel();
+
+    return $out;
+  }
+
+  function render_carousel_3d(){
+
+    return $this->render_attachments('carousel-3d');
+  }
+
+  function render_gallery(){
+
+    return $this->render_attachments('gallery');
+  }
+
+  function double_script(){
     ob_start();
 
     $php_to_js_params = apply_filters( 'array_options_before_view',
-      $this->settings_from_file($this->mblock->ID, $this->type, 'sync-slider') );
+      $this->settings_from_file($this->id, $this->sub_type, 'sync-slider') );
 
-    $o = $this->settings_from_file($this->mblock->ID, 'sync-slider');
+    $o = $this->settings_from_file($this->id, 'sync-slider');
     extract($o);
-
-    // var_dump($o);
-    // echo "<hr>";
-    // var_dump($php_to_js_params);
     ?>
-    <script type="text/javascript">
-          jq = jQuery.noConflict();
-          jq(function( $ ) {
-            //on.load
             $(function(){
-              var sync1Selector = "#mediablock-<?php echo $this->mblock->ID; ?>.slider";
+              var sync1Selector = "#mediablock-<?php echo $this->id; ?>";
               var $sync1 = $(sync1Selector);
-              var sync2Selector = "#mediablock-<?php echo $this->mblock->ID; ?>.carousel";
+              var sync2Selector = sync1Selector +" + "+ sync1Selector;
               var $sync2 = $(sync2Selector);
 
               $(sync1Selector).removeClass('row');
               $(sync1Selector + ' .item').attr('class', 'item');
               $(sync2Selector).removeClass('row');
               $(sync2Selector + ' .item').attr('class', 'item');
-    <?php
-    switch ($this->type) {
-      case 'slick':
-        ?>
-        $(sync1Selector).slick({
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          arrows: false,
-          fade: true,
-          asNavFor: sync2Selector
-        });
-        $(sync2Selector).slick({
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          asNavFor: sync1Selector,
-          dots: true,
-          centerMode: true,
-          focusOnSelect: true
-        });
-        <?php
-        break;
-      
-      default:
-      $slider_params = array(
-        'singleItem' => "on",
-        "navigation" => _isset_default( $arrows, 'false' ),
-        "pagination" => "false",
-        "afterAction" => "%position%"
-        );
-
-      if( isset($arr_prev) )
-        $slider_params['navigationTextPrev'] = $arr_prev;
-      if( isset($arr_next) )
-        $slider_params['navigationTextNext'] = $arr_next;
-
-      foreach ($php_to_js_params as $key => $value) {
-        if(in_array( $key, array("autoPlay", "stopOnHover", "rewindNav", "rewindSpeed", "autoHeight") ))
-          $slider_params[$key] = $value;
-      }
-      $php_to_js_params['afterInit'] = '%addFirstActive%';
-
-      $slider_params = apply_filters( 'array_options_before_view', $slider_params );
-      $slider_script_options = apply_filters( 'jscript_php_to_json', $slider_params );
-      $script_options = apply_filters( 'jscript_php_to_json', $php_to_js_params );
-        ?>
-          var activeClass = "inside";
-
-          function center(number){
-            var sync2visible = $sync2.data("owlCarousel").owl.visibleItems;
-            var num = number;
-            var found = false;
-            for(var i in sync2visible){
-              if(num === sync2visible[i]){
-                var found = true;
-              }
-            }
-
-            if(found===false){
-              if(num>sync2visible[sync2visible.length-1]){
-                $sync2.trigger("owl.goTo", num - sync2visible.length+2)
-              }else{
-                if(num - 1 === -1){
-                  num = 0;
-                }
-                $sync2.trigger("owl.goTo", num);
-              }
-            } else if(num === sync2visible[sync2visible.length-1]){
-              $sync2.trigger("owl.goTo", sync2visible[1])
-            } else if(num === sync2visible[0]){
-              $sync2.trigger("owl.goTo", num-1)
-            }
-          }
-
-          function position(el){
-            var current = this.currentItem;
-            $(sync2Selector)
-              .find(".owl-item")
-              .removeClass(activeClass)
-              .eq(current)
-              .addClass(activeClass)
-            if( $sync2.data("owlCarousel") !== undefined ){
-              center(current)
-            }
-          }
-
-          function addFirstActive(el){
-
-            el.find(".owl-item").eq(0).addClass(activeClass);
-          }
-
-          $sync1.owlCarousel(<?php echo $slider_script_options; ?>);
-          $sync2.owlCarousel(<?php echo $script_options; ?>);
-         
-          $(sync2Selector).on("click", ".owl-item", function(e){
-            if(!$(this).hasClass(activeClass)){
-              e.preventDefault();
-              $sync1.trigger("owl.goTo", $(this).data("owlItem") );
-            }
-          });
-      <?php
-        break;
-    }
-    ?>
+              <?php
+              switch ($this->sub_type) {
+                case 'slick':
+                ?>
+                $(sync1Selector).slick({
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                arrows: false,
+                fade: true,
+                asNavFor: sync2Selector
+              });
+              $(sync2Selector).slick({
+              slidesToShow: 3,
+              slidesToScroll: 1,
+              asNavFor: sync1Selector,
+              dots: true,
+              centerMode: true,
+              focusOnSelect: true
             });
-          });
-          </script>
-    <?php
-    $out .= ob_get_clean();
-    return $out;
-  }
-  # todo : REWRITE CODE!
-  function render_carousel_3d(){
-    $init_settings = $this->settings_from_file($this->mblock->ID, $this->type, 'carousel_3d');
-    $trigger = '#mediablock-'.$this->mblock->ID.'.carousel-3d';
+              <?php
+              break;
 
-    JQScript::init($trigger, 'removeClass', 'row');
-    JQScript::init($trigger . ' .item', 'attr', 'class", "item');
-    
-    switch ($this->type) {
-      case 'cloud9carousel':
-        $init = 'Cloud9Carousel';
-        break;
-      default:
-        $init = $this->type;
-        break;
+              default:
+              $slider_params = array(
+                'singleItem' => "on",
+                "navigation" => _isset_default( $arrows, 'false' ),
+                "pagination" => "false",
+                "afterAction" => "%position%"
+                );
+
+              if( isset($arr_prev) )
+                $slider_params['navigationTextPrev'] = $arr_prev;
+              if( isset($arr_next) )
+                $slider_params['navigationTextNext'] = $arr_next;
+
+              foreach ($php_to_js_params as $key => $value) {
+                if(in_array( $key, array("autoPlay", "stopOnHover", "rewindNav", "rewindSpeed", "autoHeight") ))
+                  $slider_params[$key] = $value;
+              }
+              $php_to_js_params['afterInit'] = '%addFirstActive%';
+
+              $slider_params = apply_filters( 'array_options_before_view', $slider_params );
+              $slider_script_options = apply_filters( 'jscript_php_to_json', $slider_params );
+              $script_options = apply_filters( 'jscript_php_to_json', $php_to_js_params );
+              ?>
+              var activeClass = "inside";
+
+              function center(number){
+              var sync2visible = $sync2.data("owlCarousel").owl.visibleItems;
+              var num = number;
+              var found = false;
+              for(var i in sync2visible){
+              if(num === sync2visible[i]){
+              var found = true;
+            }
+          }
+
+          if(found===false){
+          if(num>sync2visible[sync2visible.length-1]){
+          $sync2.trigger("owl.goTo", num - sync2visible.length+2)
+        }else{
+        if(num - 1 === -1){
+        num = 0;
+      }
+      $sync2.trigger("owl.goTo", num);
     }
+  } else if(num === sync2visible[sync2visible.length-1]){
+  $sync2.trigger("owl.goTo", sync2visible[1])
+} else if(num === sync2visible[0]){
+$sync2.trigger("owl.goTo", num-1)
+}
+}
 
-    JQScript::init($trigger, $init, $init_settings );
+function position(el){
+var current = this.currentItem;
+$(sync2Selector)
+.find(".owl-item")
+.removeClass(activeClass)
+.eq(current)
+.addClass(activeClass)
+if( $sync2.data("owlCarousel") !== undefined ){
+center(current)
+}
+}
 
-    return $this->render_attachments('carousel-3d');
-  }
-  function render_gallery(){
+function addFirstActive(el){
 
-    return $this->render_attachments('gallery');
+el.find(".owl-item").eq(0).addClass(activeClass);
+}
+
+$sync1.owlCarousel(<?php echo $slider_script_options; ?>);
+$sync2.owlCarousel(<?php echo $script_options; ?>);
+
+$(sync2Selector).on("click", ".owl-item", function(e){
+if(!$(this).hasClass(activeClass)){
+e.preventDefault();
+$sync1.trigger("owl.goTo", $(this).data("owlItem") );
+}
+});
+<?php
+break;
+}
+?>
+});
+<?php
+return ob_get_clean();
   }
 }
+
+

@@ -188,7 +188,7 @@ switch ($main_type) {
 
 return $settings;
 
-// todo:
+// todo: aditional options
 // lazy load
     // 'lazyLoad' => array(
     //     'label' => 'Lazy Load',
