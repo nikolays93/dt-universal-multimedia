@@ -43,7 +43,7 @@ if(!function_exists('is_wp_debug')){
     return false;
   }
 }
-if(!function_exists('MB\_isset_default')){
+if(!function_exists('_isset_default')){
   function _isset_default(&$var, $default, $unset = false){
     $result = $var = isset($var) ? $var : $default;
     if($unset)
@@ -53,28 +53,61 @@ if(!function_exists('MB\_isset_default')){
   function _isset_false(&$var, $unset = false){ return _isset_default( $var, false, $unset ); }
   function _isset_empty(&$var, $unset = false){ return _isset_default( $var, '', $unset ); }
 }
+if( ! has_filter( 'remove_cyrillic' )){
+  add_filter( 'remove_cyrillic', 'MB\remove_cyrillic_filter', 10, 1 );
+  function remove_cyrillic_filter($str){
+    $pattern = "/[\x{0410}-\x{042F}]+.*[\x{0410}-\x{042F}]+/iu";
+    $str = preg_replace( $pattern, "", $str );
+
+    return $str;
+  }
+}
+
+/**
+ * Получить стандартные классы ячейки bootstrap сетки
+ */
+if( ! function_exists('get_column_class') ){
+  function get_column_class( $columns_count="4", $non_responsive=false ){
+    switch ($columns_count) {
+        case '1': $col = 'col-12'; break;
+        case '2': $col = (!$non_responsive) ? 'col-6 col-sm-6 col-md-6 col-lg-6' : 'col-6'; break;
+        case '3': $col = (!$non_responsive) ? 'col-12 col-sm-6 col-md-4 col-lg-4' : 'col-4'; break;
+        case '4': $col = (!$non_responsive) ? 'col-6 col-sm-4 col-md-3 col-lg-3' : 'col-3'; break;
+        case '5': $col = (!$non_responsive) ? 'col-12 col-sm-6 col-md-2-4 col-lg-2-4' : 'col-2-4'; break; // be careful
+        case '6': $col = (!$non_responsive) ? 'col-6 col-sm-4 col-md-2 col-lg-2' : 'col-2'; break;
+        case '12': $col= (!$non_responsive) ? 'col-4 col-sm-3 col-md-1 col-lg-1' : 'col-1'; break;
+
+        default: $col = false; break;
+    }
+    return $col;
+  }
+}
 
 class DT_MediaBlocks {
   const VERSION = 1.5;
   const CLASSES_DIR = 'include/';
   
+  public $required_classes = array(
+    'MB\JQScript'    => 'class-wp-jqscript',
+    'scssc'          => 'scss.inc',
+    'MB\WPForm'      => 'class-wp-form-render',
+    'MB\WPPostBoxes' => 'class-wp-post-boxes',
+    'MB\isAdminView' => 'is-admin-callback',
+    );
+  public $public_classes = array(
+    'MB\JQScript'    => 'class-wp-jqscript',
+    'MB\MediaOutput' => 'front-callback',
+    );
+
   function __construct(){
     add_action('init', array($this, 'register_post_types'));
 
-    $this->include_required_classes( array('MB\JQScript' => 'class-wp-jqscript') );
-    
     if( is_admin() ){
-    	$this->include_required_classes( array(
-        'scssc'          => 'scss.inc',
-        'MB\WPForm'      => 'class-wp-form-render',
-        'MB\WPPostBoxes' => 'class-wp-post-boxes',
-        'MB\isAdminView' => 'is-admin-callback',
-        ''               => 'queries',
-        ) );
+    	$this->include_required_classes( apply_filters( 'get_required_classes', $this->required_classes ) );
       new isAdminView();
     }
     else {
-    	$this->include_required_classes( array('MB\MediaOutput' => 'front-callback') );
+    	$this->include_required_classes( apply_filters( 'get_public_classes', $this->public_classes ) );
       new MediaOutput();
     }
   }
@@ -309,11 +342,13 @@ function dash_to_underscore( $str ){
   $str = str_replace('-', '_', $str);
   return $str;
 }
+
 new DT_MediaBlocks();
 
 // function rewrite_flush() {
-// $mb = new DT_MediaBlocks();
-// $mb->register_post_types();
-// flush_rewrite_rules();
+//     DT_MultiMedia::register_post_types();
+//     flush_rewrite_rules();
 // }
 // register_activation_hook( __FILE__, 'rewrite_flush' );
+// 
+//

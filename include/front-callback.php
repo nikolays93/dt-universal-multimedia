@@ -3,53 +3,57 @@ namespace MB;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-if( ! has_filter( 'remove_cyrillic' )){
-  add_filter( 'remove_cyrillic', 'MB\remove_cyrillic_filter', 10, 1 );
-  function remove_cyrillic_filter($str){
-    $pattern = "/[\x{0410}-\x{042F}]+.*[\x{0410}-\x{042F}]+/iu";
-    $str = preg_replace( $pattern, "", $str );
-
-    return $str;
-  }
-}
-
 /**
- * Media Output
+ * mblock_html > render_$type > render_attachments
  */
-class MediaOutput extends DT_MediaBlocks
-{
-  public $type = 'slick';
-  public $main_type = 'carousel';
-  public $mblock;
-  public $attachments;
+class MediaBlock extends DT_MediaBlocks {
+  public $id;
+  public $post;
+
+  public $main_type = 'carousel'; // default type
+  public $sub_type  = 'slick';
+
+  public $attach_ids = array();
+  public $default_att_width = 1110;
+  public $default_att_height = 450;
+  public $default_att_size = 'medium';
+
+  public $default_columns = 4;
+
+  // use for double block
+  public $initialized = false;
 
   function __construct(){
-    add_shortcode( 'mblock', array($this, 'media_sc') );
+    add_filter( 'default_columns', array($this, 'slider_default_columns'), 10, 1 );
+    add_filter( 'type_to_lib', array($this, 'type_to_lib'), 10, 1 );
+
+    add_shortcode( 'mblock', array($this, 'mblock_cb') );
   }
 
   /**
-   * Получить стандартные классы ячейки bootstrap сетки
+   * Filter and Actions
    */
-  function get_column_class( $columns_count="4", $non_responsive=false ){
-      switch ($columns_count) {
-          case '1': $col = 'col-12'; break;
-          case '2': $col = (!$non_responsive) ? 'col-6 col-sm-6 col-md-6 col-lg-6' : 'col-6'; break;
-          case '3': $col = (!$non_responsive) ? 'col-12 col-sm-6 col-md-4 col-lg-4' : 'col-4'; break;
-          case '4': $col = (!$non_responsive) ? 'col-6 col-sm-4 col-md-3 col-lg-3' : 'col-3'; break;
-          case '5': $col = (!$non_responsive) ? 'col-12 col-sm-6 col-md-2-4 col-lg-2-4' : 'col-2-4'; break; // be careful
-          case '6': $col = (!$non_responsive) ? 'col-6 col-sm-4 col-md-2 col-lg-2' : 'col-2'; break;
-          case '12': $col= (!$non_responsive) ? 'col-4 col-sm-3 col-md-1 col-lg-1' : 'col-1'; break;
+  function slider_default_columns( $columns ){
+    if($main_type == 'slider')
+      return 1;
 
-          default: $col = false; break;
-      }
-      return $col;
+    return $columns;
+  }
+  function type_to_lib( $type ){
+    switch ( $type ) {
+      case 'owl-carousel':
+        $type = 'owlCarousel';
+        break;
+    }
+
+    return $type;
   }
 
-  function load_style(){
-    $act = 'wp_head'; // 'wp_admin';
-  }
-
-  function load_assets( $type = null ){
+  /**
+   * Load Assets
+   * @todo : previosly register assets
+   */
+  function load_block_assets(){
     $url = DT_MULTIMEDIA_ASSETS_URL;
     $dir = $this->type . '/';
     
@@ -61,103 +65,182 @@ class MediaOutput extends DT_MediaBlocks
         wp_enqueue_style ( $this->type.'-core', $url.$dir.$asset['core'], array(), $asset['ver'], 'all' );
     }
   }
-    
-  function render_attachments( $main_type, $double = false ){
+
+  /**
+   * HTML Output
+   */
+  protected function mblock_html( $atts ){
     $result = array();
-    $id = (int)$this->mblock->ID;
-    
-    // width / height / items_size / columns / lightbox / image_captions / exclude_styles / exclude_assets /
-    $settings = $this->settings_from_file( $id, $main_type );
-    if( $settings )
-      extract( $settings );
+    $result[] = '<section id="mblock-'.$this->id.'">';
 
-    $default_height = 450;
-    if( ! isset($items_size) || ! $items_size ){
-      if( isset($width) || isset($height) ){
-        _isset_default($width, 1110);
-        _isset_default($height, $default_height);
+    if( $this->meta_field( $this->id, 'show_title' ) && !empty($this->post->post_title) )
+      $result[] = "<{$atts['tag_title']}>{$this->post->post_title}</{$atts['tag_title']}>";
 
-        $items_size = array( $width, $height );
+    if( $mblock->post_excerpt )
+      $result[] = '<div class="excerpt">' .apply_filters('the_content', $mblock->post_excerpt). "</div>";
+
+    // Items output (call render_$type)
+    $func = sanitize_text_field('render_' . apply_filters( 'dash_to_underscore', $this->main_type ));
+    $result[] = $this->$func();
+
+    $result[] = '</section>';
+    return implode("\n", $result);
+  }
+
+  function set_attachment_ids(){
+    if( ! $this->id )
+      return false;
+
+    $query_options = $this->meta_field($this->id, 'query');
+
+    if(!empty($query_options['enable'])){
+      $query = new \WP_Query( array(
+        'post_type' => $query_options['type'], //post, page, post, product..
+        'posts_per_page' => $query_options['qty'],
+        'tax_query' => array(
+          array(
+            'taxonomy' => $query_options['tax'],
+            'terms'    => $query_options['term'],
+            ),
+          ),
+        'order'   => $query_options['sort'],
+        ) );
+
+      $attachments = array();
+      if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) { $query->the_post();
+          $attachments[] = get_post_thumbnail_id( get_the_id() );
+        }
       }
-      else {
-        $items_size = 'medium';
-      }
-    }
-    _isset_default($height, $default_height);
+      wp_reset_postdata();
 
-    $tag_id = "mediablock-" . $this->mblock->ID;
-    if( $main_type == 'slider' ){
-      $columns = 1;
+      $this->attachments = $attachments;
     }
-    elseif( $main_type == 'carousel-3d' ){
-      echo "<style> #{$tag_id} { height:{$height}px; } </style>";
+    else {
+      $this->attachments = explode(',', $this->meta_field($id, 'media_imgs') );
     }
-    _isset_default( $columns, 4 );
 
-    // need for gallery or "no js"
-    $item_class = $this->get_column_class( $columns );
+    if( !$this->attachments || sizeof($this->attachments) < 1 )
+      return false;
 
-    // .fancybox usually use for modal trigger
-    $class_type = str_replace('fancybox', 'fancy', $this->type);
+    return true;
+  }
+
+  function mblock_cb( $atts ){
+    $atts = shortcode_atts( array('id' => false,'status' => 'public','tag_title' => 'h3'), $atts );
+    if( ! $id = absint($atts['id']) )
+      return false;
+
+    $atts = array_filter($atts, 'sanitize_text_field');
+
+    $this->id = $id;
+    $this->post = get_post( $id );
+    if($this->post->post_status !== 'publish' )
+      return false;
+
+    $this->main_type = $this->meta_field( $id, 'main_type' );
+    $this->sub_type  = $this->meta_field( $id, 'type' );
+
+    if( false === $this->set_attachment_ids() )
+      return ( is_wp_debug() ) ? 'Файлов не найдено' : false;
+
+    // if( empty($settings['exclude_styles']) )
+    //   $this->load_style();
     
-    $item_wrap = array("<div id='{$tag_id}' class='media-block row {$main_type} {$class_type}'>", "</div>");
-    $item = array("<div class='item {$item_class}'>", "</div>");
-
-    if( empty($exclude_styles) )
-      $this->load_style();
-    
-    if( empty($exclude_assets) )
+    if( empty($settings['exclude_assets']) )
       $this->load_assets( $this->type );
 
-    /**
-     * Output Attachments
-     */
+    return $this->mblock_html();
+  }
+
+  /**
+   * HTML Output Attachments
+   */
+  protected function render_attachments_html( $settings, $item_wrap, $item ){
+    $result = array();
     $result[] = $item_wrap[0];
     foreach ($this->attachments as $attachment) {
         $att = get_post( $attachment );
         
-        $caption = '';
-        if( isset($image_captions) )
-          $caption = '<div id="caption">'.apply_filters( 'the_content', $att->post_excerpt ).'</div>';
+        /** Get Caption */
+        $caption = empty($settings['image_captions']) ? '' : sprintf('<div id="caption">%s</div>',
+            apply_filters( 'the_content', $att->post_excerpt )
+            );
         
-
+        /** Get Link */
         $link = array('', '');
-
-        $metalink = esc_attr( get_post_meta( $attachment, 'mb_link', true ) );
-        if( $metalink ){
-            $url = ( preg_match("/permalink\(([0-9]{1,40})\)/i", $metalink, $output) && isset($output[1]) ) ?
-              get_permalink( (int)$output[1] ) : $metalink;
-
-              $link = array("<a href='{$url}' class='mb_link'>", "</a>");
+        if( ! empty($settings['lightbox']) && ($settings['columns'] == 1 || ! $this->double) ){
+          $link = array("<a rel='group-{$this->id}' href='{$att->guid}' class='{$settings['lightbox']}'>", "</a>");
         }
-        
-        if( ! empty($lightbox) && ($columns == 1 || ! $double) ){
-          $url = $att->guid;
+        elseif( $metalink = esc_attr( get_post_meta( $attachment, 'mb_link', true ) ) ){
+          $url = ( preg_match("/permalink\(([0-9]{1,40})\)/i", $metalink, $output) && isset($output[1]) ) ?
+            get_permalink( (int)$output[1] ) : $metalink;
 
-          if(($link[1] != '')){
-            $link[0] = "<a rel='group-{$id}' href='{$url}' class='{$lightbox}'></a>" . $link[0];
-          }
-          else {
-            $link = array("<a rel='group-{$id}' href='{$url}' class='{$lightbox}'>", "</a>");
-          }
+          $link = array("<a href='{$url}' class='mediablock-link'>", "</a>");
         }
 
+        /** Set Template */
         $result[] = $item[0];
         $result[] = '   '.$link[0];
-        $result[] = '   '. wp_get_attachment_image( $attachment, $items_size ); //,null,array(attrs)
+        $result[] = '   '.wp_get_attachment_image( $attachment, $settings['items_size'] ); //,null,array(attrs)
         $result[] = '   '.$caption;
         $result[] = '   '.$link[1];
         $result[] = $item[1];
-
-        unset($link);
     }
     $result[] = $item_wrap[1];
 
     return implode("\n", $result);
   }
-  
+
+  protected function check_items_size( $width, $height, $items_size ){
+    if( ! isset($items_size) || ! $items_size ){
+      if( isset($width) || isset($height) ){
+        _isset_default($width, apply_filters( 'default_att_width', $this->default_att_width) );
+        _isset_default($height, apply_filters( 'default_att_height', $this->default_att_height) );
+
+        $items_size = array( $width, $height );
+      }
+      else {
+        $items_size = apply_filters('default_att_size', $this->default_att_size);
+      }
+    }
+
+    // @todo: fix it
+    _isset_default($height, apply_filters( 'default_att_height', $this->default_att_height) );
+    if( $this->main_type == 'carousel-3d' ){
+      echo "<style> #mediablock-{$this->id} { height:{$height}px; } </style>";
+    }
+    return $items_size;
+  }
+
+  protected function render_attachments(){
+    if( ! $settings = $this->settings_from_file( $this->id, $this->main_type ) )
+      return false;
+
+    $settings['items_size'] = $this->check_items_size(
+      $settings['width'],
+      $settings['height'],
+      $settings['items_size']);
+    
+    _isset_default( $settings['columns'], apply_filters( 'default_columns', $this->default_columns ) );
+
+    // need for gallery or "no js"
+    $item_class = $get_column_class( $settings['columns'] );
+
+    // .fancybox usually use for modal trigger
+    $class_type = str_replace('fancybox', 'fancy', $this->type);
+    
+    $item_wrap = array(
+      "<div id='mediablock-{$this->id}' class='media-block row {$main_type} {$class_type}'>",
+      "</div>");
+    $item = array("<div class='item {$item_class}'>", "</div>");
+
+    return $this->render_attachments_html($settings, $item_wrap, $item );
+  }
+
   /**
-   * Render media blocks
+   * Render MBlocks Functions
+   * @todo : need refactoring
    * 
    * @param  $type            string sub_type ( fancy, owl, slick.. )
    * @param  $mblock          WP_Post
@@ -165,51 +248,50 @@ class MediaOutput extends DT_MediaBlocks
    * @param  $not_init_script boolean print initialize script
    * @return $sync            html output
    */
-  function render_carousel( $double = false ){
-    $main_type = ($double) ? 'sync-slider' : 'carousel';
-    $trigger = '#mediablock-'.$this->mblock->ID.'.'.$main_type;
-    $php_array_params = $this->settings_from_file( $this->mblock->ID, $this->type, $main_type );
+  function render_carousel(){
+    if( ! $this->initialized ){
+      $init = apply_filters('type_to_lib', $this->type);
 
-    switch ( $this->type ) {
-      case 'owl-carousel':
-        $init = 'owlCarousel';
-        break;
-      default:
-        $init = $this->type;
-        break;
+      $this->main_type = 'carousel';
+      $trigger = "#mediablock-{$this->id}.{$this->main_type}";
+      $php_array_params = $this->settings_from_file( $this->id, $this->sub_type, $this->main_type );
+
+      JQScript::init($trigger, 'removeClass', 'row');
+      // clear class to 'item'
+      JQScript::init($trigger . ' .item', 'attr', 'class", "item');
+      JQScript::init($trigger, $init, $php_array_params);
+    }
+    else {
+      $this->main_type = 'sync-slider';
     }
 
-    if( ! $double ){
-     JQScript::init($trigger, 'removeClass', 'row');
-     // clear class to 'item'
-     JQScript::init($trigger . ' .item', 'attr', 'class", "item');
-     JQScript::init($trigger, $init, $php_array_params);
-   }
+    $this->initialized = true;
 
-   return $this->render_attachments('carousel', $double);
+    return $this->render_attachments('carousel');
   }
-  function render_slider( $double = false ){
-      $main_type = ($double) ? 'sync-slider' : 'slider';
-      $trigger = '#mediablock-'.$this->mblock->ID.'.'.$main_type;
-      $php_array_params = $this->settings_from_file( $this->mblock->ID, $this->type, $main_type );
 
-      switch ( $this->type ) {
-          case 'owl-carousel':
-              $init = 'owlCarousel';
-              break;
-          default:
-              $init = $this->type;
-              break;
+  function render_slider(){
+      if( ! $this->initialized ){
+        $init = apply_filters('type_to_lib', $this->type);
+
+        $this->main_type = 'slider';
+        $trigger = "#mediablock-{$this->id}.{$this->main_type}";
+        $php_array_params = $this->settings_from_file( $this->id, $this->sub_type, $this->main_type );
+
+        JQScript::init($trigger, 'removeClass', 'row');
+        // clear class to 'item'
+        JQScript::init($trigger . ' .item', 'attr', 'class", "item');
+        JQScript::init($trigger, $init, $php_array_params);
+      }
+      else {
+        $this->main_type = 'sync-slider';
       }
 
-      if( !$double ){
-          JQScript::init($trigger, 'removeClass', 'row');
-          JQScript::init($trigger . ' .item', 'attr', 'class", "item');
-          JQScript::init($trigger, $init, $php_array_params);
-      }
+      $this->initialized = true;
 
-      return $this->render_attachments('slider', $double);
+      return $this->render_attachments('slider');
   }
+  
   # todo : get variables from class props
   function render_sync_slider(){
     $out = $this->render_slider( true );
@@ -223,9 +305,9 @@ class MediaOutput extends DT_MediaBlocks
     $o = $this->settings_from_file($this->mblock->ID, 'sync-slider');
     extract($o);
 
-    var_dump($o);
-    echo "<hr>";
-    var_dump($php_to_js_params);
+    // var_dump($o);
+    // echo "<hr>";
+    // var_dump($php_to_js_params);
     ?>
     <script type="text/javascript">
           jq = jQuery.noConflict();
@@ -375,73 +457,5 @@ class MediaOutput extends DT_MediaBlocks
   function render_gallery(){
 
     return $this->render_attachments('gallery');
-  }
-
-  /**
-   * Shortcode
-   */
-  function media_sc( $atts ) {
-    /**
-     * Get & Set Options
-     */
-    $atts = shortcode_atts( array('id' => false), $atts );
-    if( ! $id = intval($atts['id']) )
-      return false;
-
-    $this->type = $this->meta_field( $id, 'type' );
-    $this->mblock = $mblock = $this->post = get_post( $id );
-    
-    if($mblock->post_status !== 'publish' )
-      return false;
-
-    $meta_query = get_post_meta( $id, '_'.DTM_PREFIX.'query', true );
-    if(isset($meta_query['enable']) && $meta_query['enable']){
-      $query = new \WP_Query( array(
-        'post_type' => $meta_query['type'], //post, page, post, product..
-        'posts_per_page' => $meta_query['qty'],
-        'tax_query' => array(
-          array(
-            'taxonomy' => $meta_query['tax'],
-            'terms'    => $meta_query['term'],
-            ),
-          ),
-        'order'   => $meta_query['sort'],
-      ) );
-
-      $attachments = array();
-      if ( $query->have_posts() ) {
-        while ( $query->have_posts() ) { $query->the_post();
-          $attachments[] = get_post_thumbnail_id( get_the_id() );
-        }
-      }
-      wp_reset_postdata();
-
-      $this->attachments = $attachments;
-    }
-    else {
-      $this->attachments = explode(',', $this->meta_field($id, 'media_imgs') );
-    }
-    
-    if( ! $this->attachments || sizeof($this->attachments) < 1 )
-      return ( is_wp_debug() ) ? 'Файлов не найдено' : false;
-    
-    /**
-     * Output
-     */
-    $result = array();
-    $result[] = '<section id="mblock-'.$mblock->ID.'">';
-
-    if( $this->meta_field( $id, 'show_title' ) && $mblock->post_title != '' )
-      $result[] = '<h3>'. $mblock->post_title .'</h3>';
-      
-    if( $mblock->post_excerpt )
-      $result[] = '<div class="excerpt">' .apply_filters('the_content', $mblock->post_excerpt). "</div>";
-
-    // Items output
-    $func = 'render_' . apply_filters( 'dash_to_underscore', $this->meta_field( $id, 'main_type' ) );
-    $result[] = $this->$func( false );
-
-    $result[] = '</section>';
-    return implode("\n", $result);
   }
 }
