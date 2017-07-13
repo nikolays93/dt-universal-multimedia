@@ -21,7 +21,7 @@ class MediaBlock extends DT_MediaBlocks {
   public $default_columns = 4;
 
   // use for double block
-  public $initialized = false;
+  public $double = false;
 
   function __construct(){
     add_filter( 'default_columns', array($this, 'slider_default_columns'), 10, 1 );
