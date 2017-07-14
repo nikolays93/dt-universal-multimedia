@@ -2,27 +2,14 @@
 namespace MB;
 /*
 Plugin Name: Медиаблоки
-Plugin URI:
+Plugin URI: https://github.com/nikolays93/mediablocks
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.7 alpha
+Version: 1.8 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
-*/
-/*  Copyright 2017  NikolayS93  (email: NikolayS93@ya.ru)
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+Author EMAIL: nikolayS93@ya.ru
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
 define( 'DTM_PREFIX', 'dtmm_');
@@ -68,14 +55,15 @@ if( ! has_filter( 'remove_cyrillic' )){
  */
 if( ! function_exists('get_column_class') ){
   function get_column_class( $columns_count="4", $non_responsive=false ){
+    $xs = ( $need_xs = apply_filters('bootstrap3_columns', false) ) ? '-xs' : '';
     switch ($columns_count) {
         case '1': $col = 'col-12'; break;
-        case '2': $col = (!$non_responsive) ? 'col-6 col-sm-6 col-md-6 col-lg-6' : 'col-6'; break;
-        case '3': $col = (!$non_responsive) ? 'col-12 col-sm-6 col-md-4 col-lg-4' : 'col-4'; break;
-        case '4': $col = (!$non_responsive) ? 'col-6 col-sm-4 col-md-3 col-lg-3' : 'col-3'; break;
-        case '5': $col = (!$non_responsive) ? 'col-12 col-sm-6 col-md-2-4 col-lg-2-4' : 'col-2-4'; break; // be careful
-        case '6': $col = (!$non_responsive) ? 'col-6 col-sm-4 col-md-2 col-lg-2' : 'col-2'; break;
-        case '12': $col= (!$non_responsive) ? 'col-4 col-sm-3 col-md-1 col-lg-1' : 'col-1'; break;
+        case '2': $col = (!$non_responsive) ? 'col'.$xs.'-6 col-sm-6 col-md-6 col-lg-6' : 'col'.$xs.'-6'; break;
+        case '3': $col = (!$non_responsive) ? 'col'.$xs.'-12 col-sm-6 col-md-4 col-lg-4' : 'col'.$xs.'-4'; break;
+        case '4': $col = (!$non_responsive) ? 'col'.$xs.'-6 col-sm-4 col-md-3 col-lg-3' : 'col'.$xs.'-3'; break;
+        case '5': $col = (!$non_responsive) ? 'col'.$xs.'-12 col-sm-6 col-md-2-4 col-lg-2-4' : 'col'.$xs.'-2-4'; break; // be careful
+        case '6': $col = (!$non_responsive) ? 'col'.$xs.'-6 col-sm-4 col-md-2 col-lg-2' : 'col'.$xs.'-2'; break;
+        case '12': $col= (!$non_responsive) ? 'col'.$xs.'-4 col-sm-3 col-md-1 col-lg-1' : 'col'.$xs.'-1'; break;
 
         default: $col = false; break;
     }
@@ -110,7 +98,7 @@ class DT_MediaBlocks {
     }
     else {
     	$this->include_required_classes( apply_filters( 'get_public_classes', $this->public_classes ) );
-      new MediaBlock();
+      // new MediaBlock();
     }
   }
 

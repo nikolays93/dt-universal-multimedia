@@ -3,12 +3,45 @@ namespace MB;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
+add_shortcode( 'mblock', 'MB\mblock_sc' );
+function mblock_sc( $atts ){
+  if( ! $id = absint($atts['id']) )
+    return false;
+
+  $mblock = new MediaBlock( $id, apply_filters( 'custom_mblock_attributs', $atts ) );
+
+  return $mblock->render();
+}
+
+add_filter( 'default_columns', 'MB\slider_default_columns', 10, 2 );
+function slider_default_columns( $columns, $main_type ){
+  if($main_type == 'slider')
+    return 1;
+
+  return $columns;
+}
+
+add_filter( 'type_to_lib', 'MB\type_to_lib', 10, 1 );
+function type_to_lib( $type ){
+  switch ( $type ) {
+    case 'owl-carousel':
+      $type = 'owlCarousel';
+      break;
+    case 'cloud9carousel':
+      $type = 'Cloud9Carousel';
+      break;
+  }
+
+  return $type;
+}
+
 /**
  * mblock_html > render_$type > render_attachments
  */
 class MediaBlock extends DT_MediaBlocks {
   public $id;
   public $post;
+  public $atts = array('status' => 'public', 'tag_title' => 'h3');
 
   public $main_type = 'carousel'; // default type
   public $sub_type  = 'slick';
@@ -23,33 +56,36 @@ class MediaBlock extends DT_MediaBlocks {
   // use for double block
   public $double = false;
 
-  function __construct(){
-    add_filter( 'default_columns', array($this, 'slider_default_columns'), 10, 1 );
-    add_filter( 'type_to_lib', array($this, 'type_to_lib'), 10, 1 );
+  function __construct( $post_id = false, $atts = array() ){
+    if( !$post_id )
+      return false;
 
-    add_shortcode( 'mblock', array($this, 'mblock_cb') );
-  }
-
-  /**
-   * Filter and Actions
-   */
-  function slider_default_columns( $columns ){
-    if($this->main_type == 'slider')
-      return 1;
-
-    return $columns;
-  }
-  function type_to_lib( $type ){
-    switch ( $type ) {
-      case 'owl-carousel':
-        $type = 'owlCarousel';
-        break;
-      case 'cloud9carousel':
-        $type = 'Cloud9Carousel';
-        break;
+    if( is_array($atts) ){
+      $atts = array_filter($atts, 'sanitize_text_field');
+      $this->atts = array_merge($this->atts, $atts);
     }
 
-    return $type;
+    $this->id = $post_id;
+    $this->post = get_post( $this->id );
+
+    if($this->post->post_status !== 'publish' )
+      return false;
+
+    $this->main_type = $this->meta_field( $this->id, 'main_type' );
+    $this->sub_type  = $this->meta_field( $this->id, 'type' );
+
+    if( false === $this->set_attachment_ids() )
+      return ( is_wp_debug() ) ? 'Файлов не найдено' : false;
+  }
+
+  public function render(){
+    // if( empty($settings['exclude_styles']) )
+    //   $this->load_style();
+
+    if( empty($settings['exclude_assets']) )
+      $this->load_block_assets();
+
+    return $this->mblock_html( $this->atts );
   }
 
   /**
@@ -144,33 +180,6 @@ class MediaBlock extends DT_MediaBlocks {
     return true;
   }
 
-  function mblock_cb( $atts ){
-    $atts = shortcode_atts( array('id' => false,'status' => 'public','tag_title' => 'h3'), $atts );
-    if( ! $id = absint($atts['id']) )
-      return false;
-
-    $atts = array_filter($atts, 'sanitize_text_field');
-
-    $this->id = $id;
-    $this->post = get_post( $id );
-    if($this->post->post_status !== 'publish' )
-      return false;
-
-    $this->main_type = $this->meta_field( $id, 'main_type' );
-    $this->sub_type  = $this->meta_field( $id, 'type' );
-
-    if( false === $this->set_attachment_ids() )
-      return ( is_wp_debug() ) ? 'Файлов не найдено' : false;
-
-    // if( empty($settings['exclude_styles']) )
-    //   $this->load_style();
-    
-    if( empty($settings['exclude_assets']) )
-      $this->load_block_assets();
-
-    return $this->mblock_html( $atts );
-  }
-
   /**
    * HTML Output Attachments
    */
@@ -242,7 +251,7 @@ class MediaBlock extends DT_MediaBlocks {
       _isset_false($settings['height']),
       _isset_false($settings['items_size']));
     
-    _isset_default( $settings['columns'], apply_filters( 'default_columns', $this->default_columns ) );
+    _isset_default( $settings['columns'], apply_filters( 'default_columns', $this->default_columns, $this->main_type ) );
 
     // need for gallery or "no js"
     $item_class = get_column_class( $settings['columns'] );
