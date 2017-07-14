@@ -94,25 +94,25 @@ class MediaBlock extends DT_MediaBlocks {
    * @todo : add style for id ( from scss )
    */
   function load_block_assets(){
-    $url = DT_MULTIMEDIA_ASSETS_URL;
-    $dir = $this->sub_type . '/';
-    
-    $asset = $this->get_assets_list( $this->sub_type );
-    if( $asset ){
+    if( $asset = register_assets( $this->sub_type ) ){
       if( isset($asset['js']) )
-        wp_enqueue_script( $this->sub_type, $url.$dir.$asset['js'], array('jquery'), $asset['ver'], true );
-      if( isset($asset['core']) )
-        wp_enqueue_style ( $this->sub_type.'-core', $url.$dir.$asset['core'], array(), $asset['ver'], 'all' );
+        wp_enqueue_script( $this->sub_type );
+      if( isset($asset['style']) )
+        wp_enqueue_style ( $this->sub_type );
+      if( isset($asset['theme']) )
+        wp_enqueue_style ( $this->sub_type . '-theme' );
     }
+
+    $trigger = "#mediablock-{$this->id}.{$this->main_type}";
+
+    JQScript::init($trigger, 'removeClass', 'row');
+    JQScript::init($trigger . ' .item', 'attr', 'class", "item');
 
     if( !in_array($this->main_type, array('sync-slider', 'gallery')) ){
       $init = apply_filters('type_to_lib', $this->sub_type);
       $filename = apply_filters( 'dash_to_underscore', $this->main_type );
       $init_settings = $this->settings_from_file($this->id, $this->sub_type, $filename);
-      $trigger = "#mediablock-{$this->id}.{$this->main_type}";
 
-      JQScript::init($trigger, 'removeClass', 'row');
-      JQScript::init($trigger . ' .item', 'attr', 'class", "item');
       JQScript::init($trigger, $init, $init_settings );
     }
     else {

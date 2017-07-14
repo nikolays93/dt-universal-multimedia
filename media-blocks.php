@@ -71,8 +71,50 @@ if( ! function_exists('get_column_class') ){
   }
 }
 
+add_action( 'wp_enqueue_scripts', 'MB\register_assets', 50 );
+function register_assets( $type = false ){
+  $affix = (is_wp_debug()) ? '' : '.min';
+  $url = DT_MULTIMEDIA_ASSETS_URL;
+
+  $assets = array(
+    'owl-carousel' => array(
+      'js' => 'owl.carousel'.$affix.'.js',
+      'style' => 'owl.carousel'.$affix.'.css',
+      'theme' => 'owl.theme.css',
+      'ver' => '1.3.3'
+      ),
+    'slick' => array(
+      'js' => 'slick.js',
+      'style' => 'slick.css',
+      'theme' => 'slick-theme.css',
+      'ver' => '1.6.0'
+      ),
+    'cloud9carousel' => array(
+      'js' => 'jquery.cloud9carousel'.$affix.'.js',
+      'ver' => '2.1.0'
+      ),
+    'waterwheelCarousel' => array(
+      'js' => 'jquery.waterwheelCarousel'.$affix.'.js',
+      'ver' => '2.3.0'
+      )
+  );
+
+  if( $type )
+    return isset($assets[$type]) ? $assets[$type] : false;
+
+  foreach ($assets as $type => $asset) {
+    if( !empty($asset['js']) )
+      wp_register_script( $type, $url . $type . '/' . $asset['js'], array('jquery'), $asset['ver'], true );
+    if( isset($asset['style']) )
+      wp_register_style( $type, $url . $type . '/' . $asset['style'], array(), $asset['ver'], 'all' );
+    if( isset($asset['theme']) )
+      wp_register_style( $type.'-theme', $url . $type . '/' . $asset['theme'],  array(), $asset['ver'], 'all' );
+  }
+
+  return true;
+}
+
 class DT_MediaBlocks {
-  const VERSION = 1.5;
   const CLASSES_DIR = 'include/';
   
   public $required_classes = array(
@@ -140,41 +182,6 @@ class DT_MediaBlocks {
         )
       )
     );
-  }
-  static protected function get_assets_list( $type = false ){
-    $affix = (is_wp_debug()) ? '' : '.min';
-
-    $assets = array(
-      'owl-carousel' => array(
-        'js' => 'owl.carousel'.$affix.'.js',
-        'core' => 'owl.carousel'.$affix.'.css',
-        'theme' => 'owl.theme.css',
-        'ver' => '1.3.3'
-        ),
-      'slick' => array(
-        'js' => 'slick.js',
-        'core' => 'slick.css',
-        'theme' => 'slick-theme.css',
-        'ver' => '1.6.0'
-        ),
-      'cloud9carousel' => array(
-        'js' => 'jquery.cloud9carousel'.$affix.'.js',
-        'ver' => '2.1.0'
-        ),
-      'waterwheelCarousel' => array(
-        'js' => 'jquery.waterwheelCarousel'.$affix.'.js',
-        'ver' => '2.3.0'
-        )
-    );
-    
-    if( $type ){
-      if( isset($assets[$type]) )
-        return $assets[$type];
-      else 
-        return false;
-    }
-
-    return $assets;
   }
 
   /**
