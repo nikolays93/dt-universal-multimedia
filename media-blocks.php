@@ -1,10 +1,10 @@
 <?php
-namespace MB;
+
 /*
 Plugin Name: Медиаблоки
 Plugin URI: https://github.com/nikolays93/mediablocks
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.8 alpha
+Version: 1.1.0 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 Author EMAIL: nikolayS93@ya.ru
@@ -12,24 +12,6 @@ License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
-define( 'DTM_PREFIX', 'dtmm_');
-define( 'DTM_TYPE', 'multimedia-base');
-
-define( 'DT_MULTIMEDIA_BASE_URL',   trailingslashit( plugins_url( basename( __DIR__ ) ) ) );
-define( 'DT_MULTIMEDIA_ASSETS_URL', trailingslashit( DT_MULTIMEDIA_BASE_URL . 'assets' ) );
-define( 'DT_MULTIMEDIA_PATH',       plugin_dir_path( __FILE__ ) );
-
-if(!function_exists('is_wp_debug')){
-  function is_wp_debug(){
-    if( WP_DEBUG ){
-      if( defined(WP_DEBUG_DISPLAY) && ! WP_DEBUG_DISPLAY){
-        return false;
-      }
-      return true;
-    }
-    return false;
-  }
-}
 if(!function_exists('_isset_default')){
   function _isset_default(&$var, $default, $unset = false){
     $result = $var = isset($var) ? $var : $default;
@@ -37,18 +19,14 @@ if(!function_exists('_isset_default')){
       $var = FALSE;
     return $result;
   }
+}
+if( !function_exists('_isset_false') ){
   function _isset_false(&$var, $unset = false){ return _isset_default( $var, false, $unset ); }
+}
+if( !function_exists('_isset_false') ){
   function _isset_empty(&$var, $unset = false){ return _isset_default( $var, '', $unset ); }
 }
-if( ! has_filter( 'remove_cyrillic' )){
-  add_filter( 'remove_cyrillic', 'MB\remove_cyrillic_filter', 10, 1 );
-  function remove_cyrillic_filter($str){
-    $pattern = "/[\x{0410}-\x{042F}]+.*[\x{0410}-\x{042F}]+/iu";
-    $str = preg_replace( $pattern, "", $str );
 
-    return $str;
-  }
-}
 
 /**
  * Получить стандартные классы ячейки bootstrap сетки
@@ -71,95 +49,47 @@ if( ! function_exists('get_column_class') ){
   }
 }
 
-add_action( 'wp_enqueue_scripts', 'MB\register_assets', 50 );
-function register_assets( $type = false ){
-  $affix = (is_wp_debug()) ? '' : '.min';
-  $url = DT_MULTIMEDIA_ASSETS_URL;
+if ( ! defined( 'ABSPATH' ) )
+  exit; // disable direct access
 
-  $assets = array(
-    'owl-carousel' => array(
-      'js' => 'owl.carousel'.$affix.'.js',
-      'style' => 'owl.carousel'.$affix.'.css',
-      'theme' => 'owl.theme.css',
-      'ver' => '1.3.3'
-      ),
-    'slick' => array(
-      'js' => 'slick.js',
-      'style' => 'slick.css',
-      'theme' => 'slick-theme.css',
-      'ver' => '1.6.0'
-      ),
-    'cloud9carousel' => array(
-      'js' => 'jquery.cloud9carousel'.$affix.'.js',
-      'ver' => '2.1.0'
-      ),
-    'waterwheelCarousel' => array(
-      'js' => 'jquery.waterwheelCarousel'.$affix.'.js',
-      'ver' => '2.3.0'
-      )
-  );
-
-  if( $type )
-    return isset($assets[$type]) ? $assets[$type] : false;
-
-  foreach ($assets as $type => $asset) {
-    if( !empty($asset['js']) )
-      wp_register_script( $type, $url . $type . '/' . $asset['js'], array('jquery'), $asset['ver'], true );
-    if( isset($asset['style']) )
-      wp_register_style( $type, $url . $type . '/' . $asset['style'], array(), $asset['ver'], 'all' );
-    if( isset($asset['theme']) )
-      wp_register_style( $type.'-theme', $url . $type . '/' . $asset['theme'],  array(), $asset['ver'], 'all' );
-  }
-
-  return true;
-}
+add_action( 'plugins_loaded', function(){ new DT_MediaBlocks(); });
+register_activation_hook( __FILE__, array( 'DT_MediaBlocks', 'activate' ) );
+register_uninstall_hook( __FILE__, array( 'DT_MediaBlocks', 'uninstall' ) );
 
 class DT_MediaBlocks {
+  const SETTINGS = 'MediaBlocks';
+  const POST_TYPE = 'mediablocks';
+  const PREFIX = 'mb_';
   const CLASSES_DIR = 'include/';
-  
-  public $required_classes = array(
-    'MB\JQScript'    => 'class-wp-jqscript',
-    'MB\queries'    => 'queries',
-    'scssc'          => 'scss.inc',
-    'MB\WPForm'      => 'class-wp-form-render',
-    'MB\WPPostBoxes' => 'class-wp-post-boxes',
-    'MB\isAdminView' => 'is-admin-callback',
-    );
-  public $public_classes = array(
-    'MB\JQScript'    => 'class-wp-jqscript',
-    'MB\queries'    => 'queries',
-    'MB\MediaBlock' => 'front-callback',
-    );
+  const VERSION = '1.1.8';
 
-  function __construct(){
+  public $settings = array();
+
+  private function __clone() {}
+  private function __wakeup() {}
+
+  public static function activate(){ add_option( self::SETTINGS, array() ); }
+  public static function uninstall(){ delete_option(self::SETTINGS); }
+
+  function __construct() {
+    self::define_constants();
+    self::include_required_classes();
+    $this->settings = get_option( self::SETTINGS, array() );
+
+    add_action( 'wp_enqueue_scripts', array( __CLASS__, 'pre_register_assets'), 50 );
     add_action('init', array($this, 'register_post_types'));
 
-    if( is_admin() ){
-    	$this->include_required_classes( apply_filters( 'get_required_classes', $this->required_classes ) );
+    if( is_admin() )
       new isAdminView();
-    }
-    else {
-    	$this->include_required_classes( apply_filters( 'get_public_classes', $this->public_classes ) );
-      // new MediaBlock();
-    }
   }
 
-  /**
-   * Global Methods
-   */
-  private function include_required_classes( $classes = array() ){
-      if(! is_array($classes) )
-        return false;
-
-      foreach ( $classes as $class_name => $path ) {
-        $path = DT_MULTIMEDIA_PATH . self::CLASSES_DIR . $path . '.php';
-
-        if ( is_readable( $path ) && ! class_exists( $class_name ) ) 
-          require_once( $path );
-      }
+  private static function define_constants(){
+    define('MBLOCKS_DIR', plugin_dir_path( __FILE__ ) );
+    define('MBLOCKS_ASSETS',  plugins_url( 'assets', __FILE__ ) );
   }
+  
   function register_post_types(){
-    register_post_type( DTM_TYPE, array(
+    register_post_type( self::POST_TYPE, array(
       'query_var' => false,
       'rewrite' => false,
       'public' => false,
@@ -184,6 +114,78 @@ class DT_MediaBlocks {
     );
   }
 
+  private static function include_required_classes(){
+    $required_classes = array(
+      'admin' => array(
+        'MB\JQScript'    => 'class-wp-jqscript',
+        'MB\queries'     => 'queries',
+        'scssc'          => 'scss.inc',
+        'MB\WPForm'      => 'class-wp-form-render',
+        'MB\WPPostBoxes' => 'class-wp-post-boxes',
+        'MB\isAdminView' => 'is-admin-callback',
+        ),
+      'public' => array(
+        'MB\JQScript'    => 'class-wp-jqscript',
+        'MB\queries'     => 'queries',
+        'MB\MediaBlock'  => 'front-callback',
+        ),
+      );
+
+    foreach ($required_classes as $type => $classes) {
+      foreach ( $classes as $class_name => $path ) {
+        if( ($type == 'admin' && !is_admin()) || ($type == 'public' && is_admin()) )
+          continue;
+
+        $path = MBLOCKS_DIR . self::CLASSES_DIR . $path . '.php';
+
+        if ( is_readable( $path ) && ! class_exists( $class_name ) ) 
+          require_once( $path );
+      }
+    }
+  }
+
+  static function pre_register_assets( $type = false ){
+    $affix = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? '' : '.min';
+    $url = MBLOCKS_ASSETS;
+
+    $assets = array(
+      'owl-carousel' => array(
+        'js' => 'owl.carousel'.$affix.'.js',
+        'style' => 'owl.carousel'.$affix.'.css',
+        'theme' => 'owl.theme.css',
+        'ver' => '1.3.3'
+        ),
+      'slick' => array(
+        'js' => 'slick.js',
+        'style' => 'slick.css',
+        'theme' => 'slick-theme.css',
+        'ver' => '1.6.0'
+        ),
+      'cloud9carousel' => array(
+        'js' => 'jquery.cloud9carousel'.$affix.'.js',
+        'ver' => '2.1.0'
+        ),
+      'waterwheelCarousel' => array(
+        'js' => 'jquery.waterwheelCarousel'.$affix.'.js',
+        'ver' => '2.3.0'
+        )
+      );
+
+    if( $type )
+      return isset($assets[$type]) ? $assets[$type] : false;
+
+    foreach ($assets as $type => $asset) {
+      if( !empty($asset['js']) )
+        wp_register_script( $type, $url .'/'. $type .'/'. $asset['js'], array('jquery'), $asset['ver'], true );
+      if( isset($asset['style']) )
+        wp_register_style( $type, $url .'/'. $type .'/'. $asset['style'], array(), $asset['ver'], 'all' );
+      if( isset($asset['theme']) )
+        wp_register_style( $type.'-theme', $url .'/'. $type .'/'. $asset['theme'],  array(), $asset['ver'], 'all' );
+    }
+
+    return true;
+  }
+
   /**
    * Settings & Options
    *
@@ -193,11 +195,11 @@ class DT_MediaBlocks {
    * @param  string type returned settings
    * @return array settings
    */
-  protected function get_settings_file( $file = false, $main_type = 'carousel' ){
+  protected function parse_settings_file( $file = false, $main_type = 'carousel' ){
     if( empty($file) )
       return false;
 
-    $path = DT_MULTIMEDIA_PATH . 'settings/'.$file.'.php';
+    $path = MBLOCKS_DIR . 'settings/'.$file.'.php';
 
     if ( is_readable( $path ) ) 
       return include( $path );
@@ -212,20 +214,20 @@ class DT_MediaBlocks {
    * @param  string meta name (without prefix)
    * @param  string values for update or get
    */
-  protected function meta_field( $post_id, $var, $record = false ){
+  public static function meta_field( $post_id, $key, $value = false ){
     if( !$post_id )
       return false;
 
-    if( $record !== false ){
-      if( $record != '' ){
-        update_post_meta( $post_id, '_'.DTM_PREFIX.$var, $record );
+    if( $value !== false ){
+      if( $value != '' ){
+        update_post_meta( $post_id, '_'.self::PREFIX.$key, $value );
       }
       else {
-        delete_post_meta( $post_id, '_'.DTM_PREFIX.$var );
+        delete_post_meta( $post_id, '_'.self::PREFIX.$key );
       }
     }
     else {
-      return get_post_meta( $post_id, '_'.DTM_PREFIX.$var, true );
+      return get_post_meta( $post_id, '_'.self::PREFIX.$key, true );
     }
   }
 
@@ -246,7 +248,7 @@ class DT_MediaBlocks {
     $result = array();
     $values = ($block_values) ? $block_values : $this->meta_field( $post_id, $settings_name.'_opt' );
     $filename = ($settings_maintype) ? 'sub/'.$settings_name : 'main/'.$settings_name;
-    $settings = $this->get_settings_file( $filename, $settings_maintype );
+    $settings = $this->parse_settings_file( $filename, $settings_maintype );
 
     if( ! $settings )
       return false;
@@ -281,7 +283,7 @@ class DT_MediaBlocks {
 
 
     if( $block_values ){
-      $this->meta_field( $post_id, $settings_name.'_opt', $result );
+      self::meta_field( $post_id, $settings_name.'_opt', $result );
       // $_debug = print_r($debug, 1) . "\n\n" . print_r($result, 1);
       // file_put_contents(__DIR__ . '/post_result.log', $_debug);
     }
@@ -290,63 +292,3 @@ class DT_MediaBlocks {
     }
   }
 }
-
-/**
- * Filters
- */
-// function setup_filters(){
-//   add_filter( 'array_options_before_view', 'split_array', 10, 3 );
-//   add_filter( 'json_change_values',        'str_to_bool', 10, 1 );
-//   add_filter( 'json_change_values',        'json_function_names', 15, 1 );
-  add_filter( 'dash_to_underscore',        'MB\dash_to_underscore', 10, 1 );
-// }
-
-// function split_array( $arr, $keys = array('navigationTextPrev', 'navigationTextNext'), $result_key =  'navigationText'){
-//   if( sizeof($arr) ){
-//     if(isset($arr[ $keys[0] ])){
-//       $prev = $arr[ $keys[0] ];
-//       unset($arr[ $keys[0] ]);
-//     }
-//     else {
-//       $prev = 'prev';
-//     }
-
-//     if(isset($arr[ $keys[1] ])){
-//       $next = $arr[ $keys[1] ];
-//       unset($arr[ $keys[1] ]);
-//     }
-//     else {
-//       $next = 'next';
-//     }
-
-//     $arr[$result_key] = array($prev, $next);
-//   }
-
-//   return $arr;
-// }
-// function str_to_bool( $json ){
-//   $json = str_replace('"true"',  'true',  $json);
-//   $json = str_replace('"on"',  'true',  $json);
-//   $json = str_replace('"false"', 'false', $json);
-//   $json = str_replace('"off"', 'false', $json);
-//   return $json;
-// }
-// function json_function_names( $json ){
-//   $json = str_replace( '"%', '', $json );
-//   $json = str_replace( '%"', '', $json );
-//   return $json;
-// }
-function dash_to_underscore( $str ){
-  $str = str_replace('-', '_', $str);
-  return $str;
-}
-
-new DT_MediaBlocks();
-
-// function rewrite_flush() {
-//     DT_MultiMedia::register_post_types();
-//     flush_rewrite_rules();
-// }
-// register_activation_hook( __FILE__, 'rewrite_flush' );
-// 
-//

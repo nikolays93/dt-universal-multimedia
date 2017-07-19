@@ -66,11 +66,13 @@ jQuery(function($){
         var url = getSizeUrl(image[i]);
 
       	var imgHTML    = '<img src="'+url+'" alt="'+image[i].alt+'" class="'+image[i].orientation+'" />';
-      	var titleHTML  = '<input type="text" name="attachment_text['+image[i].id+']" value="'+image[i].caption+'">';
-      	var descHTML   = '<textarea>'+image[i].description+'</textarea>';
-      	var hiddenHTML = '<input type="hidden" id="dt-ids" name="attachment_id[]"  value="'+image[i].id+'">';
 
-      	addAttachment(image[i].id, imgHTML, titleHTML + hiddenHTML ); //descHTML +
+      	var titleHTML  = '<input class="item-excerpt" type="text" name="attachment_excerpt['+image[i].id+']" value="'+image[i].caption+'">';
+      	var descHTML   = '<textarea class="item-content" name="attachment_content['+image[i].id+']" cols="90" rows="4">'+image[i].description+'</textarea>';
+      	var linkHTML   = '<input class="item-link" type="text" name="attachment_link['+image[i].id+']" placeholder="#permalink(4)" value="">';
+        var hiddenHTML = '<input type="hidden" id="dt-ids" name="attachment_id[]"  value="'+image[i].id+'">';
+
+      	addAttachment(image[i].id, imgHTML, titleHTML + descHTML + linkHTML + hiddenHTML );
       	// var sizes = images[i].changed.sizes;
 
       	// var img = images[i].changed;

@@ -1,9 +1,8 @@
 <?php
-namespace MB;
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-add_shortcode( 'mblock', 'MB\mblock_sc' );
+add_shortcode( 'mblock', 'mblock_sc' );
 function mblock_sc( $atts ){
   if( ! $id = absint($atts['id']) )
     return false;
@@ -13,7 +12,7 @@ function mblock_sc( $atts ){
   return $mblock->render();
 }
 
-add_filter( 'default_columns', 'MB\slider_default_columns', 10, 2 );
+add_filter( 'default_columns', 'slider_default_columns', 10, 2 );
 function slider_default_columns( $columns, $main_type ){
   if($main_type == 'slider')
     return 1;
@@ -21,7 +20,7 @@ function slider_default_columns( $columns, $main_type ){
   return $columns;
 }
 
-add_filter( 'type_to_lib', 'MB\type_to_lib', 10, 1 );
+add_filter( 'type_to_lib', 'type_to_lib', 10, 1 );
 function type_to_lib( $type ){
   switch ( $type ) {
     case 'owl-carousel':
@@ -71,8 +70,8 @@ class MediaBlock extends DT_MediaBlocks {
     if($this->post->post_status !== 'publish' )
       return false;
 
-    $this->main_type = $this->meta_field( $this->id, 'main_type' );
-    $this->sub_type  = $this->meta_field( $this->id, 'type' );
+    $this->main_type = self::meta_field( $this->id, 'main_type' );
+    $this->sub_type  = self::meta_field( $this->id, 'type' );
 
     if( false === $this->set_attachment_ids() )
       return ( is_wp_debug() ) ? 'Файлов не найдено' : false;
@@ -94,7 +93,7 @@ class MediaBlock extends DT_MediaBlocks {
    * @todo : add style for id ( from scss )
    */
   function load_block_assets(){
-    if( $asset = register_assets( $this->sub_type ) ){
+    if( $asset = self::pre_register_assets( $this->sub_type ) ){
       if( isset($asset['js']) )
         wp_enqueue_script( $this->sub_type );
       if( isset($asset['style']) )
@@ -105,18 +104,18 @@ class MediaBlock extends DT_MediaBlocks {
 
     $trigger = "#mediablock-{$this->id}.{$this->main_type}";
 
-    JQScript::init($trigger, 'removeClass', 'row');
-    JQScript::init($trigger . ' .item', 'attr', 'class", "item');
+    MB\JQScript::init($trigger, 'removeClass', 'row');
+    MB\JQScript::init($trigger . ' .item', 'attr', 'class", "item');
 
     if( !in_array($this->main_type, array('sync-slider', 'gallery')) ){
       $init = apply_filters('type_to_lib', $this->sub_type);
       $filename = apply_filters( 'dash_to_underscore', $this->main_type );
       $init_settings = $this->settings_from_file($this->id, $this->sub_type, $filename);
 
-      JQScript::init($trigger, $init, $init_settings );
+      MB\JQScript::init($trigger, $init, $init_settings );
     }
     else {
-      JQScript::custom($this->double_script());
+      MB\JQScript::custom($this->double_script());
     }
   }
 
@@ -127,7 +126,7 @@ class MediaBlock extends DT_MediaBlocks {
     $result = array();
     $result[] = '<section id="mblock-'.$this->id.'">';
 
-    if( $this->meta_field( $this->id, 'show_title' ) && !empty($this->post->post_title) )
+    if( self::meta_field( $this->id, 'show_title' ) && !empty($this->post->post_title) )
       $result[] = "<{$atts['tag_title']}>{$this->post->post_title}</{$atts['tag_title']}>";
 
     if( $this->post->post_excerpt )
@@ -145,7 +144,7 @@ class MediaBlock extends DT_MediaBlocks {
     if( ! $this->id )
       return false;
 
-    $query_options = $this->meta_field($this->id, 'query');
+    $query_options = self::meta_field($this->id, 'query');
 
     if(!empty($query_options['enable'])){
       $query = new \WP_Query( array(
@@ -171,7 +170,7 @@ class MediaBlock extends DT_MediaBlocks {
       $this->attachments = $attachments;
     }
     else {
-      $this->attachments = explode(',', $this->meta_field($this->id, 'media_imgs') );
+      $this->attachments = explode(',', self::meta_field($this->id, 'media_imgs') );
     }
 
     if( !$this->attachments || sizeof($this->attachments) < 1 )
