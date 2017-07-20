@@ -40,7 +40,19 @@ $settings = array(
     'type' => 'text',
     'default' => 'zoom',
     ),
-
+  array(
+    'id' => 'lazyLoad',
+    'label' => 'Enuqueue lazy load',
+    'desc' => 'How much images initialized af first',
+    'type' => 'number',
+    'default' => '4'
+    ),
+  array(
+    'id' => 'masonry',
+    'label' => 'Enuqueue masonry',
+    'desc' => 'Initialize masonry for gallery images',
+    'type' => 'checkbox',
+    ),
   );
 
 return $settings;

@@ -13,11 +13,9 @@ $inputs = array(
 		'options' => array(
 			'carousel'    => 'Карусель',
 			'slider'      => 'Слайдер',
-			'sync-slider' => 'Синх. слайдер',
+			//'sync-slider' => 'Синх. слайдер',
 			'carousel-3d'   => '3D слайдер',
 			'gallery'     => 'Галерея',
-			// 'query'       => 'Запрос'
-				// Преимущества
 			),
 		),
 	array(

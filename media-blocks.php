@@ -63,6 +63,9 @@ class DT_MediaBlocks {
   const CLASSES_DIR = 'include/';
   const VERSION = '1.1.8';
 
+  const SHOW_TITLE_NAME = 'show_title';
+  const VIEW_MODE_NAME = 'view_mode';
+
   public $settings = array();
 
   private function __clone() {}
@@ -118,7 +121,7 @@ class DT_MediaBlocks {
     $required_classes = array(
       'admin' => array(
         'MB\JQScript'    => 'class-wp-jqscript',
-        'MB\queries'     => 'queries',
+        // 'MB\queries'     => 'queries',
         'scssc'          => 'scss.inc',
         'MB\WPForm'      => 'class-wp-form-render',
         'MB\WPPostBoxes' => 'class-wp-post-boxes',
@@ -126,7 +129,7 @@ class DT_MediaBlocks {
         ),
       'public' => array(
         'MB\JQScript'    => 'class-wp-jqscript',
-        'MB\queries'     => 'queries',
+        // 'MB\queries'     => 'queries',
         'MB\MediaBlock'  => 'front-callback',
         ),
       );
@@ -153,22 +156,26 @@ class DT_MediaBlocks {
         'js' => 'owl.carousel'.$affix.'.js',
         'style' => 'owl.carousel'.$affix.'.css',
         'theme' => 'owl.theme.css',
-        'ver' => '1.3.3'
+        'ver' => '1.3.3',
         ),
       'slick' => array(
         'js' => 'slick.js',
         'style' => 'slick.css',
         'theme' => 'slick-theme.css',
-        'ver' => '1.6.0'
+        'ver' => '1.6.0',
         ),
       'cloud9carousel' => array(
         'js' => 'jquery.cloud9carousel'.$affix.'.js',
-        'ver' => '2.1.0'
+        'ver' => '2.1.0',
         ),
       'waterwheelCarousel' => array(
         'js' => 'jquery.waterwheelCarousel'.$affix.'.js',
-        'ver' => '2.3.0'
-        )
+        'ver' => '2.3.0',
+        ),
+      'lazyLoad' => array(
+        'js' => 'lazyLoad'.$affix.'.js',
+        'ver' => '1.9.0',
+        ),
       );
 
     if( $type )

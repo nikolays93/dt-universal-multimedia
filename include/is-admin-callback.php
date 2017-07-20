@@ -1,9 +1,6 @@
 <?php
 class isAdminView extends DT_MediaBlocks
 {
-	const SHOW_TITLE_NAME = 'show_title';
-	const VIEW_MODE_NAME = 'view_mode';
-
 	public $post_id;
 	public $settings;
 
@@ -250,6 +247,9 @@ class isAdminView extends DT_MediaBlocks
 
 		$this->validate_media_attachments($post_id);
 
+		/**
+		 * @todo change it to locate/storage js
+		 */
 		self::meta_field($post_id, self::SHOW_TITLE_NAME, _isset_false($_POST[self::SHOW_TITLE_NAME]) );
 		self::meta_field($post_id, self::VIEW_MODE_NAME, _isset_false($_POST[self::VIEW_MODE_NAME]) );
 
