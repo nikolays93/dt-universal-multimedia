@@ -258,7 +258,7 @@ class MediaBlock extends DT_MediaBlocks {
         $att = get_post( $attachment );
         
         /** Get Caption */
-        $caption = empty($this->settings['image_captions']) ? '' : sprintf('<div id="caption">%s</div>',
+        $caption = empty($this->settings['image_captions']) ? '' : sprintf('<div class="caption">%s</div>',
             apply_filters( 'the_content', $att->post_excerpt )
             );
         

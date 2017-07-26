@@ -106,7 +106,7 @@ class DT_MediaBlocks {
         'name' => 'Медиаблоки',
         'singular_name'      => 'Медиаблок',
         'add_new'            => 'Добавить блок',
-        'add_new_item'       => 'Добавление блок',
+        'add_new_item'       => 'Добавление блока',
         'edit_item'          => 'Редактирование блока',
         'new_item'           => 'Новый блок',
         'view_item'          => 'Смотреть МультиБлок',

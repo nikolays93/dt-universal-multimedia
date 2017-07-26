@@ -169,7 +169,7 @@ class isAdminView extends DT_MediaBlocks
 			true,
 			array(
 				'label_tag' => 'td',
-				//'clear_value' => 'true'
+				'clear_value' => false
 				)
 			);
 		echo "</div>";
