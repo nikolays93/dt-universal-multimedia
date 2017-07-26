@@ -310,7 +310,7 @@ class MediaBlock extends DT_MediaBlocks {
     $item_wrap = array(
       "<div id='mediablock-{$this->id}' class='media-block row {$this->main_type} {$class_type}'>",
       "</div>");
-    $item = array("<div class='item {$item_class}'>", "</div>");
+    $item = array("<div class='item {$item_class}'><div class='item-wrap'>", "</div></div>");
 
     return $this->render_attachments_html($this->settings, $item_wrap, $item );
   }
