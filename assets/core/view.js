@@ -73,21 +73,7 @@ jQuery(function($){
         var hiddenHTML = '<input type="hidden" id="dt-ids" name="attachment_id[]"  value="'+image[i].id+'">';
 
       	addAttachment(image[i].id, imgHTML, titleHTML + descHTML + linkHTML + hiddenHTML );
-      	// var sizes = images[i].changed.sizes;
-
-      	// var img = images[i].changed;
-      	// var image_caption = images[i].changed.caption;
-      	// var image_title = images[i].changed.title;
-      	// console.log(img);
-
-      	// $('#uploaded-images').prepend("<input type='text' name='uploadedImages[]' value='"+img.url+"'>");
       }
-    	// attachments.map(function(attachment) {
-    	// 	attachment = attachment.toJSON();
-    	// 	media_ids.push(attachment.id);
-    	// });
-
-    	
     });
 
     // Finally, open the modal on click
@@ -110,20 +96,23 @@ jQuery(function($){
   /**
    * Изменить стиль отображения attachments 
    */
+  var viewMode = localStorage.getItem('mb_view');
   $('#detail_view').on('click', function(e){
     e.preventDefault();
-    // toggleValue
-    if($('[name="detail_view"]').val() == 'on')
-      $('[name="detail_view"]').val('')
-    else 
-      $('[name="detail_view"]').val('on')
 
-    $(this).find('span').each(function(){
-      $(this).toggleClass('hidden');
-    });
-    $('#dt-media').toggleClass('tile');
-    $('#dt-media').toggleClass('list');
+    viewMode = localStorage.getItem('mb_view');
+    if( ! viewMode ){
+      localStorage.setItem('mb_view', '1' );
+      $(this).closest('.dt-media').addClass('list');
+    }
+    else {
+      localStorage.removeItem('mb_view' );
+      $(this).closest('.dt-media').removeClass('list');
+    }
   });
+  if( viewMode )
+    $('.inside .dt-media').addClass('list');
+
 
   /**
    * Выбор типа
@@ -203,7 +192,6 @@ jQuery(function($){
       },
       success: function(response){
         var $response = $(response);
-        console.log(response);
 
         $('#main_settings.postbox .inside').html( $response[0] );
         $('#side_settings.postbox .inside').html( $response[1] );
@@ -211,7 +199,6 @@ jQuery(function($){
       }
     }).fail(function() { console.log('Ajax Error!'); });
   });
-
 
   $('#query_select').on('change', function(event) {
     $('#dt-media-query').slideToggle();

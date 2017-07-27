@@ -20,7 +20,7 @@ class isAdminView extends DT_MediaBlocks
 		add_action( 'load-post-new.php', array( $this, 'admin_asssets' ) );
 
 		add_action( 'wp_enqueue_scripts', array($this, 'dtmb_add_ajax_data'), 99 );
-		
+
 		add_action( 'wp_ajax_main_settings', array($this, 'sub_settings_callback') );
 		add_action( 'wp_ajax_main_settings', array($this, 'side_settings_callback') );
 
@@ -57,7 +57,7 @@ class isAdminView extends DT_MediaBlocks
 
 		echo 'Вставьте шорткод в любую запись Вашего сайта';
 		echo '<input id="shortcode" readonly="readonly" type="text" value=\'[mblock id="'.$post->ID.'"]\'>';
-		
+
 		echo "</div>";
 	}
 
@@ -65,15 +65,11 @@ class isAdminView extends DT_MediaBlocks
 	 * Main Block
 	 */
 	function default_media_buttons( $post ){
-		$is_detail_view = self::meta_field($post->ID, self::VIEW_MODE_NAME);
 		?>
 			<div class="hide-if-no-js wp-media-buttons">
-				<input type="hidden" name="<?php echo self::VIEW_MODE_NAME;?>" value="<?php echo $is_detail_view; ?>">
 				<button id="detail_view" class="button" type="button">
-					<span class="dashicons dashicons-screenoptions <?php
-					echo ($is_detail_view) ? '' : 'hidden'; ?>"></span>
-					<span class="dashicons dashicons-list-view <?php
-					echo ($is_detail_view) ? 'hidden' : ''; ?>"></span>
+					<span class="dashicons dashicons-screenoptions"></span>
+					<span class="dashicons dashicons-list-view"></span>
 				</button>
 				<button id="upload-images" class="button add_media">
 					<span class="wp-media-buttons-icon"></span> Добавить медиафайл
@@ -88,7 +84,7 @@ class isAdminView extends DT_MediaBlocks
 	}
 
 	function attachments_callback( $post ) {
-		if ( ! did_action( 'wp_enqueue_media' ) ) 
+		if ( ! did_action( 'wp_enqueue_media' ) )
 			wp_enqueue_media();
 			//wp_nonce_field( 'dp_addImages_nonce', 'wp_developer_page_nonce' );
 		?>
@@ -99,9 +95,8 @@ class isAdminView extends DT_MediaBlocks
 			<?php
 			$ids = self::meta_field( $post->ID, 'media_imgs' );
 			$ids_arr = explode( ',', esc_attr($ids) );
-			$style = self::meta_field($post->ID, self::VIEW_MODE_NAME) ? 'list' : 'tile';
 
-			echo '<div class="attachments '.$style.'" id="dt-media">';
+			echo '<div class="attachments" id="dt-media">';
 			if( $ids ){
 				foreach ($ids_arr as $id) {
 					$meta = wp_get_attachment_metadata( $id );
@@ -111,6 +106,12 @@ class isAdminView extends DT_MediaBlocks
 					$attachment = get_post( $id );
 					$image = wp_get_attachment_image($id, 'medium', null, $attrs);
 					$link = get_post_meta( $id, 'mb_link', true );
+					$link_code = '';
+					/**
+					 * @todo : add link shortcode for developers tool
+					 */
+					if( shortcode_exists( 'link' ) )
+						$link_code = '[link id="4"]';
 				?>
 				<div class="attachment" data-id="<?php echo $id; ?>">
 					<div class="item">
@@ -122,7 +123,7 @@ class isAdminView extends DT_MediaBlocks
 
 						<textarea class="item-content" name="attachment_content[<?php echo $id; ?>]" id="" cols="90" rows="4"><?php echo $attachment->post_content; ?></textarea>
 
-						<input class="item-link" type="text" name="attachment_link[<?php echo $id; ?>]" placeholder="#permalink(4)" value="<?php echo $link;?>">
+						<input class="item-link" type="text" name="attachment_link[<?php echo $id; ?>]" placeholder="<?php echo $link_code; ?>" value="<?php echo $link;?>">
 						<input type="hidden" id="dt-ids" name="attachment_id[]" value="<?php echo $id; ?>">
 					</div>
 				</div>
@@ -193,12 +194,12 @@ class isAdminView extends DT_MediaBlocks
 		if( $screen->post_type != self::POST_TYPE )
 			return false;
 
-		if ( ! did_action( 'wp_enqueue_media' ) ) 
+		if ( ! did_action( 'wp_enqueue_media' ) )
 			wp_enqueue_media();
 
 		wp_enqueue_style( self::PREFIX.'style', MBLOCKS_ASSETS.'/core/style.css', array(), self::VERSION, 'all' );
 		wp_enqueue_script( self::PREFIX.'view', MBLOCKS_ASSETS.'/core/view.js', array('jquery'), self::VERSION, true );
-		wp_localize_script(self::PREFIX.'view', 'settings', array( 'nonce' => wp_create_nonce( 'any_secret_string' ) ) ); 
+		wp_localize_script(self::PREFIX.'view', 'settings', array( 'nonce' => wp_create_nonce( 'any_secret_string' ) ) );
 	}
 
 	/**
@@ -214,7 +215,7 @@ class isAdminView extends DT_MediaBlocks
 		// 	return FALSE;
 
 		// Если это автосохранение ничего не делаем.
-		// if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
+		// if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
 		// 	return FALSE;
 	}
 	private function validate_media_attachments( $post_id ){
@@ -225,20 +226,31 @@ class isAdminView extends DT_MediaBlocks
 		$attachment_ids = implode(',', $attachment_ids);
 		self::meta_field( $post_id, 'media_imgs', $attachment_ids );
 
-		foreach ($_POST['attachment_excerpt'] as $id => $excerpt) {
-			$update = array( 'ID' => $id	);
+		if( is_array($_POST['attachment_excerpt']) )
+			$s1 = sizeof($_POST['attachment_excerpt']);
 
-			if($excerpt)
-				$update['post_excerpt'] = $excerpt;
+		if( is_array($_POST['attachment_content']) )
+			$s2 = sizeof($_POST['attachment_content']);
+
+		$each = ($s1 > $s2) ? $_POST['attachment_excerpt'] : $_POST['attachment_content'];
+
+		foreach ($each as $id => $excerpt) {
+			$update = array( 'ID' => $id );
+
+			if($_POST['attachment_excerpt'])
+				$update['post_excerpt'] = $_POST['attachment_excerpt'][$id];
 
 			if( isset($_POST['attachment_content'][$id]) )
 				$update['post_content'] = $_POST['attachment_content'][$id];
 
-			if( isset($_POST['attachment_link'][$id]) )
-				update_post_meta( $id, 'mb_link', $_POST['attachment_link'][$id] );
-
 			if( sizeof($update > 1) )
 				wp_update_post( $update );
+		}
+
+		if(is_array($_POST['attachment_link']) && sizeof($_POST['attachment_link']) >= 1 ){
+			foreach ($_POST['attachment_link'] as $id => $value) {
+				update_post_meta( $id, 'mb_link', $value );
+			}
 		}
 	}
 	function validate_main_settings( $post_id ){
@@ -251,7 +263,6 @@ class isAdminView extends DT_MediaBlocks
 		 * @todo change it to locate/storage js
 		 */
 		self::meta_field($post_id, self::SHOW_TITLE_NAME, _isset_false($_POST[self::SHOW_TITLE_NAME]) );
-		self::meta_field($post_id, self::VIEW_MODE_NAME, _isset_false($_POST[self::VIEW_MODE_NAME]) );
 
 		if( !isset($_POST['main_type']) || !isset($_POST['type']) )
 			return $post_id;
@@ -261,8 +272,10 @@ class isAdminView extends DT_MediaBlocks
 
 		self::meta_field($post_id, 'main_type', $main_type);
 		self::meta_field($post_id, 'type', $type);
-		self::meta_field($post_id, 'query', $_POST['query']);
-		
+
+		if(isset($_POST['query']))
+			self::meta_field($post_id, 'query', $_POST['query']);
+
 		$this->settings_from_file($post_id, $main_type, false, $_POST );
 		$this->settings_from_file($post_id, $type, $main_type, $_POST );
 
@@ -286,8 +299,6 @@ class isAdminView extends DT_MediaBlocks
 			if(!empty($compiled))
 				file_put_contents( $out_file, $compiled );
 		}
-
-		//file_put_contents(__DIR__ . '/save.log', print_r($_POST, 1));
 	}
 }
 

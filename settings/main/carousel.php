@@ -1,5 +1,6 @@
 <?php
 defined( 'ABSPATH' ) or die();
+// as like slider
 
 $sizes = get_intermediate_image_sizes();
 $view_sizes = array();
@@ -9,11 +10,38 @@ foreach ($sizes as $value) {
 
 $settings = array(
   array(
+    "id" => "set_size",
+    "type" => "html",
+    "value" => "<p>Укажите размер вручную</p>",
+    ),
+  array(
+    'id' => 'width',
+    'label' => 'Width',
+    'desc' => '',
+    'type' => 'number',
+    ),
+  array(
+    'id' => 'height',
+    'label' => 'Height',
+    'desc' => '',
+    'type' => 'number',
+    ),
+  array(
+    "id" => "set_size2",
+    "type" => "html",
+    "value" => "<p>Или выберите предустановленный</p>",
+    ),
+  array(
     'id' => 'items_size',
     'label' => 'Image size',
     'desc' => '',
     'type' => 'select',
     'options' => $view_sizes
+    ),
+  array(
+    "id" => "set_size3",
+    "type" => "html",
+    "value" => "<p>Дополнительные настройки</p>",
     ),
   array(
     'id' => 'lightbox',
@@ -24,7 +52,7 @@ $settings = array(
     ),
   array(
     'id' => 'image_captions',
-    'label' => 'Show image captions',
+    'label' => 'Image captions',
     'desc' => '',
     'type' => 'checkbox',
     ),

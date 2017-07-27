@@ -96,28 +96,33 @@ class MediaBlock extends DT_MediaBlocks {
       $script = '';
       $is_lazy = isset($this->settings['lazyLoad']) && $this->settings['lazyLoad'] != 'false';
       $is_masonry = isset($this->settings['masonry']) && $this->settings['masonry'] != 'false';
-      
+
+      if( isset($this->settings['exclude_initialize']) )
+        return false;
+
+      $id = $this->id;
+
       if( $is_lazy || $is_masonry ){
-        $script  = "var \$container = \$('{$trigger}');";
-        $script .= "var itemSelector = '{$trigger} > .item';";
+        $script  = "var \$container{$id} = \$('{$trigger}');";
+        $script .= "var itemSelector{$id} = '{$trigger} > .item';";
         if( $is_masonry )
-          $script .= '$container.masonry({ itemSelector: itemSelector });';
+          $script .= '$container'.$id.'.masonry({ itemSelector: itemSelector'.$id.' });';
 
         if($is_lazy && $is_masonry)
-          $script .= '$container.imagesLoaded(function(){';
+          $script .= '$container'.$id.'.imagesLoaded(function(){';
 
         if($is_lazy)
-        $script .= '$(itemSelector +" img").addClass("not-loaded");
-        $(itemSelector +" img.not-loaded").lazyload({
+        $script .= '$(itemSelector'.$id.' +" img").addClass("not-loaded");
+        $(itemSelector'.$id.' +" img.not-loaded").lazyload({
           effect: "fadeIn",
           load: function() {
             $(this).removeClass("not-loaded");
             $(this).addClass("loaded");
-            if( typeof $container.masonry !== "undefined" )
-              $container.masonry("reload");
+            if( typeof $container'.$id.'.masonry !== "undefined" )
+              $container'.$id.'.masonry("reload");
           }
         });
-        $(itemSelector +" img.not-loaded").trigger("scroll");';
+        $(itemSelector'.$id.' +" img.not-loaded").trigger("scroll");';
 
         if($is_lazy && $is_masonry)
           $script .= '});';
@@ -192,11 +197,34 @@ class MediaBlock extends DT_MediaBlocks {
     return true;
   }
 
+  protected function parse_items_size( $width, $height, $items_size ){
+    // if( ! $items_size ){
+    if( $width || $height ){
+      if( !$width )
+        $width = apply_filters( 'default_att_width', $this->default_att_width);
+      if( !$height )
+        $height = apply_filters( 'default_att_height', $this->default_att_height);
+
+      $items_size = array( $width, $height );
+    }
+    else {
+      $items_size = apply_filters('default_att_size', $this->default_att_size);
+    }
+    // }
+
+    // @todo: fix it
+    _isset_default($height, apply_filters( 'default_att_height', $this->default_att_height) );
+    if( $this->main_type == 'carousel-3d' ){
+      echo "<style> #mediablock-{$this->id} { height:{$height}px; } </style>";
+    }
+    return $items_size;
+  }
+
   /** ******************************Output****************************** */
   public function render(){
     if( ! $this->post instanceof WP_Post )
       return;
-    
+
     if($this->post->post_status !== 'publish' )
       return false;
 
@@ -210,6 +238,13 @@ class MediaBlock extends DT_MediaBlocks {
 
     if( empty($this->settings['exclude_assets']) )
       $this->load_assets();
+
+    $this->settings['items_size'] = $this->parse_items_size(
+      _isset_false($this->settings['width']),
+      _isset_false($this->settings['height']),
+      _isset_false($this->settings['items_size']));
+
+    _isset_default( $this->settings['columns'], apply_filters( 'default_columns', $this->default_columns, $this->main_type ) );
 
     $atts = $this->atts;
 
@@ -228,56 +263,50 @@ class MediaBlock extends DT_MediaBlocks {
     return implode("\n", $result);
   }
 
-  protected function parse_items_size( $width, $height, $items_size ){
-    if( ! $items_size ){
-      if( $width || $height ){
-        if( !$width )
-          $width = apply_filters( 'default_att_width', $this->default_att_width);
-        if( !$height )
-          $height = apply_filters( 'default_att_height', $this->default_att_height);
+  protected function render_attachments(){
+    // need for gallery or "no js"
+    $item_class = get_column_class( $this->settings['columns'] );
+    if( isset($this->settings['no_paddings']) )
+      $item_class .= ' no-paddings';
 
-        $items_size = array( $width, $height );
-      }
-      else {
-        $items_size = apply_filters('default_att_size', $this->default_att_size);
-      }
-    }
+    // .fancybox usually use for modal trigger
+    $class_type = ($this->sub_type == 'fancybox') ? 'fancy' : $this->sub_type;
 
-    // @todo: fix it
-    _isset_default($height, apply_filters( 'default_att_height', $this->default_att_height) );
-    if( $this->main_type == 'carousel-3d' ){
-      echo "<style> #mediablock-{$this->id} { height:{$height}px; } </style>";
-    }
-    return $items_size;
-  }
+    $item_wrap = array(
+      "<div id='mediablock-{$this->id}' class='media-block row {$this->main_type} {$class_type}'>",
+      "</div>");
+    $item = array("<div class='item {$item_class}'>", "</div>");
 
-  protected function render_attachments_html( $settings, $item_wrap, $item ){
     $result = array();
     $result[] = $item_wrap[0];
     foreach ($this->attachments as $i => $attachment) {
         $att = get_post( $attachment );
-        
+
         /** Get Caption */
-        $caption = empty($this->settings['image_captions']) ? '' : sprintf('<div class="caption">%s</div>',
-            apply_filters( 'the_content', $att->post_excerpt )
+        $caption = '';
+        if( !empty($this->settings['image_captions']) ){
+          $caption = sprintf('<div class="caption">%s %s</div>',
+            !empty($att->post_excerpt) ? "<h4>" . $att->post_excerpt . "</h4>" : '',
+            !empty($att->post_content) ? apply_filters( 'the_content', $att->post_content ) : ''
             );
-        
+        }
+
         /** Get Link */
         $link = array('', '');
         if( ! empty($this->settings['lightbox']) && ($this->settings['columns'] == 1 || ! $this->double) ){
           $link = array("<a rel='group-{$this->id}' href='{$att->guid}' class='{$this->settings['lightbox']}'>", "</a>");
         }
         elseif( $metalink = esc_attr( get_post_meta( $attachment, 'mb_link', true ) ) ){
-          $url = ( preg_match("/permalink\(([0-9]{1,40})\)/i", $metalink, $output) && isset($output[1]) ) ?
+          $url = ( preg_match("/\[link id=\"([0-9]{1,40})\"\]/i", $metalink, $output) && isset($output[1]) ) ?
             get_permalink( (int)$output[1] ) : $metalink;
 
           $link = array("<a href='{$url}' class='mediablock-link'>", "</a>");
         }
-        
+
         $image = wp_get_attachment_image( $attachment, $this->settings['items_size'] );
         if(!empty( $this->settings['lazyLoad']) && $i > 3 )
           $image = str_replace(' src', ' data-original', $image);
-        
+
         /** Set Template */
         $result[] = $item[0];
         $result[] = '   '.$link[0];
@@ -289,30 +318,6 @@ class MediaBlock extends DT_MediaBlocks {
     $result[] = $item_wrap[1];
 
     return implode("\n", $result);
-  }
-
-  protected function render_attachments(){
-    
-
-    $this->settings['items_size'] = $this->parse_items_size(
-      _isset_false($this->settings['width']),
-      _isset_false($this->settings['height']),
-      _isset_false($this->settings['items_size']));
-    
-    _isset_default( $this->settings['columns'], apply_filters( 'default_columns', $this->default_columns, $this->main_type ) );
-
-    // need for gallery or "no js"
-    $item_class = get_column_class( $this->settings['columns'] );
-
-    // .fancybox usually use for modal trigger
-    $class_type = ($this->sub_type == 'fancybox') ? 'fancy' : $this->sub_type;
-    
-    $item_wrap = array(
-      "<div id='mediablock-{$this->id}' class='media-block row {$this->main_type} {$class_type}'>",
-      "</div>");
-    $item = array("<div class='item {$item_class}'><div class='item-wrap'>", "</div></div>");
-
-    return $this->render_attachments_html($this->settings, $item_wrap, $item );
   }
 }
 

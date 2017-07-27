@@ -64,7 +64,6 @@ class DT_MediaBlocks {
   const VERSION = '1.1.8';
 
   const SHOW_TITLE_NAME = 'show_title';
-  const VIEW_MODE_NAME = 'view_mode';
 
   public $settings = array();
 
@@ -90,7 +89,7 @@ class DT_MediaBlocks {
     define('MBLOCKS_DIR', plugin_dir_path( __FILE__ ) );
     define('MBLOCKS_ASSETS',  plugins_url( 'assets', __FILE__ ) );
   }
-  
+
   function register_post_types(){
     register_post_type( self::POST_TYPE, array(
       'query_var' => false,
@@ -106,7 +105,7 @@ class DT_MediaBlocks {
         'name' => 'Медиаблоки',
         'singular_name'      => 'Медиаблок',
         'add_new'            => 'Добавить блок',
-        'add_new_item'       => 'Добавление блока',
+        'add_new_item'       => 'Добавление блок',
         'edit_item'          => 'Редактирование блока',
         'new_item'           => 'Новый блок',
         'view_item'          => 'Смотреть МультиБлок',
@@ -197,7 +196,7 @@ class DT_MediaBlocks {
    * Settings & Options
    *
    * Include settings file
-   * 
+   *
    * @param  string settings filename
    * @param  string type returned settings
    * @return array settings
@@ -208,7 +207,7 @@ class DT_MediaBlocks {
 
     $path = MBLOCKS_DIR . 'settings/'.$file.'.php';
 
-    if ( is_readable( $path ) ) 
+    if ( is_readable( $path ) )
       return include( $path );
 
     return false;
@@ -216,7 +215,7 @@ class DT_MediaBlocks {
 
   /**
    * Update or Get post meta with prefix (create if empty)
-   * 
+   *
    * @param  int
    * @param  string meta name (without prefix)
    * @param  string values for update or get
@@ -240,7 +239,7 @@ class DT_MediaBlocks {
 
   /**
    * Get or Set values to meta from settings file
-   * 
+   *
    * @param  int    $post_id
    * @param  string $settings_name      settings filename (subtype if ($settings_maintype))
    * @param  string $settings_maintype  main_type settinigs (carousel, gallery..)
@@ -259,7 +258,7 @@ class DT_MediaBlocks {
 
     if( ! $settings )
       return false;
-    
+
     foreach ( $settings as $param ){
       // Если не указан name принимаем id, иначе '';
       if( !isset($param['name']) )
@@ -287,7 +286,6 @@ class DT_MediaBlocks {
       }
       // $debug[] = $pn .' => '. $values[$pn] . ' (' . $param['type'] . ')';
     }
-
 
     if( $block_values ){
       self::meta_field( $post_id, $settings_name.'_opt', $result );

@@ -56,6 +56,8 @@ select.button {
 	height: auto;
 }
 .attachment .crop {
+	background: #fff;
+	border: 1px solid #ccc;
 	height: 140px;
 	overflow: hidden;
 	position: relative;
@@ -74,37 +76,35 @@ select.button {
 	width: 90%;
 	height: auto;
 }
-
 .dt-media .attachments .attachment input,
 .dt-media .attachments .attachment textarea {
 	border: 1px solid #ccc;
 }
+
 /* tile */
-.dt-media .attachments.tile .attachment:hover input,
-.dt-media .attachments.tile .attachment input:focus {
+.dt-media .attachments .attachment:hover input,
+.dt-media .attachments .attachment input:focus {
 	box-shadow: none;
 	opacity: 1;
 }
-.dt-media .attachments.tile > div {
+.dt-media .attachments > div {
 	box-sizing: border-box;
 	width: 24.8%;
 	padding: 8px;
 	margin: 0;
 }
-.dt-media .attachments.tile .attachment input {
+.dt-media .attachments .attachment input {
 	width: 100%;
 	outline: none;
 	opacity: 0.6;
 	margin: -1px 0 0;
 }
-.dt-media .attachments.tile .attachment input.item-link {
-	display: none;
-}
-.dt-media .attachments.tile .attachment textarea {
+.dt-media .attachments .attachment input.item-link,
+.dt-media .attachments .attachment textarea {
 	display: none;
 }
 @media (max-width: 600px){
-	.attachments.tile > div {
+	.dt-media .attachments > div {
 		width: 49.6%;
 	}
 	.dt-media label {
@@ -113,28 +113,32 @@ select.button {
 }
 
 /*list*/
-.dt-media .attachments.list > div {
+.dt-media.list .attachments > div {
 	width: 100%;
 	padding: 8px 8px 0;
 }
-.dt-media .attachments.list .attachment .crop {
+.dt-media.list .attachments .attachment .crop {
 	width: 25%;
 	float: left;
 }
-.dt-media .attachments.list .attachment .item {
+.dt-media.list .attachments .attachment .item {
 	position: relative;
 	overflow: hidden;
 }
-.dt-media .attachments.list .attachment input {
-	width: 74%;
+.dt-media.list .attachments .attachment input.item-link,
+.dt-media.list .attachments .attachment textarea {
+	display: inline-block;
 }
-.dt-media .attachments.list .attachment textarea {
-	width: 74%;
+.dt-media.list .attachments .attachment input {
+	width: 73%;
+	margin-top: 0px;
+}
+.dt-media.list .attachments .attachment textarea {
+	width: 73%;
     resize: none;
-    margin: 2px 0 -4px;
+    margin: 2px 0 0;
 }
-    
-.dt-media .attachments.list .attachment .remove {
+.dt-media.list .attachments .attachment .remove {
 	right: auto;
 	top: 0;
 	left: 0px;
