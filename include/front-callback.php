@@ -284,7 +284,8 @@ class MediaBlock extends DT_MediaBlocks {
 
         /** Get Caption */
         $caption = '';
-        if( !empty($this->settings['image_captions']) ){
+        $caption_pos = 'bottom';
+        if( isset($this->settings['image_captions']) && $caption_pos = $this->settings['image_captions'] ){
           $caption = sprintf('<div class="caption">%s %s</div>',
             !empty($att->post_excerpt) ? "<h4>" . $att->post_excerpt . "</h4>" : '',
             !empty($att->post_content) ? apply_filters( 'the_content', $att->post_content ) : ''
@@ -310,8 +311,9 @@ class MediaBlock extends DT_MediaBlocks {
         /** Set Template */
         $result[] = $item[0];
         $result[] = '   '.$link[0];
-        $result[] = '     '.$image;
-        $result[] = '     '.$caption;
+        $result[] = '     <div class="wrap">';
+        $result[] = ( $caption_pos == 'top' ) ? '       ' . $caption . $image : '       ' . $caption . $image;
+        $result[] = '     </div>';
         $result[] = '   '.$link[1];
         $result[] = $item[1];
     }

@@ -46,7 +46,12 @@ $settings = array(
         'id' => 'image_captions',
         'label' => 'Image captions',
         'desc' => '',
-        'type' => 'checkbox',
+        'type' => 'select',
+        'options' => array(
+            ''       => 'Не отображать',
+            'top'    => 'Сверху',
+            'bottom' => 'Снизу'
+            )
         ),
     array(
         'id' => 'columns',

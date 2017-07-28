@@ -54,9 +54,13 @@ $settings = array(
     'id' => 'image_captions',
     'label' => 'Image captions',
     'desc' => '',
-    'type' => 'checkbox',
+    'type' => 'select',
+    'options' => array(
+        ''       => 'Не отображать',
+        'top'    => 'Сверху',
+        'bottom' => 'Снизу'
+        )
     ),
-
   array(
     'id' => 'exclude_styles',
     'label' => 'Exclude Template',
@@ -69,7 +73,6 @@ $settings = array(
     'desc' => '',
     'type' => 'checkbox',
     )
-  
   );
 
 return $settings;

@@ -49,7 +49,6 @@ $settings = array(
     'type' => 'text',
     'default' => 'next'
     ),
-  
   array(
     'id' => 'exclude_styles',
     'label' => 'Exclude Template',
