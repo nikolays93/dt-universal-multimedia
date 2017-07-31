@@ -312,7 +312,15 @@ class MediaBlock extends DT_MediaBlocks {
         $result[] = $item[0];
         $result[] = '   '.$link[0];
         $result[] = '     <div class="wrap">';
-        $result[] = ( $caption_pos == 'top' ) ? '       ' . $caption . $image : '       ' . $caption . $image;
+
+        if( $caption_pos == 'top' )
+          $result[] = '       ' . $caption;
+
+        $result[] = '       ' . $image;
+
+        if( $caption_pos == 'bottom' )
+          $result[] = '       ' . $caption;
+
         $result[] = '     </div>';
         $result[] = '   '.$link[1];
         $result[] = $item[1];
