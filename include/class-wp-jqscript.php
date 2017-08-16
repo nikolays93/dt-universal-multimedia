@@ -42,11 +42,11 @@ if(! function_exists('json_function_names') ){
   }
   add_filter( 'jscript_php_to_json', 'json_function_names', 25, 1 );
 }
-if(! function_exists('JScript_jQuery_onload_wrapper') ){
+if(! function_exists(__NAMESPACE__ . '\JScript_jQuery_onload_wrapper') ){
     function JScript_jQuery_onload_wrapper($data){
         return "<script type='text/javascript'><!-- \n jQuery(document).ready(function($) { \n" . $data . " });\n --></script>\n";
     }
-    add_filter( 'jQuery_onload_wrapper', 'JScript_jQuery_onload_wrapper', 10, 1 );
+    add_filter( 'jQuery_onload_wrapper', __NAMESPACE__ . '\JScript_jQuery_onload_wrapper', 10, 1 );
 }
 
 class JQScript {
