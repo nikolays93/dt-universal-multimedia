@@ -17,14 +17,14 @@ if( !has_filter( 'jscript_php_to_json', 'json_encode' ) ){
 
   add_filter( 'jscript_php_to_json', 'json_encode', 10, 1 );
 }
-if(! function_exists('cpJsonStr') ){
+if(! function_exists(__NAMESPACE__ . '\cpJsonStr') ){
     function cpJsonStr($str){
         $str = preg_replace_callback('/\\\\u([a-f0-9]{4})/i', create_function('$m', 'return chr(hexdec($m[1])-1072+224);'), $str);
         return iconv('cp1251', 'utf-8', $str);
     }
-    add_filter( 'jscript_php_to_json', 'cpJsonStr', 15, 1 );
+    add_filter( 'jscript_php_to_json', __NAMESPACE__ . '\cpJsonStr', 15, 1 );
 }
-if(! function_exists('str_to_bool') ){
+if(! function_exists(__NAMESPACE__ .  '\str_to_bool') ){
   function str_to_bool( $json ){
     $json = str_replace('"true"',  'true',  $json);
     $json = str_replace('"on"',  'true',  $json);
@@ -32,15 +32,15 @@ if(! function_exists('str_to_bool') ){
     $json = str_replace('"off"', 'false', $json);
     return $json;
   }
-  add_filter( 'jscript_php_to_json', 'str_to_bool', 20, 1 );
+  add_filter( 'jscript_php_to_json', __NAMESPACE__ . '\str_to_bool', 20, 1 );
 }
-if(! function_exists('json_function_names') ){
+if(! function_exists(__NAMESPACE__ .'\json_function_names') ){
   function json_function_names( $json ){
     $json = str_replace( '"%', '', $json );
     $json = str_replace( '%"', '', $json );
     return $json;
   }
-  add_filter( 'jscript_php_to_json', 'json_function_names', 25, 1 );
+  add_filter( 'jscript_php_to_json', __NAMESPACE__ .'\json_function_names', 25, 1 );
 }
 if(! function_exists(__NAMESPACE__ . '\JScript_jQuery_onload_wrapper') ){
     function JScript_jQuery_onload_wrapper($data){
