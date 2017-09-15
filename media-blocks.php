@@ -21,13 +21,18 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 if ( ! defined( 'ABSPATH' ) )
   exit; // disable direct access
 
-define('MBLOCKS_DIR', plugin_dir_path( __FILE__ ) );
-define('MBLOCKS_ASSETS',  plugins_url( 'assets', __FILE__ ) );
+define('MBLOCKS', 'MediaBlocks');
+
+define('MBLOCKS_DIR', rtrim(plugin_dir_path( __FILE__ ), '/') );
+define('MBLOCKS_ASSETS',  rtrim(plugins_url( 'assets', __FILE__ ), '/') );
 define('MBLOCKS_TYPE', 'mediablocks' );
 
-add_action( 'plugins_loaded', function(){ new DT_MediaBlocks(); });
-register_activation_hook( __FILE__, array( 'DT_MediaBlocks', 'activate' ) );
-register_uninstall_hook( __FILE__, array( 'DT_MediaBlocks', 'uninstall' ) );
+register_activation_hook( __FILE__, function() { add_option( MBLOCKS, array() ); } );
+register_uninstall_hook( __FILE__, function() { delete_option( MBLOCKS ); } );
+add_action( 'plugins_loaded', 'init_media_blocks');
+function init_media_blocks() {
+  require_once MBLOCKS_DIR . '/include/';
+}
 
 class DT_MediaBlocks {
   const SETTINGS = 'MediaBlocks';
@@ -39,12 +44,6 @@ class DT_MediaBlocks {
   const SHOW_TITLE_NAME = 'show_title';
 
   public $settings = array();
-
-  private function __clone() {}
-  private function __wakeup() {}
-
-  public static function activate(){ add_option( self::SETTINGS, array() ); }
-  public static function uninstall(){ delete_option(self::SETTINGS); }
 
   function __construct() {
     self::include_required_classes();
