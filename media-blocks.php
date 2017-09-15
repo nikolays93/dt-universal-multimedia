@@ -19,6 +19,9 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 if ( ! defined( 'ABSPATH' ) )
   exit; // disable direct access
 
+define('MBLOCKS_DIR', plugin_dir_path( __FILE__ ) );
+define('MBLOCKS_ASSETS',  plugins_url( 'assets', __FILE__ ) );
+
 add_action( 'plugins_loaded', function(){ new DT_MediaBlocks(); });
 register_activation_hook( __FILE__, array( 'DT_MediaBlocks', 'activate' ) );
 register_uninstall_hook( __FILE__, array( 'DT_MediaBlocks', 'uninstall' ) );
@@ -41,7 +44,6 @@ class DT_MediaBlocks {
   public static function uninstall(){ delete_option(self::SETTINGS); }
 
   function __construct() {
-    self::define_constants();
     self::include_required_classes();
     $this->settings = get_option( self::SETTINGS, array() );
 
@@ -50,11 +52,6 @@ class DT_MediaBlocks {
 
     if( is_admin() )
       new isAdminView();
-  }
-
-  private static function define_constants(){
-    define('MBLOCKS_DIR', plugin_dir_path( __FILE__ ) );
-    define('MBLOCKS_ASSETS',  plugins_url( 'assets', __FILE__ ) );
   }
 
   function register_post_types(){
