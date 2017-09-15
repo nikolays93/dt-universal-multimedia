@@ -14,6 +14,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 /**
  * @todo: include utilites
+ * @todo: include post-type
  */
 
 if ( ! defined( 'ABSPATH' ) )
@@ -131,27 +132,6 @@ class DT_MediaBlocks {
   }
 
   /**
-   * Settings & Options
-   *
-   * Include settings file
-   *
-   * @param  string settings filename
-   * @param  string type returned settings
-   * @return array settings
-   */
-  protected function parse_settings_file( $file = false, $main_type = 'carousel' ){
-    if( empty($file) )
-      return false;
-
-    $path = MBLOCKS_DIR . 'settings/'.$file.'.php';
-
-    if ( is_readable( $path ) )
-      return include( $path );
-
-    return false;
-  }
-
-  /**
    * Update or Get post meta with prefix (create if empty)
    *
    * @param  int
@@ -172,66 +152,6 @@ class DT_MediaBlocks {
     }
     else {
       return get_post_meta( $post_id, '_'.self::PREFIX.$key, true );
-    }
-  }
-
-  /**
-   * Get or Set values to meta from settings file
-   *
-   * @param  int    $post_id
-   * @param  string $settings_name      settings filename (subtype if ($settings_maintype))
-   * @param  string $settings_maintype  main_type settinigs (carousel, gallery..)
-   * @param  values $block_values       to record, get installed values if 'false'
-   * @return is get (array) else (null)
-   */
-  protected function settings_from_file( $post_id, $settings_name, $settings_maintype = false, $block_values = false ){
-    $post_id = intval( $post_id );
-    if( !$settings_name || !$post_id )
-      return false;
-
-    $result = array();
-    $values = ($block_values) ? $block_values : $this->meta_field( $post_id, $settings_name.'_opt' );
-    $filename = ($settings_maintype) ? 'sub/'.$settings_name : 'main/'.$settings_name;
-    $settings = $this->parse_settings_file( $filename, $settings_maintype );
-
-    if( ! $settings )
-      return false;
-
-    foreach ( $settings as $param ){
-      // Если не указан name принимаем id, иначе '';
-      if( !isset($param['name']) )
-        $param['name'] = isset($param['id']) ? $param['id'] : '';
-
-      // Если не указан default принимаем placeholder, иначе '';
-      if( !isset($param['default']) )
-        $param['default'] = isset($param['placeholder']) ? $param['placeholder'] : '';
-
-      $pn = $param['name'];
-      if($settings_maintype !== false){
-        if(isset($values[$pn]) && $values[$pn] != $param['default']){
-        // Пустой checkbox записываем как 'false'
-          if( $values[$pn] == '' && $param['type'] == 'checkbox' )
-            $result[$pn] = 'false';
-
-        // Принимаем значения если они не пустые, или если это select (Даже пустые)
-          elseif( $values[$pn] != '' || $param['type'] == 'select' )
-            $result[$pn] = $values[$pn];
-        }
-      }
-      else {
-        if( isset($values[$pn]) && ($values[$pn] != '' || $param['type'] == 'select') )
-            $result[$pn] = $values[$pn];
-      }
-      // $debug[] = $pn .' => '. $values[$pn] . ' (' . $param['type'] . ')';
-    }
-
-    if( $block_values ){
-      self::meta_field( $post_id, $settings_name.'_opt', $result );
-      // $_debug = print_r($debug, 1) . "\n\n" . print_r($result, 1);
-      // file_put_contents(__DIR__ . '/post_result.log', $_debug);
-    }
-    else{
-      return $result;
     }
   }
 }
