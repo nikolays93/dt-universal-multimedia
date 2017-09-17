@@ -35,7 +35,7 @@ if( ! function_exists('mb_post_meta') ) {
         if( ! $post_id = absint($post_id) ) return false;
 
         // $key required
-        if( ! $key = absint($key) ) return false;
+        if( ! $key ) return false;
 
         if( $update_value !== false ) {
             // not empty value

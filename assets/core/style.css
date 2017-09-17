@@ -83,7 +83,9 @@ select.button {
 
 /* tile */
 .dt-media .attachments .attachment:hover input,
-.dt-media .attachments .attachment input:focus {
+.dt-media .attachments .attachment:hover textarea,
+.dt-media .attachments .attachment input:focus,
+.dt-media .attachments .attachment textarea:focus {
 	box-shadow: none;
 	opacity: 1;
 }
@@ -93,7 +95,8 @@ select.button {
 	padding: 8px;
 	margin: 0;
 }
-.dt-media .attachments .attachment input {
+.dt-media .attachments .attachment input,
+.dt-media .attachments .attachment textarea {
 	width: 100%;
 	outline: none;
 	opacity: 0.6;

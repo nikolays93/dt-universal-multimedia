@@ -2,14 +2,14 @@
 defined( 'ABSPATH' ) or die();
 
 global $post;
-$type = get_post_meta( $post->ID, '_'.DT_MediaBlocks::PREFIX.'type', true );
+$type = get_post_meta( $post->ID, '_'.MB_PREF.'type', true );
 $inputs = array(
 	array(
 		'id'    => 'main_type',
 		'name'  => 'main_type',
 		'type'  => 'select',
 		'class' => 'button',
-		'default'=> get_post_meta( $post->ID, '_'.DT_MediaBlocks::PREFIX.'main_type', true ),
+		'default'=> get_post_meta( $post->ID, '_'.MB_PREF.'main_type', true ),
 		'options' => array(
 			'carousel'    => 'Карусель',
 			'slider'      => 'Слайдер',

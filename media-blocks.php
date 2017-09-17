@@ -22,39 +22,51 @@ if ( ! defined( 'ABSPATH' ) )
   exit; // disable direct access
 
 define('MBLOCKS', 'MediaBlocks');
+define('MB_PREF', 'mb_');
 
 define('MBLOCKS_DIR', rtrim(plugin_dir_path( __FILE__ ), '/') );
-define('MBLOCKS_ASSETS',  rtrim(plugins_url( 'assets', __FILE__ ), '/') );
-define('MBLOCKS_TYPE', 'mediablocks' );
+define('MBLOCKS_URL', rtrim(plugins_url( '', __FILE__ ), '/') );
 
-register_activation_hook( __FILE__, function() { add_option( MBLOCKS, array() ); } );
-register_uninstall_hook( __FILE__, function() { delete_option( MBLOCKS ); } );
-add_action( 'plugins_loaded', 'init_media_blocks');
+register_activation_hook( __FILE__, 'activate_media_blocks' );
+function activate_media_blocks() {
+    add_option( MBLOCKS, array() );
+}
+
+register_uninstall_hook( __FILE__, 'uninstall_media_blocks' );
+function uninstall_media_blocks() {
+    delete_option( MBLOCKS );
+}
+
 function init_media_blocks() {
     require_once MBLOCKS_DIR . '/include/utilites.php';
-    require_once MBLOCKS_DIR . '/include/class-mblock.php';
-    require_once MBLOCKS_DIR . '/include/';
-    require_once MBLOCKS_DIR . '/include/';
+
+    if( is_admin() ) {
+        mb_include_file( array(
+            'scssc'          => 'class/scss.inc',
+            'DT_Form'        => 'class/class-dt-form',
+            'MB\WPPostBoxes' => 'class/class-wp-post-boxes',
+            'MBlocks_Post_Type' => 'class-mblocks-post-type',
+        ) );
+    }
+    else {
+        mb_include_file( array(
+            'register_assets',
+        ) );
+    }
+
+    // mb_include_file( array(
+    //     'mblock_class',
+    //     // 'front' => 'front-callback',
+    // ) );
 }
 
-class DT_MediaBlocks {
-  const SETTINGS = 'MediaBlocks';
-  const POST_TYPE = 'mediablocks';
-  const PREFIX = 'mb_';
-  const CLASSES_DIR = 'include/';
-  const VERSION = '1.1.8';
+require_once MBLOCKS_DIR . '/include/class-mblocks-post-type.php';
 
-  const SHOW_TITLE_NAME = 'show_title';
+add_action( 'plugins_loaded', 'init_media_blocks');
+add_action( 'plugins_loaded', array('MBlocks_Post_Type', 'init') );
 
-  public $settings = array();
-
-  function __construct() {
-    self::include_required_classes();
-    $this->settings = get_option( self::SETTINGS, array() );
-
-    add_action( 'wp_enqueue_scripts', array( __CLASS__, 'pre_register_assets'), 50 );
-
-    if( is_admin() )
-      new isAdminView();
-  }
-}
+// class DT_MediaBlocks {
+//   function __construct() {
+//     add_action( 'wp_enqueue_scripts', array( __CLASS__, 'pre_register_assets'), 50 );
+//   }
+// }
