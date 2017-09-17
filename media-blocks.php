@@ -31,7 +31,10 @@ register_activation_hook( __FILE__, function() { add_option( MBLOCKS, array() );
 register_uninstall_hook( __FILE__, function() { delete_option( MBLOCKS ); } );
 add_action( 'plugins_loaded', 'init_media_blocks');
 function init_media_blocks() {
-  require_once MBLOCKS_DIR . '/include/';
+    require_once MBLOCKS_DIR . '/include/utilites.php';
+    require_once MBLOCKS_DIR . '/include/class-mblock.php';
+    require_once MBLOCKS_DIR . '/include/';
+    require_once MBLOCKS_DIR . '/include/';
 }
 
 class DT_MediaBlocks {
@@ -53,59 +56,5 @@ class DT_MediaBlocks {
 
     if( is_admin() )
       new isAdminView();
-  }
-
-  private static function include_required_classes(){
-    $required_classes = array(
-      'admin' => array(
-        'MB\JQScript'    => 'class-wp-jqscript',
-        // 'MB\queries'     => 'queries',
-        'scssc'          => 'scss.inc',
-        'MB\WPForm'      => 'class-wp-form-render',
-        'MB\WPPostBoxes' => 'class-wp-post-boxes',
-        'MB\isAdminView' => 'is-admin-callback',
-        ),
-      'public' => array(
-        'MB\JQScript'    => 'class-wp-jqscript',
-        // 'MB\queries'     => 'queries',
-        'MB\MediaBlock'  => 'front-callback',
-        ),
-      );
-
-    foreach ($required_classes as $type => $classes) {
-      foreach ( $classes as $class_name => $path ) {
-        if( ($type == 'admin' && !is_admin()) || ($type == 'public' && is_admin()) )
-          continue;
-
-        $path = MBLOCKS_DIR . self::CLASSES_DIR . $path . '.php';
-
-        if ( is_readable( $path ) && ! class_exists( $class_name ) ) 
-          require_once( $path );
-      }
-    }
-  }
-
-  /**
-   * Update or Get post meta with prefix (create if empty)
-   *
-   * @param  int
-   * @param  string meta name (without prefix)
-   * @param  string values for update or get
-   */
-  public static function meta_field( $post_id, $key, $value = false ){
-    if( !$post_id )
-      return false;
-
-    if( $value !== false ){
-      if( $value != '' ){
-        update_post_meta( $post_id, '_'.self::PREFIX.$key, $value );
-      }
-      else {
-        delete_post_meta( $post_id, '_'.self::PREFIX.$key );
-      }
-    }
-    else {
-      return get_post_meta( $post_id, '_'.self::PREFIX.$key, true );
-    }
   }
 }

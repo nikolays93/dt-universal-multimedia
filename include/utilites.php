@@ -37,6 +37,30 @@ if( ! function_exists('get_column_class') ){
   }
 }
 
+/**
+ * Update or Get post meta with prefix (create if empty)
+ *
+ * @param  int
+ * @param  string meta name (without prefix)
+ * @param  string values for update or get
+ */
+function meta_field( $post_id, $key, $value = false ){
+  if( !$post_id )
+    return false;
+
+  if( $value !== false ){
+    if( $value != '' ){
+      update_post_meta( $post_id, '_'.self::PREFIX.$key, $value );
+    }
+    else {
+      delete_post_meta( $post_id, '_'.self::PREFIX.$key );
+    }
+  }
+  else {
+    return get_post_meta( $post_id, '_'.self::PREFIX.$key, true );
+  }
+}
+
 if( !function_exists( 'mblock_parse_settings' ) ) {
   /**
    * Settings & Options
@@ -121,3 +145,34 @@ if( ! function_exists( 'mblock_settings_from_file' ) ) {
     }
   }
 }
+
+
+  function mb_include_classes( $arrClasses ){
+    $required_classes = array(
+      'admin' => array(
+        'MB\JQScript'    => 'class-wp-jqscript',
+        // 'MB\queries'     => 'queries',
+        'scssc'          => 'scss.inc',
+        'MB\WPForm'      => 'class-wp-form-render',
+        'MB\WPPostBoxes' => 'class-wp-post-boxes',
+        'MB\isAdminView' => 'is-admin-callback',
+        ),
+      'public' => array(
+        'MB\JQScript'    => 'class-wp-jqscript',
+        // 'MB\queries'     => 'queries',
+        'MB\MediaBlock'  => 'front-callback',
+        ),
+      );
+
+    foreach ($required_classes as $type => $classes) {
+      foreach ( $classes as $class_name => $path ) {
+        if( ($type == 'admin' && !is_admin()) || ($type == 'public' && is_admin()) )
+          continue;
+
+        $path = MBLOCKS_DIR . self::CLASSES_DIR . $path . '.php';
+
+        if ( is_readable( $path ) && ! class_exists( $class_name ) ) 
+          require_once( $path );
+      }
+    }
+  }
