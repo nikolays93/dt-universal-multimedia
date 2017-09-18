@@ -97,7 +97,8 @@ class MBlocks_Post_Type
     /**
      * Чекбокс после заголовка "Показывать заголовок"
      */
-    static function after_title() {
+    static function after_title()
+    {
         global $post, $wp_meta_boxes;
 
         if($post->post_type !== self::post_type) return;
@@ -280,11 +281,14 @@ class MBlocks_Post_Type
             wp_enqueue_media();
         }
 
-        wp_enqueue_style(MB_PREF . 'style', MBLOCKS_URL . '/assets/core/style.css', array(), '1.0' );
-        wp_enqueue_script( MB_PREF . 'view', MBLOCKS_URL . '/assets/core/view.js', array('jquery'), '1.0', true );
+        $core_url = '/assets/core/';
+        wp_enqueue_style(MB_PREF . 'style', MBLOCKS_URL . $core_url . 'style.css', array(), '1.0' );
+        wp_enqueue_script( MB_PREF . 'view', MBLOCKS_URL . $core_url . 'view.js', array('jquery'), '1.0', true );
         wp_localize_script(MB_PREF . 'view', 'mb_settings', array(
             'nonce' => wp_create_nonce( self::security ),
         ) );
+        $lib = 'jquery.data-actions';
+        wp_enqueue_script( 'easy-actions', MBLOCKS_URL.$core_url.$lib.'/'.$lib.'.min.js', array('jquery'), '1.0', true );
     }
 
     /**

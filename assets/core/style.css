@@ -24,6 +24,22 @@ select.button {
 	content: "\f104";
 }
 
+.dt-media #detail_view:focus {
+	border-color: #999;
+	outline: none;
+	box-shadow: none;
+}
+.dt-media #detail_view .dashicons-screenoptions {
+	display: none;
+}
+.dt-media.list #detail_view .dashicons-screenoptions {
+	display: block;
+	line-height: 22px;
+}
+.dt-media.list #detail_view .dashicons-list-view {
+	display: none;
+}
+
 /* attachments wrap */
 .dt-media .attachments {
 	background: #f9f9f9;

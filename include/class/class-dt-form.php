@@ -138,10 +138,15 @@ class DT_Form {
 
     private static function _input_template( $field, $entry, $for_table = false )
     {
+        if( is_array($field['input_class']) ) {
+            $class = implode( ' ', $field['input_class'] );
+        } else {
+            $class = $field['input_class'];
+        }
+
         $name         = 'name="' . esc_attr( $field['name'] ) . '"';
         $id           = 'id="' . esc_attr( $field['id'] ) . '"';
-        $class        = sizeof($field['input_class']) ?
-            ' ' . esc_attr( implode( ' ', $field['input_class'] ) ) : '';
+        $class        = esc_attr( $class );
         $ph           = esc_attr( $field['placeholder'] );
 
         $custom_attributes = array();
@@ -234,7 +239,7 @@ class DT_Form {
                             $options .= "</optgroup>";
                         }
                     }
-                    $input .= "<select {$name} {$id} class='select{$class}' {$attrs}";
+                    $input .= "<select {$name} {$id} class='select {$class}' {$attrs}";
                     $input .= " {$autocomplete}>{$options}</select>";
                 }
                 break;

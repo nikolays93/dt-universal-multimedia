@@ -149,3 +149,9 @@ if( ! function_exists('mb_include_file')) {
         }
     }
 }
+
+if( ! function_exists('dash_to_underscore') ){
+  function dash_to_underscore( $str ){
+    return str_replace('-', '_', $str);
+  }
+}

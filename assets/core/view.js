@@ -146,9 +146,11 @@ jQuery(document).ready(function($) {
         var val = $(this).val();
         $('[name=type]').each(function(){
             if( $(this).hasClass(val) ){
+                console.log('1');
                 $(this).slideDown().addClass('activated').removeAttr('disabled');
             }
             else {
+                console.log('0');
                 $(this).hide().removeClass('activated').attr('disabled', 'disable');
             }
         });
@@ -171,6 +173,7 @@ jQuery(document).ready(function($) {
     * Ajax (обновляет параметры при выборе типа)
     */
     $('#main_type, #type').on('change', function(){
+        $('#main_settings.postbox .inside, #side_settings.postbox .inside').css('opacity', '0.6');
         $.ajax({
             type: 'POST',
             url: ajaxurl,
@@ -185,6 +188,7 @@ jQuery(document).ready(function($) {
 
                 $('#main_settings.postbox .inside').html( $response[0] );
                 $('#side_settings.postbox .inside').html( $response[1] );
+                $('#main_settings.postbox .inside, #side_settings.postbox .inside').css('opacity', '1');
             }
         }).fail(function() {
             console.log('Ajax: Fatal Error.');

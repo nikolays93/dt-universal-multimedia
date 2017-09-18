@@ -86,7 +86,7 @@ $settings = array(
         'type' => 'checkbox',
         ),
     array(
-        'id' => 'exclude_initialize',
+        'id' => 'not_initialize',
         'label' => 'Disable initialize script',
         'desc' => '',
         'type' => 'checkbox',
