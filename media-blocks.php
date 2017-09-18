@@ -50,7 +50,7 @@ function init_media_blocks() {
     }
     else {
         mb_include_file( array(
-            'register_assets',
+            'register-assets',
         ) );
     }
 
