@@ -1,9 +1,10 @@
 <?php
 
 add_action('wp_enqueue_scripts', 'register_assets');
-add_action('wp_enqueue_scripts', function() {
-    wp_enqueue_script( 'owl-carousel' );
-});
+// test
+// add_action('wp_enqueue_scripts', function() {
+//     wp_enqueue_script( 'owl-carousel' );
+// });
 function register_assets( $type = false ){
     $affix = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? '' : '.min';
     $url = MBLOCKS_URL . '/assets';
