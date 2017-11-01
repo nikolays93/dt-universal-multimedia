@@ -2,14 +2,13 @@
 defined( 'ABSPATH' ) or die();
 
 global $post;
-$type = get_post_meta( $post->ID, '_'.MB_PREF.'type', true );
+$type = get_post_meta( $post->ID, '_type', true );
 $inputs = array(
 	array(
-		'id'    => 'main_type',
-		'name'  => 'main_type',
+		'id'    => 'grid_type',
 		'type'  => 'select',
 		'input_class' => 'button',
-		'default'=> get_post_meta( $post->ID, '_'.MB_PREF.'main_type', true ),
+		// 'default'=> get_post_meta( $post->ID, '_main_type', true ),
 		'options' => array(
 			'carousel'    => 'Карусель',
 			'slider'      => 'Слайдер',
@@ -19,39 +18,41 @@ $inputs = array(
 			),
 		),
 	array(
-		'id'    => 'type',
-		'name'  => 'type',
+		'id'    => 'lib_type',
+		'name'  => 'lib_type',
 		'type'  => 'select',
-		'input_class' => 'carousel slider sync-slider query button hidden',
-		'default' => $type,
-		'disabled' => 'disable',
+		'input_class' => 'carousel slider sync-slider query button',
 		'options' => array(
+			'slick' => 'Скользкий слайдер',
 			'owl-carousel' => 'Сова карусель',
-			'slick' => 'Скользкий слайдер'
-			)
+			),
 		),
 	array(
-		'id'    => 'type',
-		'name'  => 'type',
+		'id'    => 'lib_type',
+		'name'  => 'lib_type',
 		'type'  => 'select',
 		'input_class' => 'gallery button hidden',
-		'default' => $type,
-		'disabled' => 'disable',
+		// 'default' => $type,
 		'options' => array(
 			'fancybox' => 'Фантастическая коробка',
-			)
+			),
+		'custom_attributes' => array(
+			'disabled' => 'disable',
+			),
 		),
 	array(
-		'id'    => 'type',
-		'name'  => 'type',
+		'id'    => 'lib_type',
+		'name'  => 'lib_type',
 		'type'  => 'select',
 		'input_class' => 'carousel-3d button hidden',
-		'default' => $type,
-		'disabled' => 'disable',
+		// 'default' => $type,
 		'options' => array(
 			'cloud9carousel' => 'Облачная карусель',
 			'waterwheelCarousel' => 'Водяное колесо'
-			)
+			),
+		'custom_attributes' => array(
+			'disabled' => 'disable',
+			),
 		),
 	);
 

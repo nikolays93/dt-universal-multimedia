@@ -1,13 +1,11 @@
 <?php
 
-add_action('wp_enqueue_scripts', 'register_assets');
-// test
-// add_action('wp_enqueue_scripts', function() {
-//     wp_enqueue_script( 'owl-carousel' );
-// });
+namespace CDevelopers\media;
+
+add_action('wp_enqueue_scripts', __NAMESPACE__ . '\register_assets');
 function register_assets( $type = false ){
     $affix = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? '' : '.min';
-    $url = MBLOCKS_URL . '/assets';
+    $url = get_plugin_url('assets');
 
     $assets = array(
         'owl-carousel' => array(

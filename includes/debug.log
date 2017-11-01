@@ -1,0 +1,117 @@
+Array
+(
+    [0] => 3723
+    [1] => Array
+        (
+            [_wpnonce] => ce1a4c6dc6
+            [_wp_http_referer] => /wp-admin/post.php?post=3723&action=edit&message=1
+            [user_ID] => 1
+            [action] => editpost
+            [originalaction] => editpost
+            [post_author] => 1
+            [post_type] => mblock
+            [original_post_status] => publish
+            [referredby] => http://wordpress.cms/wp-admin/post.php?post=3723&action=edit
+            [_wp_original_http_referer] => http://wordpress.cms/wp-admin/post.php?post=3723&action=edit
+            [post_ID] => 3723
+            [meta-box-order-nonce] => 7654f812a2
+            [closedpostboxesnonce] => 8be131438a
+            [original_post_title] => New post the same as mblock
+            [post_title] => New post the same as mblock
+            [samplepermalinknonce] => d5b4888c54
+            [hidden_post_status] => publish
+            [post_status] => publish
+            [hidden_post_password] => 
+            [hidden_post_visibility] => public
+            [visibility] => public
+            [post_password] => 
+            [mm] => 11
+            [jj] => 01
+            [aa] => 2017
+            [hh] => 08
+            [mn] => 24
+            [ss] => 00
+            [hidden_mm] => 11
+            [cur_mm] => 11
+            [hidden_jj] => 01
+            [cur_jj] => 01
+            [hidden_aa] => 2017
+            [cur_aa] => 2017
+            [hidden_hh] => 08
+            [cur_hh] => 12
+            [hidden_mn] => 24
+            [cur_mn] => 13
+            [original_publish] => Обновить
+            [save] => Обновить
+            [_grid_options] => Array
+                (
+                    [width] => 123
+                    [height] => 
+                    [items_size] => thumbnail
+                    [lightbox] => 
+                    [image_captions] => 
+                )
+
+            [mtypes] => Array
+                (
+                    [grid_type] => slider
+                    [lib_type] => slick
+                )
+
+            [attachment_excerpt] => Array
+                (
+                    [ 3697 ] => 
+                )
+
+            [attachment_id] => Array
+                (
+                    [0] => 3697
+                )
+
+            [mediablocks] => ebf88589cd
+            [excerpt] => 
+            [_json_options] => Array
+                (
+                    [infinite] => on
+                    [slidesToShow] => 2
+                    [slidesToScroll] => 
+                    [autoplay] => on
+                    [autoplaySpeed] => 
+                    [dotsClass] => 
+                    [arrows] => on
+                    [prevArrow] => 
+                    [nextArrow] => 
+                    [speed] => 
+                    [centerPadding] => 
+                    [cssEase] => 
+                    [accessibility] => on
+                    [customPaging] => 
+                    [draggable] => on
+                    [easing] => 
+                    [edgeFriction] => 
+                    [initialSlide] => 
+                    [lazyLoad] => 
+                    [pauseOnFocus] => on
+                    [pauseOnHover] => on
+                    [pauseOnDotsHover] => on
+                    [respondTo] => 
+                    [rows] => 
+                    [slide] => 
+                    [slidesPerRow] => 
+                    [swipe] => on
+                    [touchMove] => on
+                    [touchThreshold] => 
+                    [useCSS] => on
+                    [useTransform] => on
+                    [waitForAnimate] => on
+                    [zIndex] => 
+                )
+
+            [post_mime_type] => 
+            [ID] => 3723
+            [post_excerpt] => 
+            [comment_status] => closed
+            [ping_status] => closed
+        )
+
+)

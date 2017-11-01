@@ -1,11 +1,14 @@
 <?php
-defined( 'ABSPATH' ) or die();
-// as like slider
+/**
+ * @global  $args
+ *
+ * as like slider
+ */
 
 $sizes = get_intermediate_image_sizes();
 $view_sizes = array();
 foreach ($sizes as $value) {
-  $view_sizes[$value] = $value;
+  $view_sizes[ $value ] = $value;
 }
 
 $settings = array(

@@ -1,11 +1,20 @@
 <?php
 
-class DT_Form {
+namespace CDevelopers\media;
+
+if ( ! defined( 'ABSPATH' ) )
+  exit; // disable direct access
+
+/**
+ * @todo: add defaults
+ * @todo : add checkbox reverse defaults
+ */
+class WP_Admin_Forms {
     static $clear_value = false;
     protected $inputs, $args, $is_table, $active;
     protected $hiddens = array();
 
-    public function __construct($data = null, $active = null, $is_table = true, $args = null)
+    public function __construct($data = null, $is_table = true, $args = null)
     {
         if( ! is_array($data) )
             $data = array();
@@ -17,17 +26,15 @@ class DT_Form {
             $data = array($data);
 
         $args = self::parse_defaults($args, $is_table);
-        if( $args['admin_page'] )
-            $data = self::admin_page_options( $data, $args['admin_page'] );
 
-        $this->fields = $data;
+        $this->fields = self::admin_page_options( $data, $args['form_name'], $args['sub_name'] );
         $this->args = $args;
         $this->is_table = $is_table;
-        $this->active = $active;
     }
 
     public function render( $return=false )
     {
+        $this->get_active();
 
         $html = $this->args['form_wrap'][0];
         foreach ($this->fields as $field) {
@@ -39,12 +46,16 @@ class DT_Form {
             $html .= self::_field_template( $field, $input, $this->is_table );
         }
         $html .= $this->args['form_wrap'][1];
-
         $result = $html . "\n" . implode("\n", $this->hiddens);
         if( $return )
             return $result;
 
         echo $result;
+    }
+
+    public function set_active( $active )
+    {
+        $this->active = $active;
     }
 
     public static function render_input( &$field, $active, $for_table = false )
@@ -68,19 +79,101 @@ class DT_Form {
             'default'           => '',
             'before'            => '',
             'after'             => '',
-            'check_active'      => false,
+            'check_active'      => 'id',
             'value'             => '',
             );
 
         $field = wp_parse_args( $field, $defaults );
 
-        if( ! in_array($field['type'], array('checkbox', 'select', 'radio')) )
+        if( $field['default'] && ! in_array($field['type'], array('checkbox', 'select', 'radio')) ) {
             $field['placeholder'] = $field['default'];
+        }
 
         $field['id'] = str_replace('][', '_', $field['id']);
         $entry = self::parse_entry($field, $active, $field['value']);
 
         return self::_input_template( $field, $entry, $for_table );
+    }
+
+    public function get_active()
+    {
+        if( ! $this->active ) {
+            $this->active = $this->_active();
+        }
+
+        return $this->active;
+    }
+
+    public static function defaults( $render_data = null, $args = array() ) {
+        $render_data = (array) $render_data;
+        $defaults = array();
+
+        if( empty($render_data) ) return $defaults;
+
+        if( isset($render_data['id']) ) {
+            $render_data = array($render_data);
+        }
+
+        $args = wp_parse_args( $args, array(
+            'form_name' => '',
+            'sub_name'  => false,
+            ) );
+
+        $fields = self::admin_page_options( $render_data, $args['form_name'], $args['sub_name'] );
+
+        foreach ($fields as $field) {
+            $defaults[ $field['id'] ] = isset( $field['default'] ) ? $field['default'] : '';
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * @return array installed options
+     */
+    private function _active()
+    {
+        $active = array();
+        switch ( $this->args['mode'] ) {
+            case 'post':
+                if( ! $post_id = (int) $this->args['post_id'] ) {
+                    $post_id = get_the_ID();
+                }
+
+                if( $post_id <= 0 ) return $active;
+
+                $metaname = $this->args['sub_name'] ? $this->args['sub_name'] : $this->args['form_name'];
+                $active = get_post_meta( $post_id, $metaname, true );
+                break;
+
+            case 'page':
+            default:
+                $active = get_option( $this->args['form_name'], array() );
+
+                if( $sub_name = $this->args['sub_name'] ) {
+                    $active = isset($active[ $sub_name ]) ? $active[ $sub_name ] : false;
+                }
+                break;
+        }
+
+        /** if active not found */
+        if( ! is_array($active) || ! count($active) ) {
+            return array();
+        }
+
+        $result = array();
+        foreach ($active as $key => $value) {
+            if( is_array($value) ) {
+                foreach ($value as $key2 => $value2) {
+                    $result[ $key . '_' . $key2 ] = $value2;
+                }
+            }
+            else {
+                $result[ $key ] = $value;
+            }
+        }
+
+        return $result;
     }
 
     /******************************** Templates *******************************/
@@ -138,16 +231,18 @@ class DT_Form {
 
     private static function _input_template( $field, $entry, $for_table = false )
     {
+        $name = 'name="' . esc_attr( $field['name'] ) . '"';
+        $id   = 'id="' . esc_attr( $field['id'] ) . '"';
+
+        $class = '';
         if( is_array($field['input_class']) ) {
-            $class = implode( ' ', $field['input_class'] );
-        } else {
-            $class = $field['input_class'];
+            $class = esc_attr( implode( ' ', $field['input_class'] ) );
+        }
+        elseif( is_string($field['input_class']) ) {
+            $class = ' ' . esc_attr( $field['input_class'] );
         }
 
-        $name         = 'name="' . esc_attr( $field['name'] ) . '"';
-        $id           = 'id="' . esc_attr( $field['id'] ) . '"';
-        $class        = esc_attr( $class );
-        $ph           = esc_attr( $field['placeholder'] );
+        $ph           = 'placeholder="' . esc_attr( $field['placeholder'] ) . '"';
 
         $custom_attributes = array();
         if ( ! empty( $field['custom_attributes'] ) && is_array( $field['custom_attributes'] ) ) {
@@ -172,8 +267,8 @@ class DT_Form {
                 $input .= $field['value'];
                 break;
             case 'textarea' :
-                $rows = empty( $args['custom_attributes']['rows'] ) ? ' rows="5"' : '';
-                $cols = empty( $args['custom_attributes']['cols'] ) ? ' cols="40"' : '';
+                $rows = empty( $field['custom_attributes']['rows'] ) ? ' rows="5"' : '';
+                $cols = empty( $field['custom_attributes']['cols'] ) ? ' cols="40"' : '';
 
                 $input .= $label;
                 $input .= "<textarea ";
@@ -183,24 +278,38 @@ class DT_Form {
                 $input .= '</textarea>';
                 break;
             case 'checkbox' :
-                $val = $field['value'] ? $field['value'] : 1;
-                $checked = checked( $entry, $val, false );
+                $val = $field['value'] ? $field['value'] : 'on';
+                $checked = checked( $entry, true, false );
+                // if( $field['default'] ) {
+                //     if( ! $entry ) {
+                //         $checked = checked( in_array($entry, array('true', '1', 'on')), true, false );
+                //     }
+                //     $clear_value = 'false';
+                // }
 
-                // if $clear_value === false dont use defaults (couse default + empty value = true)
-                if( false !== self::$clear_value )
-                    $input .= "<input type='hidden' {$name} value='{self::$clear_value}'>\n";
+                if( $field['default'] ) {
+                    $clear_value = str_replace(
+                        array('true', '1', 'on', 'Y'),
+                        array('false', '0', 'off', 'N'),
+                        $field['default'] );
+                }
 
-                $input .= "<input type='checkbox' {$name} {$id} value='{$val}'";
+                if( isset($clear_value) || false !== ($clear_value = self::$clear_value) ) {
+                    $input .= "<input type='hidden' {$name} value='{$clear_value}'>\n";
+                }
+
+                $input .= "<input type='checkbox' {$name} {$id} {$attrs} value='{$val}'";
                 $input .= " class='input-checkbox{$class}' {$checked} />";
                 $input .= $label;
                 break;
+            case 'hidden' :
             case 'password' :
             case 'text' :
             case 'email' :
             case 'tel' :
             case 'number' :
-                $type = "type='" . esc_attr( $field['type'] ) . "'";
-                $val = esc_attr( $entry );
+                $type = sprintf('type="%s"', esc_attr( $field['type'] ));
+                $val = $field['value'] ? esc_attr( $field['value'] ) : esc_attr( $entry );
 
                 $input .= $label;
                 $input .= "<input {$type} {$name} {$id} {$ph} {$maxlength} {$autocomplete}";
@@ -212,8 +321,9 @@ class DT_Form {
                 if ( ! empty( $field['options'] ) ) {
                     $input .= $label;
 
-                    if( isset($field['value']) && $field['value']!==false && $field['value']!==NULL )
-                        $entry = $field['value'];
+                    // if( $field['value'] || $field['value'] === '' ) {
+                    //     $entry = $field['value'];
+                    // }
 
                     foreach ( $field['options'] as $option_key => $option_text ) {
                         if ( '' === $option_key ) {
@@ -231,7 +341,7 @@ class DT_Form {
                         }
                         else {
                             $options .= "<optgroup label='{$option_key}'>";
-                            foreach ($option_key as $sub_option_key => $sub_option_text) {
+                            foreach ($option_text as $sub_option_key => $sub_option_text) {
                                 $options .= '<option value="' . esc_attr( $sub_option_key ) . '" ' .
                                     selected( $entry, $sub_option_key, false ) . '>' .
                                     esc_attr( $sub_option_text ) . '</option>';
@@ -239,18 +349,18 @@ class DT_Form {
                             $options .= "</optgroup>";
                         }
                     }
-                    $input .= "<select {$name} {$id} class='select {$class}' {$attrs}";
+                    $input .= "<select {$name} {$id} class='select{$class}' {$attrs}";
                     $input .= " {$autocomplete}>{$options}</select>";
                 }
                 break;
             // case 'radio' :
 
-            //     $label_id = current( array_keys( $args['options'] ) );
+            //     $label_id = current( array_keys( $field['options'] ) );
 
-            //     if ( ! empty( $args['options'] ) ) {
-            //         foreach ( $args['options'] as $option_key => $option_text ) {
-            //             $field .= '<input type="radio" class="input-radio ' . esc_attr( implode( ' ', $args['input_class'] ) ) .'" value="' . esc_attr( $option_key ) . '" name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '_' . esc_attr( $option_key ) . '"' . checked( $value, $option_key, false ) . ' />';
-            //             $field .= '<label for="' . esc_attr( $args['id'] ) . '_' . esc_attr( $option_key ) . '" class="radio ' . implode( ' ', $args['label_class'] ) .'">' . $option_text . '</label>';
+            //     if ( ! empty( $field['options'] ) ) {
+            //         foreach ( $field['options'] as $option_key => $option_text ) {
+            //             $field .= '<input type="radio" class="input-radio ' . esc_attr( implode( ' ', $field['input_class'] ) ) .'" value="' . esc_attr( $option_key ) . '" name="' . esc_attr( $key ) . '" id="' . esc_attr( $field['id'] ) . '_' . esc_attr( $option_key ) . '"' . checked( $value, $option_key, false ) . ' />';
+            //             $field .= '<label for="' . esc_attr( $field['id'] ) . '_' . esc_attr( $option_key ) . '" class="radio ' . implode( ' ', $field['label_class'] ) .'">' . $option_text . '</label>';
             //         }
             //     }
 
@@ -263,7 +373,11 @@ class DT_Form {
     private static function parse_defaults($args, $is_table)
     {
         $defaults = array(
-            'admin_page'  => false, // set true for auto detect
+            'form_name'   => '',
+            'mode'        => 'page', // post
+            'post_id'     => '', // force post id for post meta mode
+            'sub_name'    => '',
+            // template:
             'item_wrap'   => array('<p>', '</p>'),
             'form_wrap'   => array('', ''),
             'label_tag'   => 'th',
@@ -273,11 +387,11 @@ class DT_Form {
         if( $is_table )
             $defaults['form_wrap'] = array('<table class="table form-table"><tbody>', '</tbody></table>');
 
-        if( ( isset($args['admin_page']) && $args['admin_page'] !== false ) ||
-            !isset($args['admin_page']) && is_admin() && !empty($_GET['page']) )
-            $defaults['admin_page'] = $_GET['page'];
-
         $args = wp_parse_args( $args, $defaults );
+
+        if( ! $args['form_name'] ) {
+            $args['form_name'] = ( ! empty($_GET['page']) ) ? $_GET['page'] : $args['mode'];
+        }
 
         if( ! is_array($args['item_wrap']) )
             $args['item_wrap'] = array('', '');
@@ -296,7 +410,7 @@ class DT_Form {
         if( ! is_array($active) || sizeof($active) < 1 )
             return false;
 
-        $active_key = $field['check_active'] ? $field[$field['check_active']] : str_replace('[]', '', $field['name']);
+        $active_key = $field['check_active'] ? $field[ $field['check_active'] ] : str_replace('[]', '', $field['name']);
         $active_value = isset($active[$active_key]) ? $active[$active_key] : false;
 
         if($field['type'] == 'checkbox' || $field['type'] == 'radio'){
@@ -319,10 +433,10 @@ class DT_Form {
 
         $checked = ( $active === false ) ? false : true;
         if( $active === 'false' || $active === 'off' || $active === '0' )
-            $active = false;
+            return false;
 
         if( $active === 'true'  || $active === 'on'  || $active === '1' )
-            $active = true;
+            return true;
 
         if( $active || $field['default'] ){
             if( $field['value'] ){
@@ -339,29 +453,33 @@ class DT_Form {
                 if( $active || (!$checked && $field['default']) )
                     return true;
             }
-
-            return false;
         }
+
+        return false;
     }
 
-    private static function admin_page_options( $fields, $option_name )
+    private static function admin_page_options( $fields, $option_name, $sub_name = false )
     {
         foreach ($fields as &$field) {
-          if ( ! isset($field['id']) && ! isset($field['name']) )
-            continue;
+            if ( ! isset($field['id']) && ! isset($field['name']) )
+                continue;
 
-        if( isset($field['name']) )
-            $field['name'] = "{$option_name}[{$field['name']}]";
-        else
-            $field['name'] = "{$option_name}[{$field['id']}]";
+            if( $option_name ) {
+                if( ! isset($field['name']) ) {
+                    $field['name'] = $field['id'];
+                }
 
-        if( !isset($field['check_active']) )
-            $field['check_active'] = 'id';
+                if( $sub_name )
+                    $field['name'] = sprintf('%s[%s][%s]', $option_name, $sub_name, $field['id']);
+                else
+                    $field['name'] = sprintf('%s[%s]', $option_name, $field['id']);
+            }
         }
 
         return $fields;
     }
 }
+
 // public static function render_fieldset( $input, $entry, $is_table, $label = '' ){
 //     $result = '';
 
@@ -378,88 +496,3 @@ class DT_Form {
 //     }
 //     return $result;
 //   }
-
-  // /**
-  //  * EXPEREMENTAL!
-  //  * Get ID => Default values from $render_data
-  //  * @param  array() $render_data
-  //  * @return array(array(ID=>default),ar..)
-  //  */
-  // public static function defaults( $render_data ){
-  //   $defaults = array();
-  //   if(empty($render_data))
-  //     return $defaults;
-
-  //   if( isset($render_data['id']) )
-  //       $render_data = array($render_data);
-
-  //   foreach ($render_data as $input) {
-  //     if(isset($input['default']) && $input['default']){
-  //       $input['id'] = str_replace('][', '_', $input['id']);
-  //       $defaults[$input['id']] = $input['default'];
-  //     }
-  //   }
-
-  //   return $defaults;
-  // }
-
-  // /**
-  //  * @todo: add recursive handle
-  //  *
-  //  * @param  string   $option_name
-  //  * @param  string   $sub_name         $option_name[$sub_name]
-  //  * @param  boolean  $is_admin_options recursive split value array key with main array
-  //  * @param  int|bool $postmeta         int = post_id for post meta, true = get post_id from global post
-  //  * @return array                      installed options
-  //  */
-  // public static function active($option, $sub_name = false, $is_admin_options = false, $postmeta = false){
-
-  //   global $post;
-
-  //   /** get active values */
-  //   if( is_string($option) ){
-  //     if( $postmeta ){
-  //       if( !is_int($postmeta) && !isset($post->ID) )
-  //         return false;
-
-  //       $post_id = ($postmeta === true) ? $post->ID : $postmeta;
-
-  //       $active = get_post_meta( $post_id, $option, true );
-  //     }
-  //     else {
-  //       $active = get_option( $option, array() );
-  //     }
-  //   }
-  //   else {
-  //     $active = $option;
-  //   }
-
-  //   /** get subvalue */
-  //   if( $sub_name && isset($active[$sub_name]) && is_array($active[$sub_name]) )
-  //     $active = $active[$sub_name];
-  //   elseif( $sub_name && !isset($active[$sub_name]) )
-  //     return false;
-
-  //   /** if active not found */
-  //   if( !isset($active) || !is_array($active) )
-  //       return false;
-
-  //   /** sanitize admin values */
-  //   if( $is_admin_options === true ){
-  //     $result = array();
-  //     foreach ($active as $key => $value) {
-  //       if( is_array($value) ){
-  //         foreach ($value as $key2 => $value2) {
-  //           $result[$key . '_' . $key2] = $value2;
-  //         }
-  //       }
-  //       else {
-  //         $result[$key] = $value;
-  //       }
-  //     }
-
-  //     return $result;
-  //   }
-
-  //   return $active;
-  // }

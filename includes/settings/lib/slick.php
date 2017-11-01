@@ -28,6 +28,7 @@ $settings = array(
         'label' => 'Auto Play',
         'desc'  => 'Enables auto play of slides',
         'type'  => 'checkbox',
+        'default' => 'on',
         'data-show' => 'autoplaySpeed'
         ),
     array(
@@ -57,7 +58,9 @@ $settings = array(
         'desc'    => 'Enable Next/Prev arrows',
         'default' => 'on',
         'type'    => 'checkbox',
-        'data-show' => 'prevArrow, nextArrow'
+        'custom_attributes' => array(
+            'data-show' => '#prevArrow, #nextArrow',
+            ),
         ),
     array(
         'id'      => 'prevArrow',
