@@ -52,6 +52,8 @@ class Utils
         // includes
         require_once __DIR__ . '/includes/register-assets.php';
         require_once __DIR__ . '/includes/register-post-type.php';
+        require_once __DIR__ . '/includes/front-callback.php';
+        require_once __DIR__ . '/includes/shortcode-and-filters.php';
         // require_once __DIR__ . '/includes/admin-page.php';
     }
 

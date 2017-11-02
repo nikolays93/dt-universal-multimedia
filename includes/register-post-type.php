@@ -84,6 +84,15 @@ function after_title() {
             );
         ?>
     </div>
+<!--     <div class="media-modal wp-core-ui">
+        <div class="media-modal-content">
+            <div class="edit-attachment-frame mode-select hide-menu hide-router">
+                <div class="media-frame-content">
+                    <?php // echo get_media_item( 297 ); ?>
+                </div>
+            </div>
+        </div>
+    </div> -->
     <?php
     }
 }
@@ -141,26 +150,27 @@ function attachments_grid( $post ) {
         wp_enqueue_media();
     }
     ?>
+
         <?php do_action('mb_attachments_tool_bar'); ?>
         <div class="clear"></div>
 
+        <ul tabindex="-1" id="dt-media" class="attachments">
         <?php
             $arrAttachments = array();
-            if( $attachments = Utils::_post_meta( $post->ID, 'attachments' ) ) {
+            if( $attachments = get_post_meta( $post->ID, '_attachments', true ) ) {
                 $arrAttachments = explode(',', $attachments);
             }
 
-            $arrAttachments = array(3697);
-            echo '<ul tabindex="-1" id="dt-media" class="attachments">';
             foreach ($arrAttachments as $attachment_id) :
                 $attachment_id = absint($attachment_id);
                 $attachment = get_post( $attachment_id );
+                if( ! $attachment ) continue;
+
                 $attachment_metadata = wp_get_attachment_metadata( $attachment_id );
 
                 $image = wp_get_attachment_image($attachment_id, 'medium');
                 $file = explode('.', basename($attachment_metadata['file']));
 
-                // $attachment_link = Utils::_post_meta( $attachment, 'link', false, false );
                 $attachmentOrientation = ( $attachment_metadata['height'] > $attachment_metadata['width'] ) ? 'portrait' : 'landscape';
 
                 $attachmentClass = array('attachment-preview');
@@ -173,45 +183,54 @@ function attachments_grid( $post ) {
                     }
                 }
 
-                /**
-                 * @todo : add link shortcode for developers tool
-                 */
-                // $link_code = shortcode_exists( 'link' ) ? '[link id="4"]' : '';
-
+                $attachment_link = get_post_meta( $attachment_id, 'link', true );
+                $attachment_blank = get_post_meta( $attachment_id, '_blank', true );
                 ?>
-                    <li tabindex="0" aria-label="<?php echo $file[0] ?>" data-id="<?php echo $attachment_id ?>" class="attachment">
+                <li tabindex="0" aria-label="<?php echo $file[0] ?>" data-id="<?php echo $attachment_id ?>" class="attachment">
+                    <div class="thumbnail-wrap">
                         <div class="<?php echo implode(' ', $attachmentClass); ?>">
                             <div class="thumbnail">
-
                                 <div class="centered">
                                     <?php echo $image; ?>
                                 </div>
-
                             </div>
                         </div>
                         <?php
                         echo sprintf('<input type="text" class="item-excerpt" name="%s" value="%s">',
                             esc_attr( "attachment_excerpt[ $attachment_id ]" ),
                             esc_attr( $attachment->post_excerpt ) );
-
-                        // echo sprintf('<textarea class="item-content" cols="90" rows="4" name="%s">%s</textarea>',
-                        //     esc_attr( "attachment_content[ $attachment_id ]" ),
-                        //     $attachment->post_content );
-
-                        // echo sprintf('<input type="text" class="item-link" placeholder="%s" name="%s" value="%s">',
-                        //     esc_attr($link_code),
-                        //     esc_attr("attachment_link[ $attachment_id ]"),
-                        //     esc_attr($attachment_link) );
                         ?>
+                    </div>
+                    <?php
+                    echo sprintf('<textarea class="item-content" name="%s" cols="75" rows="7" placeholder="The some contents..">%s</textarea>',
+                        "attachment_content[ $attachment_id ]",
+                        $attachment->post_content );
+                    ?>
+                    <div class="item-link-wrap">
+                        <?php
+                        echo sprintf('<input type="text" class="item-link" name="%s" value="%s">',
+                            "attachment_link[ $attachment_id ]",
+                            esc_attr( $attachment_link ) );
+                        ?>
+                        <label class="open-blank">
+                            <?php
+                            // _e('Target blank');
+                            // echo sprintf('<input type="checkbox" class="item-blank" name="%s" value="1">',
+                            //     "attachment_blank[ $attachment_id ]",
+                            //     checked( '1', $attachment_blank, false )
+                            // );
+                                ?>
+                        </label>
+                    </div>
 
-                        <button type="button" class="check" tabindex="-1">
-                            <span class="media-modal-icon"></span>
-                            <!-- <span class="screen-reader-text">Убрать</span> -->
-                        </button>
-                        <input type="hidden" id="attachments" name="attachment_id[]" value="<?php echo $attachment_id; ?>">
-                    </li>
-                <?php endforeach; ?>
-            <?php echo '</ul>'; ?>
+                    <button type="button" class="check remove" tabindex="-1">
+                        <span class="media-modal-icon"></span>
+                        <!-- <span class="screen-reader-text">Убрать</span> -->
+                    </button>
+                    <input type="hidden" id="attachments" name="attachment_id[]" value="<?php echo $attachment_id; ?>">
+                </li>
+            <?php endforeach; ?>
+        </ul>
         <div class="clear"></div>
         <?php do_action('mb_after_attachments'); ?>
     <?php
@@ -314,17 +333,18 @@ function write_attachments_post_meta( $post_id ) {
         'attachment_excerpt' => array(),
         'attachment_content' => array(),
         'attachment_link'    => array(),
+        'attachment_blank'   => array(),
     ) );
 
     extract($args);
 
     if( ! is_array( $attachment_id ) ) {
-        Utils::_post_meta( $post_id, 'attachments', '' );
+        update_post_meta( $post_id, '_attachments', '' );
         return $post_id;
     }
 
     /** Записываем новые изображения */
-    Utils::_post_meta( $post_id, 'attachments', implode(',', $attachment_id) );
+    update_post_meta( $post_id, '_attachments', implode(',', $attachment_id) );
 
     foreach ($attachment_id as $attach_id) {
         $update = array( 'ID' => $attach_id );
@@ -335,11 +355,14 @@ function write_attachments_post_meta( $post_id ) {
         if( isset($attachment_content[ $attach_id ]) )
             $update['post_content'] = $attachment_content[ $attach_id ];
 
-        if( sizeof($update) > 1 )
+        if( sizeof( $update ) > 1 )
             wp_update_post( $update );
 
-        if( isset($attachment_link[$attach_id]) )
-            Utils::_post_meta( $attach_id, 'link', $attachment_link[ $attach_id ], false );
+        if( isset($attachment_link[ $attach_id ]) )
+            update_post_meta( $attach_id, 'link', $attachment_link[ $attach_id ] );
+
+        if( ! empty($attachment_blank[ $attach_id ]) )
+            update_post_meta( $attach_id, '_blank', '1' );
     }
 }
 
@@ -354,7 +377,7 @@ function validate( $post_id ) {
         return false;
     }
 
-    // write_attachments_post_meta( $post_id );
+    write_attachments_post_meta( $post_id );
 
     file_put_contents(__DIR__ . '/debug.log', print_r(array($post_id, $_POST), 1));
 

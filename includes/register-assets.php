@@ -3,9 +3,9 @@
 namespace CDevelopers\media;
 
 add_action('wp_enqueue_scripts', __NAMESPACE__ . '\register_assets');
-function register_assets( $type = false ){
+function register_assets() {
     $affix = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? '' : '.min';
-    $url = get_plugin_url('assets');
+    $url = Utils::get_plugin_url('assets');
 
     $assets = array(
         'owl-carousel' => array(
@@ -34,21 +34,16 @@ function register_assets( $type = false ){
         ),
     );
 
-    if( ! $type ) {
-        foreach ($assets as $type => $asset) {
-            if( !empty($asset['js']) ) {
-                wp_register_script( $type, $url .'/'. $type .'/'. $asset['js'], array('jquery'), $asset['ver'], true );
-            }
+    wp_register_script( 'mediablocks', "{$url}/public.js", array('jquery'), '1.0', true );
 
-            if( isset($asset['style']) ) {
-                wp_register_style( $type, $url .'/'. $type .'/'. $asset['style'], array(), $asset['ver'], 'all' );
-            }
+    foreach ($assets as $type => $asset) {
+        if( !empty($asset['js']) )
+            wp_register_script( $type, "{$url}/{$type}/{$asset['js']}", array('jquery'), $asset['ver'], true );
 
-            if( isset($asset['theme']) ) {
-                wp_register_style( $type.'-theme', $url .'/'. $type .'/'. $asset['theme'],  array(), $asset['ver'], 'all' );
-            }
-        }
+        if( isset($asset['style']) )
+            wp_register_style( $type, "{$url}/{$type}/{$asset['style']}", array(), $asset['ver'] );
+
+        if( isset($asset['theme']) )
+            wp_register_style( "{$type}-theme", "{$url}/{$type}/{$asset['theme']}", array(), $asset['ver'] );
     }
-
-    return isset($assets[$type]) ? $assets[$type] : false;
 }

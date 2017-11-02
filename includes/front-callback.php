@@ -1,19 +1,52 @@
 <?php
 
+namespace CDevelopers\media;
+
 if ( ! defined( 'ABSPATH' ) )
     exit; // Exit if accessed directly
+
+add_filter( Utils::PREF . 'default_columns', __NAMESPACE__ . '\slider_default_columns', 10, 2 );
+function slider_default_columns( $columns, $main_type ){
+    if($main_type == 'slider') {
+        return 1;
+    }
+
+    return $columns;
+}
+
+function type_to_lib( $type ){
+    switch ( $type ) {
+        case 'owl-carousel':
+            $type = 'owlCarousel';
+            break;
+        case 'cloud9carousel':
+            $type = 'Cloud9Carousel';
+            break;
+    }
+
+    return $type;
+}
+
+add_shortcode( 'mblock', __NAMESPACE__ . '\mblock_shortcode' );
+function mblock_shortcode( $atts = array(), $content = '' ) {
+    $atts = shortcode_atts( array(
+        'id' => 0,
+    ), $atts, 'mblock' );
+
+    if( ! $atts['id'] ) return;
+
+    $mblock = new MediaBlock( $atts );
+    $mblock->load_assets();
+    return $mblock->render();
+}
+
 
 /**
  * mblock_html > render_$type > render_attachments
  */
 class MediaBlock {
-    public $id;
     public $post;
     public $atts;
-
-    // default type
-    public $main_type = 'carousel';
-    public $sub_type  = 'slick';
 
     public $settings = array();
 
@@ -27,93 +60,28 @@ class MediaBlock {
     // use for double block
     public $double = false;
 
-    function __construct( $post_id = false, $atts = array() )
+    function __construct( $atts = array() )
     {
+        $this->post = get_post( $atts['id'] );
         $this->atts = wp_parse_args( $atts, array(
-            'status' => 'publish',
+            'status'    => 'publish',
             'tag_title' => 'h3',
-            ) );
+            'types'     => wp_parse_args( get_post_meta($this->atts['id'], 'mtypes', true), array(
+                'grid_type' => 'carousel',
+                'lib_type'  => 'slick',
+            ) )
+        ) );
 
-        $this->id = $post_id;
-        $this->post = get_post( $this->id );
-
-        $this->main_type = self::meta_field( $this->id, 'main_type' );
-        $this->sub_type  = self::meta_field( $this->id, 'type' );
+        $this->settings = wp_parse_args( get_post_meta( $this->post->ID, '_grid_options', true ), array(
+            'init'        => type_to_lib( $this->atts['types']['lib_type'] ),
+            'width'      => '',
+            'height'     => '',
+            'items_size' => '',
+            'not_initialize' => '',
+        ) );
     }
 
     /********************************* Assets *********************************/
-    function initialize_scripts()
-    {
-        $trigger = "#mediablock-{$this->id}.{$this->main_type}";
-
-        if( $this->main_type != 'gallery' ) {
-            MB\JQScript::init($trigger, 'removeClass', 'row');
-            MB\JQScript::init($trigger . ' .item', 'attr', 'class", "item');
-        }
-
-        /***************************** Initialize *****************************/
-        if( isset($this->settings['not_initialize']) ) {
-            return false;
-        }
-
-        if( $this->main_type != 'gallery' ) {
-            if( $this->main_type != 'sync-slider' ){
-                $init = apply_filters('type_to_lib', $this->sub_type);
-                $filename = dash_to_underscore($this->main_type);
-                $init_settings = $this->settings_from_file($this->id, $this->sub_type, $filename);
-
-                MB\JQScript::init($trigger, $init, $init_settings );
-            }
-            else {
-                MB\JQScript::custom($this->double_script());
-            }
-        }
-        else {
-        }
-
-        $script = '';
-        $is_lazy = isset($this->settings['lazyLoad']) && $this->settings['lazyLoad'] != 'false';
-        $is_masonry = isset($this->settings['masonry']) && $this->settings['masonry'] != 'false';
-
-        $id = $this->id;
-
-        if( $is_lazy || $is_masonry ){
-            $script  = "var \$container{$id} = \$('{$trigger}');";
-            $script .= "var itemSelector{$id} = '{$trigger} > .item';";
-
-            if( $is_masonry ) {
-                $script .= '$container'.$id.'.masonry({ itemSelector: itemSelector'.$id.' });';
-            }
-
-            if($is_lazy && $is_masonry) {
-                $script .= '$container'.$id.'.imagesLoaded(function(){';
-            }
-
-            if($is_lazy) {
-                $script .= '
-                $(itemSelector'.$id.' +" img").addClass("not-loaded");
-                $(itemSelector'.$id.' +" img.not-loaded").lazyload({
-                    effect: "fadeIn",
-                    load: function() {
-                        $(this).removeClass("not-loaded");
-                        $(this).addClass("loaded");
-
-                        if( typeof $container'.$id.'.masonry !== "undefined" ) {
-                            $container'.$id.'.masonry("reload");
-                        }
-                    }
-                });
-                $(itemSelector'.$id.' +" img.not-loaded").trigger("scroll");';
-            }
-
-            if($is_lazy && $is_masonry) {
-                $script .= '});';
-            }
-
-            MB\JQScript::custom($script);
-        }
-    }
-
     /**
      * Load Assets
      * @todo : previosly register assets
@@ -121,27 +89,27 @@ class MediaBlock {
      */
     function load_assets()
     {
-        if( $asset = self::pre_register_assets( $this->sub_type ) ){
-            if( isset($asset['js']) ) {
-                wp_enqueue_script( $this->sub_type );
-            }
+        // if( isset($asset['js']) )
+            wp_enqueue_script( $this->atts['types']['lib_type'] );
 
-            if( isset($asset['style']) ) {
-                wp_enqueue_style ( $this->sub_type );
-            }
+        // if( isset($asset['style']) )
+            wp_enqueue_style ( $this->atts['types']['lib_type'] );
 
-            if( isset($asset['theme']) ) {
-                wp_enqueue_style ( $this->sub_type . '-theme' );
-            }
-        }
+        // if( isset($asset['theme']) )
+            wp_enqueue_style ( $this->atts['types']['lib_type'] . '-theme' );
 
-        if( !empty($this->settings['lazyLoad']) ) {
+        // if( ! empty( $this->settings['lazyLoad'] ) )
             wp_enqueue_script( 'lazyLoad' );
-        }
 
-        if( isset($this->settings['masonry']) && $this->settings['masonry'] != 'false' ) {
+        // if( isset($this->settings['masonry']) && $this->settings['masonry'] != 'false' )
             wp_enqueue_script( 'jquery-masonry' );
-        }
+
+        wp_enqueue_script( 'mediablocks' );
+        wp_localize_script( 'mediablocks', "mediablock", array( $this->post->ID => array(
+            'settings' => $this->settings,
+            'atts'     => $this->atts,
+            'props'    => get_post_meta( $this->post->ID, '_json_options', true ),
+        ) ) );
     }
 
     /**
@@ -149,32 +117,32 @@ class MediaBlock {
      */
     function set_attachment_ids()
     {
-        $query_options = self::meta_field($this->id, 'query');
+        // $query_options = self::meta_field($this->id, 'query');
 
-        if(!empty($query_options['enable'])){
-            $query = new \WP_Query( array(
-                'post_type' => $query_options['type'],
-                'posts_per_page' => $query_options['qty'],
-                'tax_query' => array( array(
-                    'taxonomy' => $query_options['tax'],
-                    'terms'    => $query_options['term'],
-                    ), ),
-                'order'   => $query_options['sort'],
-                ) );
+        // if(!empty($query_options['enable'])){
+        //     $query = new \WP_Query( array(
+        //         'post_type' => $query_options['type'],
+        //         'posts_per_page' => $query_options['qty'],
+        //         'tax_query' => array( array(
+        //             'taxonomy' => $query_options['tax'],
+        //             'terms'    => $query_options['term'],
+        //             ), ),
+        //         'order'   => $query_options['sort'],
+        //         ) );
 
-            $attachments = array();
-            if ( $query->have_posts() ) {
-                while ( $query->have_posts() ) { $query->the_post();
-                    $attachments[] = get_post_thumbnail_id( get_the_id() );
-                }
-            }
-            wp_reset_postdata();
+        //     $attachments = array();
+        //     if ( $query->have_posts() ) {
+        //         while ( $query->have_posts() ) { $query->the_post();
+        //             $attachments[] = get_post_thumbnail_id( get_the_id() );
+        //         }
+        //     }
+        //     wp_reset_postdata();
 
-            $this->attachments = $attachments;
-        }
-        else {
-            $this->attachments = explode(',', self::meta_field($this->id, 'media_imgs') );
-        }
+        //     $this->attachments = $attachments;
+        // }
+        // else {
+            $this->attachments = explode(',', get_post_meta( $this->post->ID, '_attachments', true ));
+        // }
 
         if( ! is_array($this->attachments) || sizeof($this->attachments) < 1 ) {
             return false;
@@ -200,11 +168,13 @@ class MediaBlock {
             $items_size = apply_filters('default_att_size', $this->default_att_size);
         }
 
-        reset($items_size);
-        $height = current($items_size);
+        if( is_array($items_size) ) {
+            reset( $items_size );
+            $height = current($items_size);
 
-        if( $this->main_type == 'carousel-3d' ) {
-            echo "<style> #mediablock-{$this->id} { height:{$height}px; } </style>";
+            if( $this->atts['types']['grid_type'] == 'carousel-3d' ) {
+                echo "<style> #mediablock-{$this->post->ID} { height:{$height}px; } </style>";
+            }
         }
 
         return $items_size;
@@ -213,7 +183,7 @@ class MediaBlock {
     /********************************* Output *********************************/
     public function render()
     {
-        if( ! $this->post instanceof WP_Post ) {
+        if( ! is_a($this->post, 'WP_Post')  ) {
             return;
         }
 
@@ -225,14 +195,13 @@ class MediaBlock {
             return;
         }
 
-        $this->settings = $this->settings_from_file( $this->id, $this->main_type );
-        $settings = wp_parse_args( $this->settings_from_file( $this->id, $this->main_type ), array(
+        $settings = wp_parse_args( $this->settings, array(
             'exclude_assets' => false,
             'exclude_styles' => false,
             'width' => false,
             'height' => false,
             'items_size' => false,
-            'columns' => apply_filters( MB_PREF.'default_columns', $this->default_columns, $this->main_type ),
+            'columns' => apply_filters( Utils::PREF.'default_columns', $this->default_columns, $this->atts['types']['grid_type'] ),
             'no_paddings' => false,
             'image_captions' => false,
             'lightbox' => false,
@@ -245,16 +214,16 @@ class MediaBlock {
         // }
 
         if( ! $exclude_assets ) {
-            $this->load_assets();
-            $this->initialize_scripts();
+            // $this->load_assets();
+            // $this->initialize_scripts();
         }
 
         $settings['items_size'] = $this->parse_items_size( $width, $height, $items_size );
 
         $result = array();
-        $result[] = "<section id='mblock-{$this->id}'>";
+        $result[] = "<section id='mblock-{$this->post->ID}'>";
 
-        if( self::meta_field( $this->id, '_show_title' ) && $this->post->post_title !== '' ) {
+        if( get_post_meta( $this->id, '_show_title', true ) && $this->post->post_title !== '' ) {
             sprintf('<%1$s>%2$s</%1$s>',
                 $this->atts['tag_title'],
                 $this->post->post_title
@@ -275,14 +244,14 @@ class MediaBlock {
     protected function render_attachments( $settings )
     {
         // need for gallery or "no js"
-        $item_class = get_column_class( $settings['columns'] );
+        $item_class = Utils::get_column_class( $settings['columns'] );
         if( $settings['no_paddings'] ) $item_class .= ' no-paddings';
 
         // .fancybox usually use for modal trigger
         $class_type = ($this->sub_type == 'fancybox') ? 'fancy' : $this->sub_type;
 
         $item_wrap = array(
-          "<div id='mediablock-{$this->id}' class='media-block row {$this->main_type} {$class_type}'>",
+          "<div id='mediablock-{$this->post->ID}' class='media-block row {$this->atts['types']['grid_type']} {$class_type}'>",
           "</div>");
         $item = array("<div class='item {$item_class}'>", "</div>");
 
@@ -348,7 +317,7 @@ class MediaBlock {
    */
   /*
   function render_sync_slider(){
-    $this->main_type = 'sync-slider';
+    $this->atts['types']['grid_type'] = 'sync-slider';
 
     $out = $this->render_slider();
     $out .= $this->render_carousel();

@@ -1,24 +1,26 @@
 Array
 (
-    [0] => 3723
+    [0] => 330
     [1] => Array
         (
-            [_wpnonce] => ce1a4c6dc6
-            [_wp_http_referer] => /wp-admin/post.php?post=3723&action=edit&message=1
+            [_wpnonce] => e50b09fd3a
+            [_wp_http_referer] => /wp-admin/post.php?post=330&action=edit&message=1
             [user_ID] => 1
             [action] => editpost
             [originalaction] => editpost
             [post_author] => 1
             [post_type] => mblock
             [original_post_status] => publish
-            [referredby] => http://wordpress.cms/wp-admin/post.php?post=3723&action=edit
-            [_wp_original_http_referer] => http://wordpress.cms/wp-admin/post.php?post=3723&action=edit
-            [post_ID] => 3723
-            [meta-box-order-nonce] => 7654f812a2
-            [closedpostboxesnonce] => 8be131438a
-            [original_post_title] => New post the same as mblock
-            [post_title] => New post the same as mblock
-            [samplepermalinknonce] => d5b4888c54
+            [referredby] => http://wordpress.cms/wp-admin/post.php?post=330&action=edit
+            [_wp_original_http_referer] => http://wordpress.cms/wp-admin/post.php?post=330&action=edit
+            [post_ID] => 330
+            [meta-box-order-nonce] => 5b8a9612f6
+            [closedpostboxesnonce] => bec841a805
+            [original_post_title] => 
+            [post_title] => 
+            [samplepermalinknonce] => fbf2e937ee
+            [second-title] => 
+            [second-title-nonce] => de3e9d4ec7
             [hidden_post_status] => publish
             [post_status] => publish
             [hidden_post_password] => 
@@ -26,26 +28,26 @@ Array
             [visibility] => public
             [post_password] => 
             [mm] => 11
-            [jj] => 01
+            [jj] => 02
             [aa] => 2017
-            [hh] => 08
-            [mn] => 24
-            [ss] => 00
+            [hh] => 19
+            [mn] => 57
+            [ss] => 52
             [hidden_mm] => 11
             [cur_mm] => 11
-            [hidden_jj] => 01
-            [cur_jj] => 01
+            [hidden_jj] => 02
+            [cur_jj] => 03
             [hidden_aa] => 2017
             [cur_aa] => 2017
-            [hidden_hh] => 08
-            [cur_hh] => 12
-            [hidden_mn] => 24
-            [cur_mn] => 13
+            [hidden_hh] => 19
+            [cur_hh] => 01
+            [hidden_mn] => 57
+            [cur_mn] => 10
             [original_publish] => Обновить
             [save] => Обновить
             [_grid_options] => Array
                 (
-                    [width] => 123
+                    [width] => 
                     [height] => 
                     [items_size] => thumbnail
                     [lightbox] => 
@@ -54,61 +56,103 @@ Array
 
             [mtypes] => Array
                 (
-                    [grid_type] => slider
+                    [grid_type] => carousel
                     [lib_type] => slick
                 )
 
             [attachment_excerpt] => Array
                 (
-                    [ 3697 ] => 
+                    [ 289 ] => Second
+                    [ 288 ] => Thirdary
+                    [ 287 ] => 
+                    [ 286 ] => 
+                    [275] => 
+                    [274] => 
+                    [273] => 
+                    [271] => 
+                    [272] => 
+                )
+
+            [attachment_content] => Array
+                (
+                    [ 289 ] => Second content
+                    [ 288 ] => Thirdary content
+                    [ 287 ] => 
+                    [ 286 ] => 
+                    [275] => 
+                    [274] => 
+                    [273] => 
+                    [271] => 
+                    [272] => 
+                )
+
+            [attachment_link] => Array
+                (
+                    [ 289 ] => 
+                    [ 288 ] => 
+                    [ 287 ] => 
+                    [ 286 ] => 
+                    [275] => 
+                    [274] => 
+                    [273] => 
+                    [271] => 
+                    [272] => 
                 )
 
             [attachment_id] => Array
                 (
-                    [0] => 3697
+                    [0] => 289
+                    [1] => 288
+                    [2] => 287
+                    [3] => 286
+                    [4] => 275
+                    [5] => 274
+                    [6] => 273
+                    [7] => 271
+                    [8] => 272
                 )
 
-            [mediablocks] => ebf88589cd
+            [mediablocks] => 7fe209d16f
             [excerpt] => 
             [_json_options] => Array
                 (
-                    [infinite] => on
-                    [slidesToShow] => 2
+                    [infinite] => off
+                    [slidesToShow] => 
                     [slidesToScroll] => 
-                    [autoplay] => on
+                    [autoplay] => off
                     [autoplaySpeed] => 
                     [dotsClass] => 
-                    [arrows] => on
+                    [arrows] => off
                     [prevArrow] => 
                     [nextArrow] => 
                     [speed] => 
                     [centerPadding] => 
                     [cssEase] => 
-                    [accessibility] => on
+                    [accessibility] => off
                     [customPaging] => 
-                    [draggable] => on
+                    [draggable] => off
                     [easing] => 
                     [edgeFriction] => 
                     [initialSlide] => 
                     [lazyLoad] => 
-                    [pauseOnFocus] => on
-                    [pauseOnHover] => on
-                    [pauseOnDotsHover] => on
+                    [pauseOnFocus] => off
+                    [pauseOnHover] => off
+                    [pauseOnDotsHover] => off
                     [respondTo] => 
                     [rows] => 
                     [slide] => 
                     [slidesPerRow] => 
-                    [swipe] => on
-                    [touchMove] => on
+                    [swipe] => off
+                    [touchMove] => off
                     [touchThreshold] => 
-                    [useCSS] => on
-                    [useTransform] => on
-                    [waitForAnimate] => on
+                    [useCSS] => off
+                    [useTransform] => off
+                    [waitForAnimate] => off
                     [zIndex] => 
                 )
 
             [post_mime_type] => 
-            [ID] => 3723
+            [ID] => 330
             [post_excerpt] => 
             [comment_status] => closed
             [ping_status] => closed

@@ -25,23 +25,77 @@ select.button {
 }
 
 #attachments.postbox ul.attachments {
+	padding: 10px;
 	border: 1px solid #ddd;
 	overflow: hidden;
 	margin-top: 10px;
 }
-#attachments.postbox ul.attachments li input {
+#attachments.postbox ul.attachments li {
+	width: 20%;
+}
+#attachments.postbox ul.attachments li .item-content,
+#attachments.postbox ul.attachments li .item-link-wrap {
+	display: none;
+}
+
+#attachments.postbox ul.attachments.detail li {
+	width: 100%;
+}
+#attachments.postbox ul.attachments.detail li .thumbnail-wrap {
+	float: left;
+	width: 145px;
+}
+#attachments.postbox ul.attachments.detail li .thumbnail {
+	max-width: 100%;
+	width: 145px;
+	height: 145px;
+}
+#attachments.postbox ul.attachments li .item-excerpt {
 	width: 100%;
 	border: 1px dashed #c1c1c1;
 	border-top: none;
 	position: relative;
 	left: -1px;
 }
-#attachments.postbox ul.attachments li.attachment:hover .check {
+#attachments.postbox ul.attachments.detail li .item-content,
+#attachments.postbox ul.attachments.detail li .item-link-wrap {
+	position: relative;
+	display: block;
+	width: 80%;
+	float: right;
+	margin-right: 0px;
+}
+#attachments.postbox ul.attachments.detail li .item-content {
+	padding: 6px;
+	height: 145px;
+}
+#attachments.postbox ul.attachments.detail li .item-link {
+	padding-right: 140px;
+	width: 100%;
+	border: 1px dashed #c1c1c1;
+	border-top: none;
+	position: relative;
+	left: -1px;
+}
+#attachments.postbox ul.attachments.detail li .open-blank {
+	position: absolute;
+	right: 0;
+	top: -1px;
+}
+#attachments.postbox ul.attachments.detail li .open-blank input {
+	margin-left: 5px;
+}
+
+ul.attachments.detail li.attachment .check.remove {
+	left: 0;
+}
+li.attachment .check.remove .media-modal-icon {
+	background-position: -40px 0;
+}
+li.attachment:hover .check.remove {
 	display: block;
 }
-#attachments.postbox ul.attachments li.attachment:hover .check .media-modal-icon {
-	background-position: -99px 0;
-}
+
 
 /* settings */
 #main_settings table,

@@ -4,6 +4,25 @@ jQuery(document).ready(function($) {
         addImgLink = metaBox.find('#upload-images'),
         imgsContainer = metaBox.find('#dt-media');
 
+    function baseName(str)
+    {
+        var base = new String(str).substring(str.lastIndexOf('/') + 1); 
+        if(base.lastIndexOf(".") != -1)
+            base = base.substring(0, base.lastIndexOf("."));
+        return base;
+    }
+
+    //
+    // Получить ссылку на изображение
+    //
+    function getSize( image ){
+        if( 'medium' in image.sizes ) return image.sizes.medium;
+        if( 'large' in image.sizes ) return image.sizes.large;
+        if( 'thumbnail' in image.sizes ) return image.sizes.thumbnail;
+        if( 'full' in image.sizes ) return image.sizes.full;
+        return false;
+    }
+
     //
     // Добавить событие удалить изображение при нажатии на крестик
     //
@@ -16,30 +35,72 @@ jQuery(document).ready(function($) {
     //
     // Шаблон для вставки изображения
     //
-    function addAttachment(id, img, fields){
+    function addAttachment( image ) {
+        console.log( image );
+        var size = getSize(image);
+        var file = baseName( image.filename );
+
+        var caption = $('<input>').attr({
+            type: 'text',
+            class: 'item-excerpt',
+            name: 'attachment_excerpt['+image.id+']',
+            value: image.caption
+        })[0].outerHTML;
+
+        var descHTML = $('<textarea></textarea>').attr({
+            class: 'item-content',
+            name: 'attachment_content['+image.id+']',
+            placeholder: 'The some contents..',
+            cols: 90,
+            rows: 4
+        }).text( image.description )[0].outerHTML;
+
+        var linkHTML = $('<input>').attr({
+            type: 'text',
+            class: 'item-link',
+            name: 'attachment_link['+image.id+']',
+            placeholder: '[link post="4"]',
+            value: ''
+        })[0].outerHTML;
+
         imgsContainer.append(
-            '<div class="attachment">\n'
-          + '  <div class="item">\n'
-          + '    <span class="dashicons dashicons-no remove"></span>\n'
-          + '    <div class="crop">' + img + '</div>\n' + fields
-          + '  </div>\n'
-          + '  <input type="hidden" id="dt-ids" name="attachment_id[]"  value="'+id+'">\n'
-          + '</div>\n'
-           );
+        '<li tabindex="0" aria-label="'+ file +'" data-id="'+ image.id +'" class="attachment">\n'
+      + '    <div class="thumbnail-wrap">'
+      + '        <div class="attachment-preview '+ size.orientation
+      + '     type-'+image.type+' subtype-'+image.subtype+'">\n'
+      + '            <div class="thumbnail">'
+      + '                <div class="centered">'
+      + '                    <img src="'+ size.url +'" alt="" />'
+      + '                </div>'
+      + '            </div>'
+      + '        </div>'
+      + '        <button type="button" class="check remove" tabindex="-1">'
+      + '            <span class="media-modal-icon"></span>'
+      + '        </button>'
+      + caption
+      + '        <input type="hidden" id="attachments" name="attachment_id[]" value="'+ image.id +'">'
+      + '    </div>'
+      + descHTML
+      + '<div class="item-link-wrap">'
+      + linkHTML
+      + '    <label class="open-blank">Target blank <input type="checkbox"></label>'
+      + '</div>'
+      + '</li>' );
 
         setRemoveEvents();
     }
 
-    //
-    // Получить ссылку на изображение
-    //
-    function getSizeUrl( image ){
-        if( 'medium' in image.sizes ) return image.sizes.medium.url;
-        if( 'large' in image.sizes ) return image.sizes.large.url;
-        if( 'thumbnail' in image.sizes ) return image.sizes.thumbnail.url;
-        if( 'full' in image.sizes ) return image.sizes.full.url;
-        return false;
-    }
+    // function addAttachment(id, img, fields){
+        // (
+        //     '<div class="attachment">\n'
+        //   + '  <div class="item">\n'
+        //   + '    <span class="dashicons dashicons-no remove"></span>\n'
+        //   + '    <div class="crop">' + img + '</div>\n' + fields
+        //   + '  </div>\n'
+        //   + '  <input type="hidden" id="dt-ids" name="attachment_id[]"  value="'+id+'">\n'
+        //   + '</div>\n'
+        //    );
+    // }
 
     imgsContainer.sortable();
     setRemoveEvents();
@@ -67,35 +128,8 @@ jQuery(document).ready(function($) {
             var image = attachments.toJSON();//attachments.models;
 
             for(var i = 0; i < attachments.length; i++){
-                var imgHTML = jQuery('<img/>', {
-                    src: getSizeUrl(image[i]),
-                    alt: image[i].alt,
-                    class: image[i].orientation
-                })[0].outerHTML;
-
-                var titleHTML = $('<input>').attr({
-                    type: 'text',
-                    class: 'item-excerpt',
-                    name: 'attachment_excerpt['+image[i].id+']',
-                    value: image[i].caption
-                })[0].outerHTML;
-
-                var descHTML = $('<textarea></textarea>').attr({
-                    class: 'item-content',
-                    name: 'attachment_content['+image[i].id+']',
-                    cols: 90,
-                    rows: 4
-                }).text( image[i].description )[0].outerHTML;
-
-                var linkHTML = $('<input>').attr({
-                    type: 'text',
-                    class: 'item-link',
-                    name: 'attachment_link['+image[i].id+']',
-                    placeholder: '[link post="4"]',
-                    value: ''
-                })[0].outerHTML;
-
-                addAttachment(image[i].id, imgHTML, titleHTML + descHTML + linkHTML );
+                // addAttachment(image[i].id, imgHTML, titleHTML + descHTML + linkHTML );
+                addAttachment( image[i] );
             }
         });
 
@@ -124,18 +158,18 @@ jQuery(document).ready(function($) {
     $('#detail_view').on('click', function(e){
         e.preventDefault();
 
-        if( localStorage.getItem('mb_view') ){
-            localStorage.removeItem('mb_view');
-            $(this).closest('.dt-media').removeClass('list');
+        if( localStorage.getItem('detail_mode') ){
+            localStorage.removeItem('detail_mode');
+            $('#dt-media').removeClass('detail');
         }
         else {
-            localStorage.setItem('mb_view', '1' );
-            $(this).closest('.dt-media').addClass('list');
+            localStorage.setItem('detail_mode', '1' );
+            $('#dt-media').addClass('detail');
         }
     });
 
-    if( localStorage.getItem('mb_view') ) {
-        $('#detail_view').closest('.dt-media').addClass('list');
+    if( localStorage.getItem('detail_mode') ) {
+        $('#dt-media').addClass('detail');
     }
 
 
