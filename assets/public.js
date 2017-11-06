@@ -13,6 +13,19 @@ jQuery(document).ready(function($) {
             });
         }
 
+        $.each(value.props, function(index, val) {
+            if( val == 'on' )
+                value.props[ index ] = true;
+            else if( val == 'off' )
+                value.props[ index ] = false;
+
+            var int = parseInt(val);
+            if( ! isNaN( int ) )
+                value.props[ index ] = int;
+        });
+
+        console.log(value.props);
+
         if( value.settings.not_initialize ) {
             return false;
         }
@@ -26,30 +39,30 @@ jQuery(document).ready(function($) {
             }
         }
 
-        if( value.settings.lazyLoad || value.settings.masonry ) {
-            if( value.settings.masonry ) {
-                block.masonry({ itemSelector: '#mediablock-' + index + ' > .item' });
-            }
+        // if( value.settings.lazyLoad || value.settings.masonry ) {
+        //     if( value.settings.masonry ) {
+        //         block.masonry({ itemSelector: '#mediablock-' + index + ' > .item' });
+        //     }
 
-            if( value.settings.lazyLoad && value.settings.masonry ) {
-                block.imagesLoaded(function() {
-                    if( value.settings.lazyLoad ) {
-                        $('img', block).addClass('not-loaded');
-                        $('img.not-loaded', block).lazyload({
-                            effect: "fadeIn",
-                            load: function() {
-                                $(this).removeClass("not-loaded");
-                                $(this).addClass("loaded");
+        //     if( value.settings.lazyLoad && value.settings.masonry ) {
+        //         block.imagesLoaded(function() {
+        //             if( value.settings.lazyLoad ) {
+        //                 $('img', block).addClass('not-loaded');
+        //                 $('img.not-loaded', block).lazyload({
+        //                     effect: "fadeIn",
+        //                     load: function() {
+        //                         $(this).removeClass("not-loaded");
+        //                         $(this).addClass("loaded");
 
-                                if( typeof block.masonry !== "undefined" ) {
-                                    block.masonry.masonry("reload");
-                                }
-                            }
-                        });
-                        $('img.not-loaded', block).trigger("scroll");
-                    }
-                });
-            }
-        }
+        //                         if( typeof block.masonry !== "undefined" ) {
+        //                             block.masonry.masonry("reload");
+        //                         }
+        //                     }
+        //                 });
+        //                 $('img.not-loaded', block).trigger("scroll");
+        //             }
+        //         });
+        //     }
+        // }
     });
 });

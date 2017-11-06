@@ -84,12 +84,18 @@ class WP_Admin_Forms {
             );
 
         $field = wp_parse_args( $field, $defaults );
+        $field['id'] = str_replace('][', '_', $field['id']);
 
-        if( $field['default'] && ! in_array($field['type'], array('checkbox', 'select', 'radio')) ) {
-            $field['placeholder'] = $field['default'];
+        if( "" !== $field['default'] && ! in_array($field['type'], array('checkbox', 'radio')) ) {
+            if ($field['type'] != 'select')
+                $field['placeholder'] = $field['default'];
         }
 
-        $field['id'] = str_replace('][', '_', $field['id']);
+        $key = $field[ $field['check_active'] ];
+        if( "" !== $field['default'] && ! isset($active[ $key ]) ) {
+            $active[ $key ] = $field['default'];
+        }
+
         $entry = self::parse_entry($field, $active, $field['value']);
 
         return self::_input_template( $field, $entry, $for_table );

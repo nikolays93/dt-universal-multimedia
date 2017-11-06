@@ -19,143 +19,207 @@ function register_mediablocks_type() {
         'menu_position' => 10,
         'supports' => array('title', 'custom-fields', 'excerpt'),
         'labels' => array(
-            'name' => __( 'Mediablocks', MB_LANG ),
-            'singular_name' => __( 'Mediablock', MB_LANG ),
-            'add_new'       => __( 'Add block', MB_LANG ),
-            'add_new_item'  => __( 'Add new block', MB_LANG ),
-            'edit_item'     => __( 'Edit block', MB_LANG ),
-            'new_item'      => __( 'New block', MB_LANG ),
-            'view_item'     => __( 'View block', MB_LANG ),
-            'search_items'  => __( 'Search media block', MB_LANG ),
+            'name' => __( 'Mediablocks', DOMAIN ),
+            'singular_name' => __( 'Mediablock', DOMAIN ),
+            'add_new'       => __( 'Add block', DOMAIN ),
+            'add_new_item'  => __( 'Add new block', DOMAIN ),
+            'edit_item'     => __( 'Edit block', DOMAIN ),
+            'new_item'      => __( 'New block', DOMAIN ),
+            'view_item'     => __( 'View block', DOMAIN ),
+            'search_items'  => __( 'Search media block', DOMAIN ),
         )
     ) );
 }
 
 /**
- * Добавить стили и скрипты на страницу создания и редактирования типа записи
+ * На странице создания и редактирования типа записи
  */
-add_action( 'load-post.php',     __NAMESPACE__ . '\enqueue_admin_assets' );
-add_action( 'load-post-new.php', __NAMESPACE__ . '\enqueue_admin_assets' );
-function enqueue_admin_assets() {
-    if( ($screen = get_current_screen()) && isset($screen->post_type) && $screen->post_type != Utils::OPTION ) {
-        return false;
+class mediablock_load_post_page
+{
+    function __construct()
+    {
+        /**
+         * Добавить стили и скрипты
+         */
+        add_action( 'load-post.php',     array(__CLASS__, 'enqueue_admin_assets') );
+        add_action( 'load-post-new.php', array(__CLASS__, 'enqueue_admin_assets') );
+
+        /**
+         * Шорткод и Чекбокс после заголовка "Показывать заголовок"
+         */
+        add_action( 'edit_form_after_title', array(__CLASS__, 'after_title') );
+
+        /**
+         * Добавить метабоксы
+         */
+        add_action( 'add_meta_boxes', array(__CLASS__, 'blocks_meta_boxes'), 20 );
+
+        /**
+         * Ajax обновление метабоксов
+         */
+        add_action( 'wp_ajax_mblock_options', array(__CLASS__, 'json_options') );
+        add_action( 'wp_ajax_mblock_options', array(__CLASS__, 'grid_options') );
+
+        /**
+         * Добавить upload и sort кнопку
+         */
+        add_action( 'mediablocks_before_attachments',
+            array(__CLASS__, 'attachments_media_buttons'), 50 );
+
+        /**
+         * Выбор типа блока
+         */
+        add_action( 'mediablocks_before_attachments',
+            array(__CLASS__, 'determine_type'), 50 );
     }
 
-    if ( ! did_action('wp_enqueue_media') ) {
-        wp_enqueue_media();
+    static function enqueue_admin_assets() {
+        if( ($screen = get_current_screen()) && isset($screen->post_type) && $screen->post_type != Utils::OPTION ) {
+            return false;
+        }
+
+        if ( ! did_action('wp_enqueue_media') ) {
+            wp_enqueue_media();
+        }
+
+        $core_url = Utils::get_plugin_url( 'includes/assets' );
+
+        wp_enqueue_style(  Utils::PREF . 'style', $core_url . '/style.css', array(), '1.0' );
+        wp_enqueue_script( Utils::PREF . 'admin', $core_url . '/admin.js', array('jquery'), '1.0', true );
+        wp_localize_script( Utils::PREF . 'admin', 'mb_settings', array(
+            'nonce' => wp_create_nonce( Utils::SECURITY ),
+        ) );
+
+        $min = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? '' : '.min';
+        wp_enqueue_script( 'easy-actions', $core_url . '/jquery.data-actions'.$min.'.js', array('jquery'), '1.0', true );
+
+        wp_enqueue_script('mustache', $core_url . '/mustache'.$min.'.js', array(), null, true);
+        echo "<script id='attachment-tpl' type='x-tmpl-mustache'>";
+        echo self::admin_attachment_template();
+        echo "</script>";
     }
 
-    $core_url = Utils::get_plugin_url( 'assets/core' );
+    static function admin_attachment_template()
+    {
+        return file_get_contents( Utils::get_plugin_dir('includes/templates/admin_attachment.tpl') );
+    }
 
-    wp_enqueue_style(  Utils::PREF . 'style', $core_url . '/style.css', array(), '1.0' );
-    wp_enqueue_script( Utils::PREF . 'admin', $core_url . '/admin.js', array('jquery'), '1.0', true );
-    wp_localize_script( Utils::PREF . 'admin', 'mb_settings', array(
-        'nonce' => wp_create_nonce( Utils::SECURITY ),
-    ) );
+    static function after_title() {
+        global $post, $wp_meta_boxes;
 
-    $min = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? '' : '.min';
-    wp_enqueue_script( 'easy-actions', $core_url . '/jquery.data-actions'.$min.'.js', array('jquery'), '1.0', true );
-}
+        if( $post->post_type !== Utils::OPTION ) {
+            return;
+        } ?>
+        <div class='shortcode-wrap wrap-sc'>
+            <label>
+                <?php
+                    _e('Show title', DOMAIN);
+                    echo sprintf('<input id="_show_title" name="_show_title" type="checkbox" value="on"%s>',
+                        checked( Utils::_post_meta($post->ID, '_show_title'), 'on', true ))
+                ?>
+            </label>
 
-/**
- * Шорткод и
- * Чекбокс после заголовка "Показывать заголовок"
- */
-add_action( 'edit_form_after_title', __NAMESPACE__ . '\after_title' );
-function after_title() {
-    global $post, $wp_meta_boxes;
-
-    if( $post->post_type == Utils::OPTION ) {
-    ?>
-    <div class='shortcode-wrap wrap-sc'>
-        <label>
             <?php
-                // _e('Show title', MB_LANG);
-                // echo sprintf('<input id="_show_title" name="_show_title" type="checkbox" value="on"%s>',
-                //     checked( Utils::_post_meta($post->ID, '_show_title'), 'on', true ))
+                _e('Insert short code in any post', DOMAIN);
+                echo sprintf('<input readonly="readonly" id="shortcode" type="text" value="%s" onclick="%s">',
+                    '[mblock id=&quot;'.$post->ID.'&quot;]',
+                    'this.focus();return false;'
+                );
             ?>
-        </label>
-
-        <?php
-            _e('Insert short code in any post', MB_LANG);
-            echo sprintf('<input readonly="readonly" id="shortcode" type="text" value="%s" onclick="%s">',
-                '[mblock id=&quot;'.$post->ID.'&quot;]',
-                'this.focus();return false;'
-            );
-        ?>
-    </div>
-<!--     <div class="media-modal wp-core-ui">
-        <div class="media-modal-content">
-            <div class="edit-attachment-frame mode-select hide-menu hide-router">
-                <div class="media-frame-content">
-                    <?php // echo get_media_item( 297 ); ?>
-                </div>
-            </div>
         </div>
-    </div> -->
-    <?php
-    }
-}
-
-/**
- * Добавить метабоксы
- */
-add_action( 'add_meta_boxes', __NAMESPACE__ . '\blocks_meta_boxes', 20 );
-function blocks_meta_boxes() {
-    add_meta_box('attachments', 'Мультимедиа', __NAMESPACE__ . '\attachments_grid', Utils::OPTION, 'normal', 'high');
-    add_meta_box('json_options', __('JSON options'), __NAMESPACE__ . '\json_options', Utils::OPTION, 'normal');
-    add_meta_box('grid_options', 'Настройки', __NAMESPACE__ . '\grid_options', Utils::OPTION, 'side');
-}
-
-/**
- * Ajax обновление метабоксов
- */
-add_action( 'wp_ajax_main_settings', 'json_options' );
-add_action( 'wp_ajax_main_settings', 'grid_options' );
-
-add_action( 'mb_attachments_tool_bar', __NAMESPACE__ . '\attachments_media_buttons', 50 );
-function attachments_media_buttons() {
-    ?>
-    <div class="hide-if-no-js wp-media-buttons">
-        <button id="detail_view" class="button" type="button">
-            <span class="dashicons dashicons-screenoptions"></span>
-            <span class="dashicons dashicons-list-view"></span>
-        </button>
-        <button id="upload-images" class="button add_media">
-            <span class="wp-media-buttons-icon"></span> Добавить медиафайл
-        </button>
-    </div><!-- .wp-media-buttons -->
-    <?php
-}
-
-add_action( 'mb_attachments_tool_bar', __NAMESPACE__ . '\determine_type', 50 );
-function determine_type() {
-    // echo sprintf('<label>%s</label>', __('', MB_LANG) );
-
-    $form = new WP_Admin_Forms( Utils::get_settings( 'general' ), false, array(
-        'form_name'  => 'mtypes',
-        'mode'       => 'post',
-        // Template:
-        'item_wrap'   => array('<span>', '</span>'),
-        // 'form_wrap'   => array('', ''),
-        // 'label_tag'   => 'th',
-        // 'hide_desc'   => false,
-    ) );
-
-    echo $form->render();
-}
-
-function attachments_grid( $post ) {
-    if ( ! did_action( 'wp_enqueue_media' ) ) {
-        wp_enqueue_media();
-    }
-    ?>
-
-        <?php do_action('mb_attachments_tool_bar'); ?>
-        <div class="clear"></div>
-
-        <ul tabindex="-1" id="dt-media" class="attachments">
         <?php
+    }
+
+    static function blocks_meta_boxes() {
+        add_meta_box('attachments', __('Multimedia'),
+            array(__CLASS__, 'attachments_grid'), Utils::OPTION, 'normal', 'high');
+
+        /** With AJAX */
+        add_meta_box('json_options', __('JSON options'),
+            array(__CLASS__, 'json_options'), Utils::OPTION, 'normal');
+        add_meta_box('grid_options', __('Settings'),
+            array(__CLASS__, 'grid_options'), Utils::OPTION, 'side');
+    }
+
+    /******************************* Attachments ******************************/
+    static function attachments_media_buttons()
+    {
+        ?>
+        <div class="hide-if-no-js wp-media-buttons">
+            <button id="detail_view" class="button" type="button">
+                <span class="dashicons dashicons-screenoptions"></span>
+                <span class="dashicons dashicons-list-view"></span>
+            </button>
+            <button id="upload-images" class="button add_media">
+                <span class="wp-media-buttons-icon"></span> Добавить медиафайл
+            </button>
+        </div><!-- .wp-media-buttons -->
+        <?php
+    }
+
+    static function determine_type()
+    {
+        $form = new WP_Admin_Forms( Utils::get_settings( 'general' ), false, array(
+            'form_name'  => 'mtypes',
+            'mode'       => 'post',
+            // Template:
+            'item_wrap'   => array('<span>', '</span>'),
+            // 'form_wrap'   => array('', ''),
+            // 'label_tag'   => 'th',
+            // 'hide_desc'   => false,
+        ) );
+
+        echo $form->render();
+        echo '<div class="clear"></div>';
+    }
+
+    static function get_attachment_class( $attachment_metadata = false )
+    {
+        $attachmentOrientation = ( $attachment_metadata['height'] > $attachment_metadata['width'] ) ? 'portrait' : 'landscape';
+
+        $attachmentClass = array('attachment-preview');
+        $attachmentClass[] = $attachmentOrientation;
+        if( isset($attachment_metadata['sizes']['thumbnail']['mime-type']) ) {
+            $types = explode('/', $attachment_metadata['sizes']['thumbnail']['mime-type']);
+            $attachmentClass[] = 'type-' . $types[0];
+            if( isset($types[1]) ) {
+                $attachmentClass[] =  'subtype-' . $types[1];
+            }
+        }
+
+        return implode(' ', $attachmentClass);
+    }
+
+    static function get_attachment_size( $attachment_metadata = false )
+    {
+        $upload = wp_upload_dir();
+        $dir = dirname( $attachment_metadata['file'] ) . '/';
+
+        if( isset( $attachment_metadata['sizes']['medium'] ) ) {
+            $filename = $dir . $attachment_metadata['sizes']['medium']['file'];
+        }
+        elseif( isset( $attachment_metadata['sizes']['large'] ) ) {
+            $filename = $dir . $attachment_metadata['sizes']['large']['file'];
+        }
+        elseif( isset( $attachment_metadata['sizes']['thumbnail'] ) ) {
+            $filename = $dir . $attachment_metadata['sizes']['thumbnail']['file'];
+        }
+        elseif( isset( $attachment_metadata['sizes']['full'] ) ) {
+            $filename = $dir . $attachment_metadata['sizes']['full']['file'];
+        }
+        else {
+            $filename = $attachment_metadata['file'];
+        }
+
+        return $upload['baseurl'] . '/' . $filename;
+    }
+
+    static function attachments_grid( $post )
+    {
+        do_action('mediablocks_before_attachments');
+        ?>
+        <ul tabindex="-1" id="mediablocks-media" class="attachments">
+            <?php
             $arrAttachments = array();
             if( $attachments = get_post_meta( $post->ID, '_attachments', true ) ) {
                 $arrAttachments = explode(',', $attachments);
@@ -167,134 +231,92 @@ function attachments_grid( $post ) {
                 if( ! $attachment ) continue;
 
                 $attachment_metadata = wp_get_attachment_metadata( $attachment_id );
-
-                $image = wp_get_attachment_image($attachment_id, 'medium');
                 $file = explode('.', basename($attachment_metadata['file']));
 
-                $attachmentOrientation = ( $attachment_metadata['height'] > $attachment_metadata['width'] ) ? 'portrait' : 'landscape';
-
-                $attachmentClass = array('attachment-preview');
-                $attachmentClass[] = $attachmentOrientation;
-                if( isset($attachment_metadata['sizes']['thumbnail']['mime-type']) ) {
-                    $types = explode('/', $attachment_metadata['sizes']['thumbnail']['mime-type']);
-                    $attachmentClass[] = 'type-' . $types[0];
-                    if( isset($types[1]) ) {
-                        $attachmentClass[] =  'subtype-' . $types[1];
-                    }
-                }
-
-                $attachment_link = get_post_meta( $attachment_id, 'link', true );
-                $attachment_blank = get_post_meta( $attachment_id, '_blank', true );
-                ?>
-                <li tabindex="0" aria-label="<?php echo $file[0] ?>" data-id="<?php echo $attachment_id ?>" class="attachment">
-                    <div class="thumbnail-wrap">
-                        <div class="<?php echo implode(' ', $attachmentClass); ?>">
-                            <div class="thumbnail">
-                                <div class="centered">
-                                    <?php echo $image; ?>
-                                </div>
-                            </div>
-                        </div>
-                        <?php
-                        echo sprintf('<input type="text" class="item-excerpt" name="%s" value="%s">',
-                            esc_attr( "attachment_excerpt[ $attachment_id ]" ),
-                            esc_attr( $attachment->post_excerpt ) );
-                        ?>
-                    </div>
-                    <?php
-                    echo sprintf('<textarea class="item-content" name="%s" cols="75" rows="7" placeholder="The some contents..">%s</textarea>',
-                        "attachment_content[ $attachment_id ]",
-                        $attachment->post_content );
-                    ?>
-                    <div class="item-link-wrap">
-                        <?php
-                        echo sprintf('<input type="text" class="item-link" name="%s" value="%s">',
-                            "attachment_link[ $attachment_id ]",
-                            esc_attr( $attachment_link ) );
-                        ?>
-                        <label class="open-blank">
-                            <?php
-                            // _e('Target blank');
-                            // echo sprintf('<input type="checkbox" class="item-blank" name="%s" value="1">',
-                            //     "attachment_blank[ $attachment_id ]",
-                            //     checked( '1', $attachment_blank, false )
-                            // );
-                                ?>
-                        </label>
-                    </div>
-
-                    <button type="button" class="check remove" tabindex="-1">
-                        <span class="media-modal-icon"></span>
-                        <!-- <span class="screen-reader-text">Убрать</span> -->
-                    </button>
-                    <input type="hidden" id="attachments" name="attachment_id[]" value="<?php echo $attachment_id; ?>">
-                </li>
-            <?php endforeach; ?>
+                // Init template engine
+                $m = new \Mustache_Engine;
+                $tpl = self::admin_attachment_template();
+                echo $m->render( $tpl, array(
+                    'filename' => $file[0],
+                    'attachment_id' => $attachment_id,
+                    'attachment_class' => self::get_attachment_class( $attachment_metadata ),
+                    'attachment_url' => self::get_attachment_size( $attachment_metadata ),
+                    'attachment_excerpt_value' => esc_attr( $attachment->post_excerpt ),
+                    'attachment_content_value' => $attachment->post_content,
+                    'attachment_link_value' => esc_attr( get_post_meta( $attachment_id, 'link', true ) ),
+                    'attachment_blank_label' => __('Target blank', DOMAIN),
+                    'attachment_blank_checked' => checked( '1',
+                        get_post_meta( $attachment_id, '_blank', true ), false ),
+                ) );
+            endforeach;
+            ?>
         </ul>
-        <div class="clear"></div>
-        <?php do_action('mb_after_attachments'); ?>
-    <?php
-    wp_nonce_field( Utils::SECURITY, 'mediablocks' );
+        <?php do_action('mediablocks_after_attachments');
+
+        wp_nonce_field( Utils::SECURITY, 'mediablocks' );
+    }
+
+    /**
+     * Показывает настройки библиотеки
+     * Обновляется через AJAX
+     */
+    static function json_options( $post, $default = '' )
+    {
+        $atts = wp_parse_args( get_post_meta(get_the_ID(), 'mtypes', true), array(
+            'grid_type' => 'carousel',
+            'lib_type'  => 'slick',
+        ) );
+
+        echo '<div class="inner">';
+
+        $form = new WP_Admin_Forms( Utils::get_settings( 'lib/'.$atts['lib_type'], $atts ), $is_table = true, $args = array(
+            'form_name'  => '_json_options',
+            'mode'       => 'post',
+            // template:
+            // 'item_wrap'   => array('<p>', '</p>'),
+            // 'form_wrap'   => array('', ''),
+            // 'label_tag'   => 'th',
+            // 'hide_desc'   => false,
+        ) );
+
+        echo $form->render();
+
+        echo '</div>';
+    }
+
+    /**
+     * Показывает под настройки (справа в сайдбаре)
+     * Обновляется через AJAX
+     */
+    static function grid_options( $post )
+    {
+        $atts = wp_parse_args( get_post_meta(get_the_ID(), 'mtypes', true), array(
+            'grid_type' => isset($_POST['grid_type']) ? $_POST['grid_type'] : 'carousel',
+            'lib_type'  => isset($_POST['lib_type'])  ? $_POST['lib_type']  : 'slick',
+        ) );
+
+
+        echo "<div class='inner'>";
+
+        $form = new WP_Admin_Forms( Utils::get_settings( 'grid/'.$atts['grid_type'], $atts ), $is_table = true, $args = array(
+            'form_name'  => '_grid_options',
+            'mode'       => 'post',
+            // template:
+            // 'item_wrap'   => array('<p>', '</p>'),
+            // 'form_wrap'   => array('', ''),
+            // 'label_tag'   => 'th',
+            // 'hide_desc'   => false,
+        ) );
+
+        echo $form->render();
+
+        echo '</div>';
+    }
 }
-
-/**
- * Показывает настройки библиотеки
- * Обновляется через AJAX
- */
-function json_options( $post, $default = '' )
-{
-    //$_POST
-
-    $atts = wp_parse_args( get_post_meta(get_the_ID(), 'mtypes', true), array(
-        'grid_type' => 'carousel',
-        'lib_type'  => 'slick',
-    ) );
-
-    echo '<div class="inner">';
-
-    $form = new WP_Admin_Forms( Utils::get_settings( 'lib/'.$atts['lib_type'], $atts ), $is_table = true, $args = array(
-        'form_name'  => '_json_options',
-        'mode'       => 'post',
-        // template:
-        // 'item_wrap'   => array('<p>', '</p>'),
-        // 'form_wrap'   => array('', ''),
-        // 'label_tag'   => 'th',
-        // 'hide_desc'   => false,
-    ) );
-
-    echo $form->render();
-
-    echo '</div>';
-}
-
-/**
- * Показывает под настройки (справа в сайдбаре)
- * Обновляется через AJAX
- */
-function grid_options( $post )
-{
-    $atts = wp_parse_args( get_post_meta(get_the_ID(), 'mtypes', true), array(
-        'grid_type' => 'carousel',
-        'lib_type'  => 'slick',
-    ) );
+new mediablock_load_post_page();
 
 
-    echo "<div class='inner'>";
 
-    $form = new WP_Admin_Forms( Utils::get_settings( 'grid/'.$atts['grid_type'], $atts ), $is_table = true, $args = array(
-        'form_name'  => '_grid_options',
-        'mode'       => 'post',
-        // template:
-        // 'item_wrap'   => array('<p>', '</p>'),
-        // 'form_wrap'   => array('', ''),
-        // 'label_tag'   => 'th',
-        // 'hide_desc'   => false,
-    ) );
-
-    echo $form->render();
-
-    echo '</div>';
-}
 
 add_action( 'add_meta_boxes', __NAMESPACE__ . '\change_excerpt_box', 10 );
 function change_excerpt_box() {

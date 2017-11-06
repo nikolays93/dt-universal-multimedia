@@ -2,13 +2,18 @@
 defined( 'ABSPATH' ) or die();
 
 global $post;
-$type = get_post_meta( $post->ID, '_type', true );
+
+$type = wp_parse_args( get_post_meta( $post->ID, 'mtypes', true ), array(
+	'grid_type' => '',
+	'lib_type'  => '',
+) );
+
 $inputs = array(
 	array(
 		'id'    => 'grid_type',
 		'type'  => 'select',
 		'input_class' => 'button',
-		// 'default'=> get_post_meta( $post->ID, '_main_type', true ),
+		'default' => $type['grid_type'],
 		'options' => array(
 			'carousel'    => 'Карусель',
 			'slider'      => 'Слайдер',
@@ -18,17 +23,17 @@ $inputs = array(
 			),
 		),
 	array(
-		'id'    => 'lib_type',
+		'id'    => 'lib_type_group1',
 		'name'  => 'lib_type',
 		'type'  => 'select',
-		'input_class' => 'carousel slider sync-slider query button',
+		'input_class' => 'activated carousel slider sync-slider button',
 		'options' => array(
 			'slick' => 'Скользкий слайдер',
 			'owl-carousel' => 'Сова карусель',
 			),
 		),
 	array(
-		'id'    => 'lib_type',
+		'id'    => 'lib_type_group2',
 		'name'  => 'lib_type',
 		'type'  => 'select',
 		'input_class' => 'gallery button hidden',
@@ -41,7 +46,7 @@ $inputs = array(
 			),
 		),
 	array(
-		'id'    => 'lib_type',
+		'id'    => 'lib_type_group3',
 		'name'  => 'lib_type',
 		'type'  => 'select',
 		'input_class' => 'carousel-3d button hidden',

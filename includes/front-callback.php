@@ -209,21 +209,12 @@ class MediaBlock {
 
         extract( $settings );
 
-        // if( ! $exclude_styles ) {
-        //     $this->load_style();
-        // }
-
-        if( ! $exclude_assets ) {
-            // $this->load_assets();
-            // $this->initialize_scripts();
-        }
-
-        $settings['items_size'] = $this->parse_items_size( $width, $height, $items_size );
+        $this->settings['items_size'] = $this->parse_items_size( $width, $height, $items_size );
 
         $result = array();
         $result[] = "<section id='mblock-{$this->post->ID}'>";
 
-        if( get_post_meta( $this->id, '_show_title', true ) && $this->post->post_title !== '' ) {
+        if( get_post_meta( $this->post->ID, '_show_title', true ) && $this->post->post_title !== '' ) {
             sprintf('<%1$s>%2$s</%1$s>',
                 $this->atts['tag_title'],
                 $this->post->post_title
@@ -243,20 +234,24 @@ class MediaBlock {
 
     protected function render_attachments( $settings )
     {
-        // need for gallery or "no js"
-        $item_class = Utils::get_column_class( $settings['columns'] );
-        if( $settings['no_paddings'] ) $item_class .= ' no-paddings';
+        $wrap_classes = array('media-block', 'row', $this->atts['types']['grid_type']);
 
         // .fancybox usually use for modal trigger
-        $class_type = ($this->sub_type == 'fancybox') ? 'fancy' : $this->sub_type;
+        $wrap_classes[] = ($this->atts['types']['lib_type'] == 'fancybox') ? 'fancy'
+            : $this->atts['types']['lib_type'];
 
-        $item_wrap = array(
-          "<div id='mediablock-{$this->post->ID}' class='media-block row {$this->atts['types']['grid_type']} {$class_type}'>",
-          "</div>");
-        $item = array("<div class='item {$item_class}'>", "</div>");
+        $item_classes = array('item');
+        // need for gallery or "no js"
+        $item_classes[] = Utils::get_column_class( $settings['columns'] );
+        if( $settings['no_paddings'] )
+            $item_classes[] = 'no-paddings';
+
+        $item_start = sprintf('<div class="%s">', implode(' ', $item_classes) );
+        $item_end   = '</div>';
 
         $result = array();
-        $result[] = $item_wrap[0];
+        $result[] = sprintf('<div id="mediablock-%d" class="%s">',
+            $this->post->ID, implode(' ', $wrap_classes) );
         foreach ($this->attachments as $i => $attachment) {
             $att = get_post( $attachment );
 
@@ -271,9 +266,10 @@ class MediaBlock {
             /** Get Link */
             $link = array('', '');
             if( $settings['lightbox'] && ($settings['columns'] == 1 || ! $this->double) ) {
-                $link = array("<a rel='group-{$this->id}' href='{$att->guid}' class='{$settings['lightbox']}'>", "</a>");
+                $link = array("<a rel='group-{$this->post->ID}' href='{$att->guid}' class='{$settings['lightbox']}'>", "</a>");
             }
-            elseif( $metalink = esc_attr( get_post_meta( $attachment, 'mb_link', true ) ) ) {
+
+            if( $metalink = esc_attr( get_post_meta( $attachment, 'link', true ) ) ) {
                 if( preg_match("/\[link id=\"([0-9]{1,40})\"\]/i", $metalink, $output) && isset($output[1]) ) {
                     $url = get_permalink( (int)$output[1] );
                 }
@@ -290,8 +286,8 @@ class MediaBlock {
             }
 
             /** Set Template */
-            $result[] = $item[0];
-            $result[] = '   '.$link[0];
+            $result[] = $item_start;
+            $result[] = '   ' . $link[0];
             $result[] = '     <div class="wrap">';
 
             if( $settings['image_captions'] == 'top' )
@@ -303,10 +299,10 @@ class MediaBlock {
                 $result[] = '       ' . $caption;
 
             $result[] = '     </div>';
-            $result[] = '   '.$link[1];
-            $result[] = $item[1];
+            $result[] = '   ' . $link[1];
+            $result[] = $item_end;
         }
-        $result[] = $item_wrap[1];
+        $result[] = '</div>';
 
         return implode("\n", $result);
     }

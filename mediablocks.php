@@ -17,7 +17,7 @@ namespace CDevelopers\media;
 if ( ! defined( 'ABSPATH' ) )
   exit; // disable direct access
 
-define('MB_LANG', 'mblocks');
+const DOMAIN = 'mediablocks';
 
 class Utils
 {
@@ -41,6 +41,7 @@ class Utils
             // __NAMESPACE__ . '\WP_Admin_Page'      => 'wp-admin-page.php',
             __NAMESPACE__ . '\WP_Admin_Forms'     => 'wp-admin-forms.php',
             // __NAMESPACE__ . '\WP_Post_Boxes'      => 'wp-post-boxes.php',
+            '\Mustache_Engine' => 'Mustache/Autoloader.php',
             );
 
         foreach ($classes as $classname => $path) {
@@ -53,8 +54,10 @@ class Utils
         require_once __DIR__ . '/includes/register-assets.php';
         require_once __DIR__ . '/includes/register-post-type.php';
         require_once __DIR__ . '/includes/front-callback.php';
-        require_once __DIR__ . '/includes/shortcode-and-filters.php';
+        // require_once __DIR__ . '/includes/shortcode-and-filters.php';
         // require_once __DIR__ . '/includes/admin-page.php';
+
+        \Mustache_Autoloader::register();
     }
 
     public static function initialize()
@@ -63,7 +66,7 @@ class Utils
             return false;
         }
 
-        load_plugin_textdomain( MB_LANG, false, basename(__DIR__) . '/languages/' );
+        load_plugin_textdomain( DOMAIN, false, DOMAIN . '/languages/' );
         self::include_required_classes();
 
         self::$initialized = true;
@@ -93,7 +96,7 @@ class Utils
      */
     public static function load_file_if_exists( $file_array, $args = array(), $once = false )
     {
-        $cant_be_loaded = __('The file %s can not be included', MB_LANG);
+        $cant_be_loaded = __('The file %s can not be included', DOMAIN);
         if( is_array( $file_array ) ) {
             $result = array();
             foreach ( $file_array as $id => $path ) {
