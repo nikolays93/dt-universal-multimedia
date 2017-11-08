@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: plugin\n"
-"POT-Creation-Date: 2017-10-18 12:41+0400\n"
-"PO-Revision-Date: 2017-10-27 10:17+0400\n"
+"POT-Creation-Date: 2017-11-08 23:32+0400\n"
+"PO-Revision-Date: 2017-11-08 23:35+0400\n"
 "Last-Translator: \n"
 "Language-Team: NikolayS93 <NikolayS93@yandex.ru>\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.7\n"
+"X-Generator: Poedit 1.8.7.1\n"
 "X-Poedit-Basepath: ../.\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -19,3 +19,1158 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: includes/classes\n"
 "X-Poedit-SearchPathExcluded-1: languages\n"
 "X-Poedit-SearchPathExcluded-2: .git\n"
+
+#: includes/post-edit-page.php:73
+msgid "Multimedia"
+msgstr "Мультимедия"
+
+#: includes/post-edit-page.php:77
+msgid "JSON options"
+msgstr "JSON настройки"
+
+#: includes/post-edit-page.php:79
+msgid "Settings"
+msgstr "Настройки"
+
+#: includes/post-edit-page.php:185
+msgid "Target blank"
+msgstr "В новом окне"
+
+#: includes/register-post-type.php:22
+msgid "Mediablocks"
+msgstr "Медиаблоки"
+
+#: includes/register-post-type.php:23
+msgid "Mediablock"
+msgstr "Медиаблок"
+
+#: includes/register-post-type.php:24
+msgid "Add block"
+msgstr "Добавить блок"
+
+#: includes/register-post-type.php:25
+msgid "Add new block"
+msgstr "Добавить новый блок"
+
+#: includes/register-post-type.php:26
+msgid "Edit block"
+msgstr "Изменить блок"
+
+#: includes/register-post-type.php:27
+msgid "New block"
+msgstr "Новый блок"
+
+#: includes/register-post-type.php:28
+msgid "View block"
+msgstr "Показать блок"
+
+#: includes/register-post-type.php:29
+msgid "Search media block"
+msgstr "Найти медиа блок"
+
+#: includes/settings/grid/slider.php:9
+msgid "Custom"
+msgstr "Собственный"
+
+#: includes/settings/lib/Cloud9carousel.php:8
+msgid "xOrigin"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:9
+msgid "Center of the carousel (container width / 2)"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:14
+msgid "yOrigin"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:15
+msgid "Center of the carousel (container height / 10)"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:20
+msgid "xRadius"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:21
+msgid "Half the width of the carousel (container height / 6)"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:26
+msgid "yRadius"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:27
+msgid "Half the height of the carousel (container height / 6)"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:32
+msgid "farScale"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:33
+msgid "Scale of an item at its farthest point (range: 0 to 1)"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:39
+msgid "Reflections"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:40
+msgid "Reflection options none"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:46
+msgid "Transforms"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:47
+msgid "Use native CSS transforms if support for them is detected true"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:52
+msgid "Fps Frames per second"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:53
+msgid ""
+"Use maximum effective frame rate via the requestAnimationFrame API if "
+"support is detected true. (if smooth animation is turned off)"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:59
+#: includes/settings/lib/slick.php:82
+#: includes/settings/lib/waterwheelCarousel.php:72
+msgid "Speed"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:60
+msgid ""
+"Relative speed factor of the carousel. Any positive number: 1 is slow, 4 is "
+"medium, 10 is fast."
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:66
+msgid "autoPlay"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:67
+msgid ""
+"Automatically rotate the carousel by this many items periodically (positive "
+"number is clockwise). Auto-play is not performed while the mouse hovers over "
+"the carousel container. A value of 0 means auto-play is turned off. See: "
+"autoPlayDelay 0"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:73
+msgid "autoPlayDelay"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:74
+msgid "Delay, in milliseconds, between auto-play spins"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:80
+msgid "mouseWheel"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:81
+msgid ""
+"Spin the carousel using the mouse wheel. Requires a \"mousewheel\" event, "
+"provided by this mousewheel plugin. However, see: known issues"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:86
+msgid "bringToFront"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:87
+msgid "Clicking an item will rotate it to the front"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:92
+msgid "buttonLeft"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:93
+msgid ""
+"jQuery collection of element(s) intended to spin the carousel so as to bring "
+"the item to the left of the frontmost item to the front, i.e., spin it "
+"counterclockwise, when clicked. E.g., $(\"#button-left\")"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:98
+msgid "buttonRight"
+msgstr ""
+
+#: includes/settings/lib/Cloud9carousel.php:99
+msgid ""
+"jQuery collection of element(s) intended to spin the carousel so as to bring "
+"the item to the right of the frontmost item to the front, i.e., spin it "
+"clockwise, when clicked. E.g., $(\"#button-right\")"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:8
+msgid "Padding"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:11
+msgid ""
+" Space inside fancyBox around content. Can be set as array - [top, right, "
+"bottom, left]. "
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:15
+msgid "Margin"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:18
+msgid ""
+"Minimum space between viewport and fancyBox. Can be set as array - [top, "
+"right, bottom, left]. Right and bottom margins are ignored if content "
+"dimensions exceeds viewport"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:22
+msgid "Width"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:29
+msgid "Height"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:36
+msgid "Minimum Width"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:39
+msgid "Minimum width fancyBox should be allowed to resize to    "
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:43
+msgid "Minimum Height"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:46
+msgid "Minimum height fancyBox should be allowed to resize to   "
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:50
+msgid "Maximum Width"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:53
+msgid "Maximum width fancyBox should be allowed to resize to    "
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:57
+msgid "Maximum Height"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:60
+msgid "Maximum height fancyBox should be allowed to resize to   "
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:64
+msgid "Auto Size"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:67
+msgid "Maximum height fancyBox should be allowed to resize to"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:72
+msgid "Auto Width"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:78
+#: includes/settings/lib/owlCarousel.php:136
+msgid "Auto Height"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:84
+msgid "Auto Resize"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:90
+msgid "Auto Center"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:96
+msgid "Fit To View"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:99
+msgid ""
+"If set to true, fancyBox is resized to fit inside viewport before opening"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:103
+msgid "Scrolling"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:110
+msgid "Wrap CSS"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:113
+msgid "Customizable CSS class for wrapping element (useful for custom styling)"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:117
+msgid "Display Arrows"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:120
+msgid "If set to true, navigation arrows will be displayed"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:124
+msgid "Display Close Button"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:127
+msgid "If set to true, close button will be displayed"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:131
+msgid "Close Click"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:133
+msgid "If set to true, fancyBox will be closed when user clicks the content"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:137
+msgid "Next Click"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:139
+msgid ""
+"If set to true, will navigate to next gallery item when user clicks the "
+"content"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:143
+msgid "Mouse Wheel"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:146
+msgid ""
+"If set to true, you will be able to navigate gallery using the mouse wheel"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:150
+#: includes/settings/lib/owlCarousel.php:53
+#: includes/settings/lib/waterwheelCarousel.php:106
+msgid "Auto Play"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:152
+msgid ""
+"If set to true, slideshow will start after opening the first gallery item"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:157
+msgid "Play Speed"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:160
+msgid "Slideshow speed in milliseconds  "
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:164
+msgid "Preload"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:167
+msgid "Number of gallery images to preload  "
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:171
+msgid "Modal"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:173
+msgid "If set to true, will disable navigation and closing  "
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:177
+msgid "Loop"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:180
+msgid ""
+"If set to true, enables cyclic navigation. This means, if you click \"next\" "
+"after you reach the last element, first element will be displayed (and vice "
+"versa).   "
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:184
+msgid "Scroll Outside"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:187
+msgid ""
+"If true, the script will try to avoid horizontal scrolling for iframes and "
+"html content"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:191
+msgid "Index"
+msgstr ""
+
+#: includes/settings/lib/fancybox.php:194
+msgid "Overrides group start index"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:8
+msgid "Responsive"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:9
+msgid "Use Owl Carousel on not desktop-only website"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:16
+msgid "Items"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:17
+msgid "The number of items you want to see on the screen."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:23
+msgid "Items Desktop"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:24
+msgid "The number of items on desktop resolutions (1199px)"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:30
+msgid "Items Desktop Small"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:31
+msgid "The number of items on small desktop resolutions (979px)"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:37
+msgid "Items Tablet"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:38
+msgid "The number of items on tablet resolutions (768px)"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:44
+msgid "Items Mobile"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:45
+msgid "The number of items on mobile resolutions (479px)"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:54
+msgid ""
+"Change to any integrer for example autoPlay : 5000 to play every 5 seconds, "
+"or 0 to disable autoPlay."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:60
+msgid "Stop On Hover"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:61
+msgid "Stop autoplay on mouse hover"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:69
+msgid "Pagination"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:70
+msgid "Display pagination."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:77
+msgid "Pagination Numbers"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:78
+msgid "Show numbers inside pagination buttons"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:83
+msgid "Pagination Speed"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:84
+msgid "Pagination speed in milliseconds."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:92
+msgid "Navigation"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:93
+msgid "Display \"next\" and \"prev\" buttons."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:99
+msgid "Navigation \"Prev\""
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:100
+msgid "Text on \"Prev\" button"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:106
+msgid "Navigation \"Next\""
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:107
+msgid "Text on \"Next\" button"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:113
+msgid "Rewind"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:114
+msgid "Slide to first item."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:121
+msgid "Rewind Speed"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:122
+msgid "Rewind speed in milliseconds."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:130
+msgid "Scroll per Page"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:131
+msgid ""
+"Scroll per page not per item. This affect next/prev buttons and mouse/touch "
+"dragging."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:137
+msgid ""
+"Add height to owl-wrapper-outer so you can use diffrent heights on slides. "
+"Use it only for one item per page setting."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:143
+msgid "Add Class Active"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:144
+msgid ""
+"Add \"active\" classes on visible items. Works with any numbers of items on "
+"screen."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:149
+msgid "Mouse Drag"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:150
+msgid "Turn on mouse events."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:156
+msgid "Touch Drag"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:157
+msgid "Turn on touch events."
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:163
+msgid "Drag Before Animation Finishes"
+msgstr ""
+
+#: includes/settings/lib/owlCarousel.php:164
+msgid "Ignore whether a transition is done (only dragging)."
+msgstr ""
+
+#: includes/settings/lib/slick.php:8
+msgid "Infinite"
+msgstr ""
+
+#: includes/settings/lib/slick.php:9
+msgid "Infinite looping"
+msgstr ""
+
+#: includes/settings/lib/slick.php:15
+msgid "Slides To Show"
+msgstr ""
+
+#: includes/settings/lib/slick.php:16
+msgid "slides to show at a time"
+msgstr ""
+
+#: includes/settings/lib/slick.php:22
+msgid "Slides To Scroll"
+msgstr ""
+
+#: includes/settings/lib/slick.php:23
+msgid "slides to scroll at a time"
+msgstr ""
+
+#: includes/settings/lib/slick.php:30
+msgid "Enables auto play of slides"
+msgstr ""
+
+#: includes/settings/lib/slick.php:37
+msgid "Auto Play Speed"
+msgstr ""
+
+#: includes/settings/lib/slick.php:38
+msgid "Auto play change interval"
+msgstr ""
+
+#: includes/settings/lib/slick.php:44
+msgid "Dots"
+msgstr ""
+
+#: includes/settings/lib/slick.php:45
+msgid "Current slide indicator dots"
+msgstr ""
+
+#: includes/settings/lib/slick.php:51
+msgid "Dots Class"
+msgstr ""
+
+#: includes/settings/lib/slick.php:52
+msgid "Class for slide indicator dots container"
+msgstr ""
+
+#: includes/settings/lib/slick.php:58
+msgid "Arrows"
+msgstr ""
+
+#: includes/settings/lib/slick.php:59
+msgid "Enable Next/Prev arrows"
+msgstr ""
+
+#: includes/settings/lib/slick.php:68
+msgid "Prev Arrow"
+msgstr ""
+
+#: includes/settings/lib/slick.php:69
+msgid ""
+"(html | jQuery selector) | object (DOM node | jQuery object)   Allows you to "
+"select a node or customize the HTML for the \"Previous\" arrow. (May use "
+"%object%)"
+msgstr ""
+
+#: includes/settings/lib/slick.php:75
+msgid "Next Arrow"
+msgstr ""
+
+#: includes/settings/lib/slick.php:76
+msgid ""
+"(html | jQuery selector) | object (DOM node | jQuery object) Allows you to "
+"select a node or customize the HTML for the \"Next\" arrow. (May use %object"
+"%)"
+msgstr ""
+
+#: includes/settings/lib/slick.php:83
+msgid "Transition speed"
+msgstr ""
+
+#: includes/settings/lib/slick.php:90
+msgid ""
+"Enables centered view with partial prev/next slides. Use with odd numbered "
+"slidesToShow counts."
+msgstr ""
+
+#: includes/settings/lib/slick.php:96
+msgid "Center Padding"
+msgstr ""
+
+#: includes/settings/lib/slick.php:97
+msgid "Side padding when in center mode. (px or %)"
+msgstr ""
+
+#: includes/settings/lib/slick.php:103
+msgid "Fade"
+msgstr ""
+
+#: includes/settings/lib/slick.php:104
+msgid "Enables fade"
+msgstr ""
+
+#: includes/settings/lib/slick.php:109
+msgid "Variable Width"
+msgstr ""
+
+#: includes/settings/lib/slick.php:110
+msgid "Disables automatic slide width calculation"
+msgstr ""
+
+#: includes/settings/lib/slick.php:116
+msgid "Adapts slider height to the current slide"
+msgstr ""
+
+#: includes/settings/lib/slick.php:121
+msgid "CSS Ease"
+msgstr ""
+
+#: includes/settings/lib/slick.php:122
+msgid "CSS3 easing"
+msgstr ""
+
+#: includes/settings/lib/slick.php:128
+msgid "Accessibility"
+msgstr ""
+
+#: includes/settings/lib/slick.php:129
+msgid "Enables tabbing and arrow key navigation"
+msgstr ""
+
+#: includes/settings/lib/slick.php:136
+msgid ""
+"(use %function_name%) Custom paging templates. See source for use example."
+msgstr ""
+
+#: includes/settings/lib/slick.php:141
+msgid "Draggable"
+msgstr ""
+
+#: includes/settings/lib/slick.php:142
+msgid "Enables desktop dragging"
+msgstr ""
+
+#: includes/settings/lib/slick.php:148
+msgid "Easing"
+msgstr ""
+
+#: includes/settings/lib/slick.php:149
+msgid "animate() fallback easing"
+msgstr ""
+
+#: includes/settings/lib/slick.php:155
+msgid "Edge Friction"
+msgstr ""
+
+#: includes/settings/lib/slick.php:156
+msgid "Resistance when swiping edges of non-infinite carousels"
+msgstr ""
+
+#: includes/settings/lib/slick.php:176
+msgid "Mobile First"
+msgstr ""
+
+#: includes/settings/lib/slick.php:177
+msgid "Responsive settings use mobile first calculation"
+msgstr ""
+
+#: includes/settings/lib/slick.php:182
+msgid "Initial Slide"
+msgstr ""
+
+#: includes/settings/lib/slick.php:183
+msgid "Slide to start on"
+msgstr ""
+
+#: includes/settings/lib/slick.php:189
+msgid "Lazy Load"
+msgstr ""
+
+#: includes/settings/lib/slick.php:190
+msgid ""
+"Accepts 'ondemand' or 'progressive' for lazy load technique. 'ondemand' will "
+"load the image as soon as you slide to it, 'progressive' loads one image "
+"after the other when the page loads."
+msgstr ""
+
+#: includes/settings/lib/slick.php:196
+msgid "Pause On Focus"
+msgstr ""
+
+#: includes/settings/lib/slick.php:197
+msgid "Pauses autoplay when slider is focussed"
+msgstr ""
+
+#: includes/settings/lib/slick.php:203
+msgid "Pause On Hover"
+msgstr ""
+
+#: includes/settings/lib/slick.php:204
+msgid "Pauses autoplay on hover"
+msgstr ""
+
+#: includes/settings/lib/slick.php:210
+msgid "Pause On Dots Hover"
+msgstr ""
+
+#: includes/settings/lib/slick.php:211
+msgid "Pauses autoplay when a dot is hovered"
+msgstr ""
+
+#: includes/settings/lib/slick.php:217
+msgid "Respond To"
+msgstr ""
+
+#: includes/settings/lib/slick.php:218
+msgid ""
+"Width that responsive object responds to. Can be 'window', 'slider' or "
+"'min', (the smaller of the two).\n"
+"        responsive  array   null    Array of objects containing breakpoints "
+"and settings objects (see example). Enables settings at given breakpoint. "
+"Set settings to \"unslick\" instead of an object to disable slick at a given "
+"breakpoint."
+msgstr ""
+
+#: includes/settings/lib/slick.php:225
+msgid "Rows"
+msgstr ""
+
+#: includes/settings/lib/slick.php:226
+msgid ""
+"Setting this to more than 1 initializes grid mode. Use slidesPerRow to set "
+"how many slides should be in each row."
+msgstr ""
+
+#: includes/settings/lib/slick.php:232
+msgid "Slide"
+msgstr ""
+
+#: includes/settings/lib/slick.php:233
+msgid "Slide element query"
+msgstr ""
+
+#: includes/settings/lib/slick.php:239
+msgid "Slides Per Row"
+msgstr ""
+
+#: includes/settings/lib/slick.php:240
+msgid ""
+"With grid mode initialized via the rows option, this sets how many slides "
+"are in each grid row."
+msgstr ""
+
+#: includes/settings/lib/slick.php:246
+msgid "Swipe"
+msgstr ""
+
+#: includes/settings/lib/slick.php:247
+msgid "Enables touch swipe"
+msgstr ""
+
+#: includes/settings/lib/slick.php:253
+msgid "Swipe To Slide"
+msgstr ""
+
+#: includes/settings/lib/slick.php:254
+msgid "Swipe to slide irrespective of slidesToScroll"
+msgstr ""
+
+#: includes/settings/lib/slick.php:259
+msgid "Touch Move"
+msgstr ""
+
+#: includes/settings/lib/slick.php:260
+msgid "Enables slide moving with touch"
+msgstr ""
+
+#: includes/settings/lib/slick.php:266
+msgid "Touch Threshold"
+msgstr ""
+
+#: includes/settings/lib/slick.php:267
+msgid ""
+"To advance slides, the user must swipe a length of (1/touchThreshold) * the "
+"width of the slider."
+msgstr ""
+
+#: includes/settings/lib/slick.php:273
+msgid "Use CSS"
+msgstr ""
+
+#: includes/settings/lib/slick.php:274
+msgid "Enable/Disable CSS Transitions"
+msgstr ""
+
+#: includes/settings/lib/slick.php:280
+msgid "Use Transform"
+msgstr ""
+
+#: includes/settings/lib/slick.php:281
+msgid "Enable/Disable CSS Transforms"
+msgstr ""
+
+#: includes/settings/lib/slick.php:287
+msgid "Vertical"
+msgstr ""
+
+#: includes/settings/lib/slick.php:288
+msgid "Vertical slide direction"
+msgstr ""
+
+#: includes/settings/lib/slick.php:293
+msgid "Vertical Swiping"
+msgstr ""
+
+#: includes/settings/lib/slick.php:294
+msgid "Changes swipe direction to vertical"
+msgstr ""
+
+#: includes/settings/lib/slick.php:299
+msgid "Right To Left"
+msgstr ""
+
+#: includes/settings/lib/slick.php:300
+msgid "Change the slider's direction to become right-to-left"
+msgstr ""
+
+#: includes/settings/lib/slick.php:305
+msgid "Wait For Animate"
+msgstr ""
+
+#: includes/settings/lib/slick.php:306
+msgid "Ignores requests to advance the slide while animating"
+msgstr ""
+
+#: includes/settings/lib/slick.php:312
+msgid "zIndex"
+msgstr ""
+
+#: includes/settings/lib/slick.php:313
+msgid "Set the zIndex values for slides, useful for IE9 and lower"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:9
+msgid "Starting Item"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:10
+msgid ""
+"Determines which image will appear in the center when the carousel loads. "
+"Set to 0 to start with the middle item."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:16
+msgid "Separation"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:17
+msgid "The amount if pixels to separate each item from one another."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:23
+msgid "Separation Multiplier"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:24
+msgid ""
+"Multiplied by 'separation' exponentially to determine item separation for "
+"all items (a value of 0.5 will reduce the distance by half for each item as "
+"they span out)."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:30
+msgid "Horizon Offset"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:31
+msgid ""
+"The amount of pixels to separate each item from the horizon. Can be negative "
+"or positive to have the items fall above or below horizon. Set to '0' to "
+"keep the center of each item aligned with the horizon."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:37
+msgid "Horizon Offset Multiplier"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:38
+msgid ""
+"Multiplied by 'horizonOffset' exponentially to determine horizon offset for "
+"all items."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:44
+msgid "Size Multiplier"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:45
+msgid ""
+"How much the items should increase/decrease by as they span out (a value of "
+"0.5 will reduce each items size by half)."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:51
+msgid "Opacity Multiplier"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:52
+msgid ""
+"How drastically the opacity of each item decreases. Applied exponentially. "
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:58
+msgid "Horizon"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:59
+msgid ""
+"How \"far in\" the horizon should be set from either the top of the "
+"container (horizontal orientation) or left of the container (vertical "
+"orientation). By default, it will be centered based on the container "
+"dimensions."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:65
+msgid "Flanking Items"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:66
+msgid ""
+"The amount of visible images on either side of the center item at any time."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:73
+msgid "Time in milliseconds it takes to rotate the carousel."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:79
+msgid "Animation Easing"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:80
+msgid ""
+"The easing effect used to animate the features in the carousel. jQuery has "
+"two built in effects 'swing' and 'linear'. There are many more transition "
+"effects available with this plugin."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:86
+msgid "Quicker For Further"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:87
+msgid ""
+"Will animate the carousel faster depending on how far away an item was when "
+"it was clicked to move to center."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:93
+msgid "Edge Fade Enabled"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:94
+msgid ""
+"When true, items fade off into nothingness when reaching the edge. "
+"Otherwise, they will move to a hidden position behind the center item."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:99
+msgid "Link Handling"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:100
+msgid ""
+"Determines behavior of links that are placed around the images. 1 to disable "
+"all (if you want to use the callback functions to do something special with "
+"the links), 2 to disable all but center (to link images out)"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:107
+msgid ""
+"The speed in milliseconds to wait before auto-rotating. Positive value for a "
+"left to right movement, negative for a right to left. Zero to turn off."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:113
+msgid "Orientation"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:114
+msgid ""
+"Controls whether or not the carousel spans out horizontally or vertically. "
+"The default options are optimized for a horizontal orientation."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:120
+msgid "Active Class Name"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:121
+msgid "The class name to assign to the item currently in the center position."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:127
+msgid "Keyboard Nav"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:128
+msgid ""
+"Set to true to allow the user to use the arrow keys to move the carousel."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:133
+msgid "Keyboard Nav Override"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:134
+msgid ""
+"Set to true to to override the normal functionality of the arrow keys on the "
+"browser window (prevents scrolling of the window). False to allow normal "
+"functionality of the keys as well as controlling the carousel."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:140
+msgid "Image Nav"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:141
+msgid ""
+"When true, clicking an image that is not in the center position will rotate "
+"the image to the center. False to disable that functionality, which is "
+"commonly paired with navigational buttons instead."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:147
+msgid "Preload Images"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:148
+msgid ""
+"The carousel will attempt to preload all images before initializing. This is "
+"known to have some issues in certain browsers. The main reason for the "
+"preloader is too be able to determine the dimensions for each image before "
+"running calculations. If you run into issues, disable this and use the "
+"forced proportions below (or set your image dimensions using CSS)."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:154
+msgid "Forced Image Width"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:155
+msgid ""
+"Set a global width that should be applied to all images in the carousel."
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:161
+msgid "Forced Image Height"
+msgstr ""
+
+#: includes/settings/lib/waterwheelCarousel.php:162
+msgid ""
+"Set a global height that should be applied to all images in the carousel."
+msgstr ""
+
+#: mediablocks.php:99
+#, php-format
+msgid "The file %s can not be included"
+msgstr ""

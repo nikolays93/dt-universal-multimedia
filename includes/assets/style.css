@@ -121,11 +121,21 @@ li.attachment:hover .check.remove {
 }
 
 /* side metabox */
-table.side-settings td,
-table.side-settings th {
+#side-sortables .form-table {
+	table-layout: fixed;
+}
+#side-sortables .form-table td,
+#side-sortables .form-table th {
 	vertical-align: middle;
 	padding: .25rem;
 }
+#side-sortables .form-table td input {
+	max-width: 100%;
+}
+#side-sortables .form-table th {
+	width: 80px;
+}
+
 #side_settings .description {
 	display: none;
 }

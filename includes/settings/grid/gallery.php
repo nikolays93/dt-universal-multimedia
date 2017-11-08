@@ -1,5 +1,6 @@
 <?php
-defined( 'ABSPATH' ) or die();
+
+namespace CDevelopers\media;
 
 $sizes = get_intermediate_image_sizes();
 $view_sizes = array(); // '' => 'Custom'

@@ -1,12 +1,13 @@
 <?php
-defined( 'ABSPATH' ) or die();
+
+namespace CDevelopers\media;
 
 $sizes = get_intermediate_image_sizes();
 $view_sizes = array();
 foreach ($sizes as $value) {
     $view_sizes[$value] = $value;
 }
-$view_sizes['custom'] = __('Custom');
+$view_sizes['custom'] = __('Custom', DOMAIN);
 
 $settings = array(
     // array(

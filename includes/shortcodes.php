@@ -14,19 +14,6 @@ function slider_default_columns( $columns, $main_type ){
     return $columns;
 }
 
-function type_to_lib( $type ){
-    switch ( $type ) {
-        case 'owl-carousel':
-            $type = 'owlCarousel';
-            break;
-        case 'cloud9carousel':
-            $type = 'Cloud9Carousel';
-            break;
-    }
-
-    return $type;
-}
-
 add_shortcode( 'mblock', __NAMESPACE__ . '\mblock_shortcode' );
 function mblock_shortcode( $atts = array(), $content = '' ) {
     $atts = shortcode_atts( array(
@@ -66,14 +53,14 @@ class MediaBlock {
         $this->atts = wp_parse_args( $atts, array(
             'status'    => 'publish',
             'tag_title' => 'h3',
-            'types'     => wp_parse_args( get_post_meta($this->atts['id'], 'mtypes', true), array(
+            'types'     => wp_parse_args( get_post_meta($this->post->ID, 'mtypes', true), array(
                 'grid_type' => 'carousel',
                 'lib_type'  => 'slick',
             ) )
         ) );
 
         $this->settings = wp_parse_args( get_post_meta( $this->post->ID, '_grid_options', true ), array(
-            'init'        => type_to_lib( $this->atts['types']['lib_type'] ),
+            'init'       => $this->atts['types']['lib_type'],
             'width'      => '',
             'height'     => '',
             'items_size' => '',

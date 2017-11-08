@@ -335,7 +335,7 @@ class WP_Admin_Forms {
                         if ( '' === $option_key ) {
                             if ( empty( $field['placeholder'] ) )
                                 $field['placeholder'] = $option_text ?
-                                    $option_text : __( 'Choose an option' );
+                                    $option_text : __( 'Choose an option', DOMAIN );
 
                             // $custom_attributes[] = 'data-allow_clear="true"';
                         }

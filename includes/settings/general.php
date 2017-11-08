@@ -19,22 +19,20 @@ $inputs = array(
 			'slider'      => 'Слайдер',
 			//'sync-slider' => 'Синх. слайдер',
 			'carousel-3d'   => '3D слайдер',
-			'gallery'     => 'Галерея',
+			// 'gallery'     => 'Галерея',
 			),
 		),
 	array(
-		'id'    => 'lib_type_group1',
-		'name'  => 'lib_type',
+		'id'    => 'lib_type',
 		'type'  => 'select',
 		'input_class' => 'activated carousel slider sync-slider button',
 		'options' => array(
 			'slick' => 'Скользкий слайдер',
-			'owl-carousel' => 'Сова карусель',
+			'owlCarousel' => 'Сова карусель',
 			),
 		),
 	array(
-		'id'    => 'lib_type_group2',
-		'name'  => 'lib_type',
+		'id'    => 'lib_type',
 		'type'  => 'select',
 		'input_class' => 'gallery button hidden',
 		// 'default' => $type,
@@ -46,13 +44,12 @@ $inputs = array(
 			),
 		),
 	array(
-		'id'    => 'lib_type_group3',
-		'name'  => 'lib_type',
+		'id'    => 'lib_type',
 		'type'  => 'select',
 		'input_class' => 'carousel-3d button hidden',
 		// 'default' => $type,
 		'options' => array(
-			'cloud9carousel' => 'Облачная карусель',
+			'Cloud9carousel' => 'Облачная карусель',
 			'waterwheelCarousel' => 'Водяное колесо'
 			),
 		'custom_attributes' => array(

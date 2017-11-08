@@ -4,7 +4,7 @@
 Plugin Name: Медиаблоки
 Plugin URI: https://github.com/nikolays93/mediablocks
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 1.2 alpha
+Version: 2.0 beta
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 Author EMAIL: nikolayS93@ya.ru
@@ -53,9 +53,9 @@ class Utils
         // includes
         require_once __DIR__ . '/includes/register-assets.php';
         require_once __DIR__ . '/includes/register-post-type.php';
-        require_once __DIR__ . '/includes/front-callback.php';
-        // require_once __DIR__ . '/includes/shortcode-and-filters.php';
-        // require_once __DIR__ . '/includes/admin-page.php';
+        require_once __DIR__ . '/includes/lib-wishes.php';
+        require_once __DIR__ . '/includes/post-edit-page.php';
+        require_once __DIR__ . '/includes/shortcodes.php';
 
         \Mustache_Autoloader::register();
     }

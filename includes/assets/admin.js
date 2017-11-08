@@ -111,7 +111,7 @@ jQuery(document).ready(function($) {
     /**
     * Ajax (обновляет параметры при выборе типа)
     */
-    $('#grid_type, #lib_type').on('change', function(){
+    $('#grid_type, #lib_type.carousel, #lib_type.gallery, #lib_type.carousel-3d').on('change', function(){
         $('#json_options.postbox .inside, #grid_options.postbox .inside').css('opacity', '0.6');
 
         $.ajax({

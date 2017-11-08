@@ -1,61 +1,62 @@
 <?php
-defined( 'ABSPATH' ) or die();
+
+namespace CDevelopers\media;
 
 $settings = array(
     array(
         'id'      => 'infinite',
-        'label'   => 'Infinite',
-        'desc'    => 'Infinite looping',
+        'label'   => __('Infinite'),
+        'desc'    => __('Infinite looping', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'slidesToShow',
-        'label'   => 'Slides To Show',
-        'desc'    => 'slides to show at a time',
+        'label'   => __('Slides To Show', DOMAIN),
+        'desc'    => __('slides to show at a time', DOMAIN),
         'default' => '1',
         'type'    => 'number'
         ),
     array(
         'id'      => 'slidesToScroll',
-        'label'   => 'Slides To Scroll',
-        'desc'    => 'slides to scroll at a time',
+        'label'   => __('Slides To Scroll', DOMAIN),
+        'desc'    => __('slides to scroll at a time', DOMAIN),
         'default' => '1',
         'type'    => 'number'
         ),
     array(
         'id'    => 'autoplay',
         'label' => 'Auto Play',
-        'desc'  => 'Enables auto play of slides',
+        'desc'  => __('Enables auto play of slides', DOMAIN),
         'type'  => 'checkbox',
         'default' => 'on',
         'data-show' => 'autoplaySpeed'
         ),
     array(
         'id'      => 'autoplaySpeed',
-        'label'   => 'Auto Play Speed',
-        'desc'    => 'Auto play change interval',
+        'label'   => __('Auto Play Speed', DOMAIN),
+        'desc'    => __('Auto play change interval', DOMAIN),
         'default' => '3000',
         'type'    => 'number'
         ),
     array(
         'id'      => 'dots',
-        'label'   => 'Dots',
-        'desc'    => 'Current slide indicator dots',
+        'label'   => __('Dots', DOMAIN),
+        'desc'    => __('Current slide indicator dots', DOMAIN),
         'type'    => 'checkbox',
         'data-show' => 'dotsClass'
         ),
     array(
         'id'      => 'dotsClass',
-        'label'   => 'Dots Class',
-        'desc'    => 'Class for slide indicator dots container',
+        'label'   => __('Dots Class', DOMAIN),
+        'desc'    => __('Class for slide indicator dots container', DOMAIN),
         'default' => 'slick-dots',
         'type'    => 'text'
         ),
     array(
         'id'      => 'arrows',
-        'label'   => 'Arrows',
-        'desc'    => 'Enable Next/Prev arrows',
+        'label'   => __('Arrows', DOMAIN),
+        'desc'    => __('Enable Next/Prev arrows', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox',
         'custom_attributes' => array(
@@ -64,252 +65,252 @@ $settings = array(
         ),
     array(
         'id'      => 'prevArrow',
-        'label'   => 'Prev Arrow',
-        'desc'    => '(html | jQuery selector) | object (DOM node | jQuery object)   Allows you to select a node or customize the HTML for the "Previous" arrow. (May use %object%)',
+        'label'   => __('Prev Arrow', DOMAIN),
+        'desc'    => __('(html | jQuery selector) | object (DOM node | jQuery object)   Allows you to select a node or customize the HTML for the "Previous" arrow. (May use %object%)', DOMAIN),
         'default' => '<button type="button" class="slick-prev">Previous</button>',
         'type'    => 'text'
         ),
     array(
         'id'      => 'nextArrow',
-        'label'   => 'Next Arrow',
-        'desc'    => '(html | jQuery selector) | object (DOM node | jQuery object) Allows you to select a node or customize the HTML for the "Next" arrow. (May use %object%)',
+        'label'   => __('Next Arrow', DOMAIN),
+        'desc'    => __('(html | jQuery selector) | object (DOM node | jQuery object) Allows you to select a node or customize the HTML for the "Next" arrow. (May use %object%)', DOMAIN),
         'default' => '<button type="button" class="slick-next">Next</button>',
         'type'    => 'text'
         ),
     array(
         'id'      => 'speed',
-        'label'   => 'Speed',
-        'desc'    => 'Transition speed',
+        'label'   => __('Speed', DOMAIN),
+        'desc'    => __('Transition speed', DOMAIN),
         'default' => '300',
         'type'    => 'number'
         ),
     array(
         'id'    => 'centerMode',
         'label' => 'Center Mode',
-        'desc'  => 'Enables centered view with partial prev/next slides. Use with odd numbered slidesToShow counts.',
+        'desc'  => __('Enables centered view with partial prev/next slides. Use with odd numbered slidesToShow counts.', DOMAIN),
         'type'  => 'checkbox',
         'data-show' => 'centerPadding',
         ),
     array(
         'id'      => 'centerPadding',
-        'label'   => 'Center Padding',
-        'desc'    => 'Side padding when in center mode. (px or %)',
+        'label'   => __('Center Padding', DOMAIN),
+        'desc'    => __('Side padding when in center mode. (px or %)', DOMAIN),
         'default' => '50px',
         'type'    => 'text'
         ),
     array(
         'id'      => 'fade',
-        'label'   => 'Fade',
-        'desc'    => 'Enables fade',
+        'label'   => __('Fade', DOMAIN),
+        'desc'    => __('Enables fade', DOMAIN),
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'variableWidth',
-        'label'   => 'Variable Width',
-        'desc'    => 'Disables automatic slide width calculation',
+        'label'   => __('Variable Width', DOMAIN),
+        'desc'    => __('Disables automatic slide width calculation', DOMAIN),
         'type'    => 'checkbox'
         ),
     array(
         'id'    => 'adaptiveHeight',
         'label' => 'AdaptiveHeight',
-        'desc'  => 'Adapts slider height to the current slide',
-        'type'  => 'checkbox'
+        'desc'  => __('Adapts slider height to the current slide', DOMAIN),
+        'type'  => 'checkbox',
         ),
     array(
         'id'      => 'cssEase',
-        'label'   => 'CSS Ease',
-        'desc'    => 'CSS3 easing',
+        'label'   => __('CSS Ease', DOMAIN),
+        'desc'    => __('CSS3 easing', DOMAIN),
         'default' => 'ease',
         'type'    => 'text'
         ),
     array(
         'id'      => 'accessibility',
-        'label'   => 'Accessibility',
-        'desc'    => 'Enables tabbing and arrow key navigation',
+        'label'   => __('Accessibility', DOMAIN),
+        'desc'    => __('Enables tabbing and arrow key navigation', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'    => 'customPaging',
         'label' => 'Custom Paging',
-        'desc'  => '(use %function_name%) Custom paging templates. See source for use example.',
+        'desc'  => __('(use %function_name%) Custom paging templates. See source for use example.', DOMAIN),
         'type'  => 'text'
         ),
     array(
         'id'      => 'draggable',
-        'label'   => 'Draggable',
-        'desc'    => 'Enables desktop dragging',
+        'label'   => __('Draggable', DOMAIN),
+        'desc'    => __('Enables desktop dragging', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'easing',
-        'label'   => 'Easing',
-        'desc'    => 'animate() fallback easing',
+        'label'   => __('Easing', DOMAIN),
+        'desc'    => __('animate() fallback easing', DOMAIN),
         'default' => 'linear',
         'type'    => 'text'
         ),
     array(
         'id'      => 'edgeFriction',
-        'label'   => 'Edge Friction',
-        'desc'    => 'Resistance when swiping edges of non-infinite carousels',
+        'label'   => __('Edge Friction', DOMAIN),
+        'desc'    => __('Resistance when swiping edges of non-infinite carousels', DOMAIN),
         'default' => '0.15',
         'type'    => 'number'
         ),
     // array(
     //     'id'      => 'appendArrows',
-    //     'label'   => 'appendArrows',
-    //     'desc'    => '$(element)  Change where the navigation arrows are attached (Selector, htmlString, Array, Element, jQuery object)',
+    //     'label'   => __('appendArrows', DOMAIN),
+    //     'desc'    => __('$(element)  Change where the navigation arrows are attached (Selector, htmlString, Array, Element, jQuery object)', DOMAIN),
     //     'default' => 'on',
     //     'type'    => 'text'
     //     ),
     // array(
     //     'id'      => 'appendDots',
-    //     'label'   => 'appendDots',
-    //     'desc'    => '$(element)  Change where the navigation dots are attached (Selector, htmlString, Array, Element, jQuery object)',
+    //     'label'   => __('appendDots', DOMAIN),
+    //     'desc'    => __('$(element)  Change where the navigation dots are attached (Selector, htmlString, Array, Element, jQuery object)', DOMAIN),
     //     'default' => 'on',
     //     'type'    => 'text'
     //     ),
     array(
         'id'      => 'mobileFirst',
-        'label'   => 'Mobile First',
-        'desc'    => 'Responsive settings use mobile first calculation',
+        'label'   => __('Mobile First', DOMAIN),
+        'desc'    => __('Responsive settings use mobile first calculation', DOMAIN),
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'initialSlide',
-        'label'   => 'Initial Slide',
-        'desc'    => 'Slide to start on',
+        'label'   => __('Initial Slide', DOMAIN),
+        'desc'    => __('Slide to start on', DOMAIN),
         'default' => '0',
         'type'    => 'number'
         ),
     array(
         'id'      => 'lazyLoad',
-        'label'   => 'Lazy Load',
-        'desc'    => 'Accepts \'ondemand\' or \'progressive\' for lazy load technique. \'ondemand\' will load the image as soon as you slide to it, \'progressive\' loads one image after the other when the page loads.',
+        'label'   => __('Lazy Load', DOMAIN),
+        'desc'    => __('Accepts \'ondemand\' or \'progressive\' for lazy load technique. \'ondemand\' will load the image as soon as you slide to it, \'progressive\' loads one image after the other when the page loads.', DOMAIN),
         'default' => 'ondemand',
         'type'    => 'text'
         ),
     array(
         'id'      => 'pauseOnFocus',
-        'label'   => 'Pause On Focus',
-        'desc'    => 'Pauses autoplay when slider is focussed',
+        'label'   => __('Pause On Focus', DOMAIN),
+        'desc'    => __('Pauses autoplay when slider is focussed', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'pauseOnHover',
-        'label'   => 'Pause On Hover',
-        'desc'    => 'Pauses autoplay on hover',
+        'label'   => __('Pause On Hover', DOMAIN),
+        'desc'    => __('Pauses autoplay on hover', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'pauseOnDotsHover',
-        'label'   => 'Pause On Dots Hover',
-        'desc'    => 'Pauses autoplay when a dot is hovered',
+        'label'   => __('Pause On Dots Hover', DOMAIN),
+        'desc'    => __('Pauses autoplay when a dot is hovered', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'respondTo',
-        'label'   => 'Respond To',
-        'desc'    => 'Width that responsive object responds to. Can be \'window\', \'slider\' or \'min\' (the smaller of the two).
-        responsive  array   null    Array of objects containing breakpoints and settings objects (see example). Enables settings at given breakpoint. Set settings to "unslick" instead of an object to disable slick at a given breakpoint.',
+        'label'   => __('Respond To', DOMAIN),
+        'desc'    => __('Width that responsive object responds to. Can be \'window\', \'slider\' or \'min\', (the smaller of the two).
+        responsive  array   null    Array of objects containing breakpoints and settings objects (see example). Enables settings at given breakpoint. Set settings to "unslick" instead of an object to disable slick at a given breakpoint.', DOMAIN),
         'default' => 'window',
         'type'    => 'text'
         ),
     array(
         'id'      => 'rows',
-        'label'   => 'Rows',
-        'desc'    => 'Setting this to more than 1 initializes grid mode. Use slidesPerRow to set how many slides should be in each row.',
+        'label'   => __('Rows', DOMAIN),
+        'desc'    => __('Setting this to more than 1 initializes grid mode. Use slidesPerRow to set how many slides should be in each row.', DOMAIN),
         'default' => '1',
         'type'    => 'number'
         ),
     array(
         'id'      => 'slide',
-        'label'   => 'Slide',
-        'desc'    => 'Slide element query',
+        'label'   => __('Slide', DOMAIN),
+        'desc'    => __('Slide element query', DOMAIN),
         'default' => '',
         'type'    => 'text'
         ),
     array(
         'id'      => 'slidesPerRow',
-        'label'   => 'Slides Per Row',
-        'desc'    => 'With grid mode initialized via the rows option, this sets how many slides are in each grid row.',
+        'label'   => __('Slides Per Row', DOMAIN),
+        'desc'    => __('With grid mode initialized via the rows option, this sets how many slides are in each grid row.', DOMAIN),
         'default' => '1',
         'type'    => 'number'
         ),
     array(
         'id'      => 'swipe',
-        'label'   => 'Swipe',
-        'desc'    => 'Enables touch swipe',
+        'label'   => __('Swipe', DOMAIN),
+        'desc'    => __('Enables touch swipe', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'swipeToSlide',
-        'label'   => 'Swipe To Slide',
-        'desc'    => 'Swipe to slide irrespective of slidesToScroll',
+        'label'   => __('Swipe To Slide', DOMAIN),
+        'desc'    => __('Swipe to slide irrespective of slidesToScroll', DOMAIN),
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'touchMove',
-        'label'   => 'Touch Move',
-        'desc'    => 'Enables slide moving with touch',
+        'label'   => __('Touch Move', DOMAIN),
+        'desc'    => __('Enables slide moving with touch', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'touchThreshold',
-        'label'   => 'Touch Threshold',
-        'desc'    => 'To advance slides, the user must swipe a length of (1/touchThreshold) * the width of the slider.',
+        'label'   => __('Touch Threshold', DOMAIN),
+        'desc'    => __('To advance slides, the user must swipe a length of (1/touchThreshold) * the width of the slider.', DOMAIN),
         'default' => '5',
         'type'    => 'number'
         ),
     array(
         'id'      => 'useCSS',
-        'label'   => 'Use CSS',
-        'desc'    => 'Enable/Disable CSS Transitions',
+        'label'   => __('Use CSS', DOMAIN),
+        'desc'    => __('Enable/Disable CSS Transitions', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'useTransform',
-        'label'   => 'Use Transform',
-        'desc'    => 'Enable/Disable CSS Transforms',
+        'label'   => __('Use Transform', DOMAIN),
+        'desc'    => __('Enable/Disable CSS Transforms', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'vertical',
-        'label'   => 'Vertical',
-        'desc'    => 'Vertical slide direction',
+        'label'   => __('Vertical', DOMAIN),
+        'desc'    => __('Vertical slide direction', DOMAIN),
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'verticalSwiping',
-        'label'   => 'Vertical Swiping',
-        'desc'    => 'Changes swipe direction to vertical',
+        'label'   => __('Vertical Swiping', DOMAIN),
+        'desc'    => __('Changes swipe direction to vertical', DOMAIN),
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'rtl',
-        'label'   => 'Right To Left',
-        'desc'    => 'Change the slider\'s direction to become right-to-left',
+        'label'   => __('Right To Left', DOMAIN),
+        'desc'    => __('Change the slider\'s direction to become right-to-left', DOMAIN),
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'waitForAnimate',
-        'label'   => 'Wait For Animate',
-        'desc'    => 'Ignores requests to advance the slide while animating',
+        'label'   => __('Wait For Animate', DOMAIN),
+        'desc'    => __('Ignores requests to advance the slide while animating', DOMAIN),
         'default' => 'on',
         'type'    => 'checkbox'
         ),
     array(
         'id'      => 'zIndex',
-        'label'   => 'zIndex',
-        'desc'    => 'Set the zIndex values for slides, useful for IE9 and lower',
+        'label'   => __('zIndex', DOMAIN),
+        'desc'    => __('Set the zIndex values for slides, useful for IE9 and lower', DOMAIN),
         'default' => '1000',
         'type'    => 'number'
         )
@@ -328,7 +329,6 @@ $settings = array(
 //     case 'sync-slider':
 //       $settings = array_merge( $Responsive, $autoPlay, $Pagination, $Navigation, $advanced );
 //       break;
-    
 //     default: // 'carousel'
 //       $settings = array_merge( $Responsive, $autoPlay, $Pagination, $Navigation, $advanced );
 //       break;
