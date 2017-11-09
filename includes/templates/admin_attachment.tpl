@@ -8,11 +8,11 @@
         <button type="button" class="check remove" tabindex="-1">
             <span class="media-modal-icon"></span>
         </button>
-        <input type="text" class="item-excerpt" name="attachment_excerpt[{{attachment_id}}]" value="{{attachment_excerpt_value}}">
+        <input type="text" class="item-excerpt" name="attachment_excerpt[{{attachment_id}}]" value="{{attachment_excerpt_value}}" placeholder="{{excerpt_description}}">
     </div><!-- .thumbnail-wrap -->
-    <textarea class="item-content" name="attachment_content[{{attachment_id}}]" cols="75" rows="7" placeholder="The some contents..">{{attachment_content_value}}</textarea>
+    <textarea class="item-content" name="attachment_content[{{attachment_id}}]" cols="75" rows="7" placeholder="{{content_description}}">{{attachment_content_value}}</textarea>
     <div class="item-link-wrap">
-        <input type="text" class="item-link" name="attachment_link[{{attachment_id}}]" value="{{attachment_link_value}}">
+        <input type="text" class="item-link" name="attachment_link[{{attachment_id}}]" value="{{attachment_link_value}}" placeholder="{{link_description}}">
         <label class="open-blank">
             {{attachment_blank_label}}
             <input type="checkbox" class="item-blank" value="1" name="attachment_blank[{{attachment_id}}]"{{attachment_blank_checked}}>

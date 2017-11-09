@@ -257,6 +257,8 @@ class MediaBlock {
             }
 
             if( $metalink = esc_attr( get_post_meta( $attachment, 'link', true ) ) ) {
+                $blank = get_post_meta( $attachment, '_blank', true );
+                $blank_html = $blank ? ' target="_blank"' : '';
                 if( preg_match("/\[link id=\"([0-9]{1,40})\"\]/i", $metalink, $output) && isset($output[1]) ) {
                     $url = get_permalink( (int)$output[1] );
                 }
@@ -264,7 +266,7 @@ class MediaBlock {
                     $url = $metalink;
                 }
 
-                $link = array("<a href='{$url}' class='mediablock-link'>", "</a>");
+                $link = array("<a href='{$url}' class='mediablock-link'{$blank_html}>", "</a>");
             }
 
             $image = wp_get_attachment_image( $attachment, $settings['items_size'] );

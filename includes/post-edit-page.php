@@ -185,6 +185,9 @@ class mediablock_load_post_page
                     'attachment_blank_label' => __('Target blank', DOMAIN),
                     'attachment_blank_checked' => checked( '1',
                         get_post_meta( $attachment_id, '_blank', true ), false ),
+                    'excerpt_description' => __( 'Caption' ),
+                    'content_description' => __( 'Detail caption' ),
+                    'link_description' => __( 'Link' ),
                 ) );
             endforeach;
             ?>

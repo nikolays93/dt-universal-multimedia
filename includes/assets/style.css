@@ -44,15 +44,14 @@ select.button {
 #attachments.postbox ul.attachments.detail li .thumbnail-wrap {
 	float: left;
 	width: 145px;
+	max-width: 21%;
 }
-#attachments.postbox ul.attachments.detail li .thumbnail {
-	max-width: 100%;
-	width: 145px;
+#attachments.postbox ul.attachments.detail li .attachment-preview {
 	height: 145px;
 }
 #attachments.postbox ul.attachments li .item-excerpt {
 	width: 100%;
-	border: 1px dashed #c1c1c1;
+	border: 1px solid #ddd;
 	border-top: none;
 	position: relative;
 	left: -1px;
@@ -61,7 +60,7 @@ select.button {
 #attachments.postbox ul.attachments.detail li .item-link-wrap {
 	position: relative;
 	display: block;
-	width: 80%;
+	width: 78%;
 	float: right;
 	margin-right: 0px;
 }
@@ -72,7 +71,7 @@ select.button {
 #attachments.postbox ul.attachments.detail li .item-link {
 	padding-right: 140px;
 	width: 100%;
-	border: 1px dashed #c1c1c1;
+	border: 1px solid #ddd;
 	border-top: none;
 	position: relative;
 	left: -1px;
