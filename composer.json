@@ -1,0 +1,6 @@
+{
+    "require": {
+        "mustache/mustache": "~2.5",
+        "leafo/scssphp": "0.7.5"
+    }
+}

@@ -1,13 +1,13 @@
 <?php
 
-namespace CDevelopers\media;
+namespace NikolayS93\MediaBlocks;
 
 /**
  * Регистрация типа записей "Медиа блоки"
  */
 add_action('init', __NAMESPACE__ . '\register_mediablocks_type' );
 function register_mediablocks_type() {
-    register_post_type( Utils::OPTION, array(
+    register_post_type( Utils::get_option_name(), array(
         'query_var' => false,
         'rewrite' => false,
         'public' => false,
@@ -33,7 +33,7 @@ function register_mediablocks_type() {
 
 add_action( 'add_meta_boxes', __NAMESPACE__ . '\change_excerpt_box', 10 );
 function change_excerpt_box() {
-    add_meta_box('mb_excerpt', 'Контент после заголовка', __NAMESPACE__ . '\excerpt_box', Utils::OPTION, 'normal');
+    add_meta_box('mb_excerpt', 'Контент после заголовка', __NAMESPACE__ . '\excerpt_box', Utils::get_option_name(), 'normal');
 }
 
 /**
@@ -52,9 +52,9 @@ function excerpt_box() {
 add_action( 'add_meta_boxes', __NAMESPACE__ . '\remove_default_divs', 99 );
 function remove_default_divs() {
     // ярлык записи
-    remove_meta_box( 'slugdiv', Utils::OPTION, 'normal' );
+    remove_meta_box( 'slugdiv', Utils::get_option_name(), 'normal' );
     // Произвольные поля
-    remove_meta_box( 'postcustom', Utils::OPTION, 'normal' );
+    remove_meta_box( 'postcustom', Utils::get_option_name(), 'normal' );
     // Цитата (Краткое содержимое).
-    remove_meta_box( 'postexcerpt', Utils::OPTION, 'normal' );
+    remove_meta_box( 'postexcerpt', Utils::get_option_name(), 'normal' );
 }

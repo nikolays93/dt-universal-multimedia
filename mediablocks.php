@@ -4,7 +4,7 @@
 Plugin Name: Медиаблоки
 Plugin URI: https://github.com/nikolays93/mediablocks
 Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 2.0 beta
+Version: 0.0.2 alpha
 Author: NikolayS93
 Author URI: https://vk.com/nikolays_93
 Author EMAIL: nikolayS93@ya.ru
@@ -12,215 +12,100 @@ License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
-namespace CDevelopers\media;
+/**
+ * Хуки плагина:
+ * $pageslug . _after_title (default empty hook)
+ * $pageslug . _before_form_inputs (default empty hook)
+ * $pageslug . _inside_page_content
+ * $pageslug . _inside_side_container
+ * $pageslug . _inside_advanced_container
+ * $pageslug . _after_form_inputs (default empty hook)
+ * $pageslug . _after_page_wrap (default empty hook)
+ *
+ * Фильтры плагина:
+ * "get_{DOMAIN}_option_name" - имя опции плагина
+ * "get_{DOMAIN}_option" - значение опции плагина
+ * "load_{DOMAIN}_file_if_exists" - информация полученная с файла
+ * "get_{DOMAIN}_plugin_dir" - Дирректория плагина (доступ к файлам сервера)
+ * "get_{DOMAIN}_plugin_url" - УРЛ плагина (доступ к внешним файлам)
+ *
+ * $pageslug . _form_action - Аттрибут action формы на странице настроек плагина
+ * $pageslug . _form_method - Аттрибут method формы на странице настроек плагина
+ */
+
+namespace NikolayS93\MediaBlocks;
 
 if ( ! defined( 'ABSPATH' ) )
-  exit; // disable direct access
+    exit; // disable direct access
 
-const DOMAIN = 'mediablocks';
+const PLUGIN_DIR = __DIR__;
+const DOMAIN = '_plugin';
 
-class Utils
+// Нужно подключить заранее для подключения файлов @see include_required_files()
+// активации и деактивации плагина @see activate(), uninstall();
+require __DIR__ . '/utils.php';
+
+class Plugin
 {
-    const PREF   = 'mb_';
-    const OPTION = 'mblock';
-    const SECURITY  = 'Secret';
-
     private static $initialized;
-    private static $settings;
     private function __construct() {}
-    private function __clone() {}
 
-    static function activate() { add_option( self::OPTION, array() ); }
-    static function uninstall() { delete_option(self::OPTION); }
-
-    private static function include_required_classes()
-    {
-        $classes = array(
-            'scssc' => 'scss.inc.php',
-            // __NAMESPACE__ . '\Example_List_Table' => 'wp-list-table.php',
-            // __NAMESPACE__ . '\WP_Admin_Page'      => 'wp-admin-page.php',
-            __NAMESPACE__ . '\WP_Admin_Forms'     => 'wp-admin-forms.php',
-            // __NAMESPACE__ . '\WP_Post_Boxes'      => 'wp-post-boxes.php',
-            '\Mustache_Engine' => 'Mustache/Autoloader.php',
-            );
-
-        foreach ($classes as $classname => $path) {
-            if( ! class_exists($classname) ) {
-                require_once self::get_plugin_dir('classes') . '/' . $path;
-            }
-        }
-
-        // includes
-        require_once __DIR__ . '/includes/register-assets.php';
-        require_once __DIR__ . '/includes/register-post-type.php';
-        require_once __DIR__ . '/includes/lib-wishes.php';
-        require_once __DIR__ . '/includes/post-edit-page.php';
-        require_once __DIR__ . '/includes/shortcodes.php';
-
-        \Mustache_Autoloader::register();
-    }
+    static function activate() { add_option( Utils::get_option_name(), array() ); }
+    static function uninstall() { delete_option( Utils::get_option_name() ); }
 
     public static function initialize()
     {
-        if( self::$initialized ) {
+        if( self::$initialized )
             return false;
-        }
 
-        load_plugin_textdomain( DOMAIN, false, DOMAIN . '/languages/' );
-        self::include_required_classes();
+        load_plugin_textdomain( DOMAIN, false, basename(PLUGIN_DIR) . '/languages/' );
+        self::include_required_files();
+        self::_actions();
+        self::_filters();
 
         self::$initialized = true;
     }
 
     /**
-     * Записываем ошибку
+     * Подключение файлов нужных для работы плагина
      */
-    public static function write_debug( $msg, $dir )
+    private static function include_required_files()
     {
-        if( ! defined('WP_DEBUG_LOG') || ! WP_DEBUG_LOG )
-            return;
+        $include = Utils::get_plugin_dir('includes');
+        $classes = array(
+            'scssc' => 'scss.inc.php',
+            __NAMESPACE__ . '\WP_Admin_Forms' => Utils::get_plugin_dir('/vendor/nikolayS93/wp-admin-forms.php'),
+            '\Mustache_Engine' => Utils::get_plugin_dir('/vendor/mustache/mustache/src/Mustache/Autoloader.php'),
+            );
 
-        $dir = str_replace(__DIR__, '', $dir);
-        $msg = str_replace(__DIR__, '', $msg);
+        
 
-        $date = new \DateTime();
-        $date_str = $date->format(\DateTime::W3C);
-
-        $handle = fopen(__DIR__ . "/debug.log", "a+");
-        fwrite($handle, "[{$date_str}] {$msg} ({$dir})\r\n");
-        fclose($handle);
-    }
-
-    /**
-     * Загружаем файл если существует
-     */
-    public static function load_file_if_exists( $file_array, $args = array(), $once = false )
-    {
-        $cant_be_loaded = __('The file %s can not be included', DOMAIN);
-        if( is_array( $file_array ) ) {
-            $result = array();
-            foreach ( $file_array as $id => $path ) {
-                if ( ! is_readable( $path ) ) {
-                    self::write_debug(sprintf($cant_be_loaded, $path), __FILE__);
-                    continue;
-                }
-
-                $result[] = include_once( $path );
-            }
-        }
-        else {
-            if ( ! is_readable( $file_array ) ) {
-                self::write_debug(sprintf($cant_be_loaded, $file_array), __FILE__);
-                return false;
-            }
-
-            $result = include_once( $file_array );
-        }
-
-        return $result;
-    }
-
-    public static function get_plugin_dir( $path = false )
-    {
-        $result = __DIR__;
-
-        switch ( $path ) {
-            case 'classes': $result .= '/includes/classes'; break;
-            case 'settings': $result .= '/includes/settings'; break;
-            default: $result .= '/' . $path;
-        }
-
-        return $result;
-    }
-
-    public static function get_plugin_url( $path = false )
-    {
-        $result = plugins_url(basename(__DIR__) );
-
-        switch ( $path ) {
-            default: $result .= '/' . $path;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Получает настройку из self::$settings или из кэша или из базы данных
-     */
-    public static function get( $prop_name, $default = false )
-    {
-        if( ! self::$settings )
-            self::$settings = get_option( self::OPTION, array() );
-
-        if( 'all' === $prop_name ) {
-            if( is_array(self::$settings) && count(self::$settings) )
-                return self::$settings;
-
-            return $default;
-        }
-
-        return isset( self::$settings[ $prop_name ] ) ? self::$settings[ $prop_name ] : $default;
-    }
-
-    public static function get_settings( $filename, $arguments = array() )
-    {
-
-        return self::load_file_if_exists( self::get_plugin_dir('settings') . '/' . $filename . '.php', $arguments );
-    }
-
-    /**
-     * Получить стандартные классы ячейки bootstrap сетки
-     */
-    public static function get_column_class( $columns_count = 4, $responsive = false ) {
-        $xs = ( $need_xs = apply_filters('bootstrap3_columns', false) ) ? '-xs' : '';
-        switch ($columns_count) {
-            case 1: $col = 'col-12'; break;
-            case 2: $col = ($responsive) ? 'col'.$xs.'-6 col-sm-6 col-md-6 col-lg-6' : 'col'.$xs.'-6'; break;
-            case 3: $col = ($responsive) ? 'col'.$xs.'-12 col-sm-6 col-md-4 col-lg-4' : 'col'.$xs.'-4'; break;
-            case 4: $col = ($responsive) ? 'col'.$xs.'-6 col-sm-4 col-md-3 col-lg-3' : 'col'.$xs.'-3'; break;
-            // be careful
-            case 5: $col = ($responsive) ? 'col'.$xs.'-12 col-sm-6 col-md-2-4 col-lg-2-4' : 'col'.$xs.'-2-4'; break;
-            case 6: $col = ($responsive) ? 'col'.$xs.'-6 col-sm-4 col-md-2 col-lg-2' : 'col'.$xs.'-2'; break;
-            case 12: $col= ($responsive) ? 'col'.$xs.'-4 col-sm-3 col-md-1 col-lg-1' : 'col'.$xs.'-1'; break;
-
-            default: $col = false; break;
-        }
-        return $col;
-    }
-
-    public static function dash_to_underscore( $str ){
-        return str_replace('-', '_', $str);
-    }
-
-    public static function _post_meta( $post_id, $key = '', $value = false, $hidden = '_', $default = false )
-    {
-        $answer = $default;
-
-        $key = self::PREF . $key;
-        if( $hidden ) {
-            $key = $hidden . $key;
-        }
-
-        if( false === $value ) {
-            if( $value ) {
-                if( ! $result = get_post_meta( $post_id, $key, true ) ) {
-                    $answer = $result;
-                }
+        foreach ($classes as $classname => $path) {
+            if( ! class_exists($classname) ) {
+                Utils::load_file_if_exists( $path );
             }
             else {
-                delete_post_meta( $post_id, $key );
+                Utils::write_debug(sprintf( __('Duplicate class %s', DOMAIN), $classname ), __FILE__);
             }
         }
-        else {
-            update_post_meta( $post_id, $key, true );
-        }
 
-        return $answer;
+        // includes
+        Utils::load_file_if_exists( $include . '/register-assets.php' );
+        Utils::load_file_if_exists( $include . '/register-post-type.php' );
+        Utils::load_file_if_exists( $include . '/post-edit-page.php' );
+        Utils::load_file_if_exists( $include . '/shortcodes.php' );
+
+        \Mustache_Autoloader::register();
     }
+
+    private static function _actions(){}
+    private static function _filters(){}
 }
 
-register_activation_hook( __FILE__, array( __NAMESPACE__ . '\Utils', 'activate' ) );
-register_uninstall_hook( __FILE__, array( __NAMESPACE__ . '\Utils', 'uninstall' ) );
-// register_deactivation_hook( __FILE__, array( __NAMESPACE__ . '\Utils', 'deactivate' ) );
 
-add_action( 'plugins_loaded', array( __NAMESPACE__ . '\Utils', 'initialize' ), 10 );
+
+register_activation_hook( __FILE__, array( __NAMESPACE__ . '\Plugin', 'activate' ) );
+register_uninstall_hook( __FILE__, array( __NAMESPACE__ . '\Plugin', 'uninstall' ) );
+// register_deactivation_hook( __FILE__, array( __NAMESPACE__ . '\Plugin', 'deactivate' ) );
+
+add_action( 'plugins_loaded', array( __NAMESPACE__ . '\Plugin', 'initialize' ), 10 );

@@ -1,6 +1,6 @@
 <?php
 
-namespace CDevelopers\media;
+namespace NikolayS93\MediaBlocks;
 
 /**
  * На странице создания и редактирования типа записи
@@ -46,7 +46,7 @@ class mediablock_load_post_page
     static function after_title() {
         global $post, $wp_meta_boxes;
 
-        if( $post->post_type !== Utils::OPTION ) {
+        if( $post->post_type !== Utils::get_option_name() ) {
             return;
         } ?>
         <div class='shortcode-wrap wrap-sc'>
@@ -71,13 +71,13 @@ class mediablock_load_post_page
 
     static function blocks_meta_boxes() {
         add_meta_box('attachments', __('Multimedia', DOMAIN),
-            array(__CLASS__, 'attachments_grid'), Utils::OPTION, 'normal', 'high');
+            array(__CLASS__, 'attachments_grid'), Utils::get_option_name(), 'normal', 'high');
 
         /** With AJAX */
         add_meta_box('json_options', __('JSON options', DOMAIN),
-            array(__CLASS__, 'json_options'), Utils::OPTION, 'normal');
+            array(__CLASS__, 'json_options'), Utils::get_option_name(), 'normal');
         add_meta_box('grid_options', __('Settings', DOMAIN),
-            array(__CLASS__, 'grid_options'), Utils::OPTION, 'side');
+            array(__CLASS__, 'grid_options'), Utils::get_option_name(), 'side');
     }
 
     /******************************* Attachments ******************************/
@@ -99,7 +99,7 @@ class mediablock_load_post_page
     static function determine_type()
     {
         $form = new WP_Admin_Forms(
-            Utils::get_settings( 'general' ),
+            Utils::get_settings( '/general.php' ),
             $table = false,
             array(
                 'form_name'  => 'mtypes',
@@ -173,7 +173,7 @@ class mediablock_load_post_page
 
                 // Init template engine
                 $m = new \Mustache_Engine;
-                $tpl = Utils::get_plugin_dir('includes/templates') . '/admin_attachment.tpl';
+                $tpl = Utils::get_plugin_dir('includes/templates/admin_attachment.tpl');
                 echo $m->render( file_get_contents( $tpl ), array(
                     'filename' => $file[0],
                     'attachment_id' => $attachment_id,
@@ -209,7 +209,7 @@ class mediablock_load_post_page
         ) );
 
         $form = new WP_Admin_Forms(
-            Utils::get_settings( 'lib/'.$atts['lib_type'], $atts ),
+            Utils::get_settings( '/lib/'.$atts['lib_type'], $atts ),
             $is_table = true, array(
                 'form_name'  => '_json_options',
                 'mode'       => 'post',
@@ -232,7 +232,7 @@ class mediablock_load_post_page
         ) );
 
         $form = new WP_Admin_Forms(
-            Utils::get_settings( 'grid/'.$atts['grid_type'], $atts ),
+            Utils::get_settings( '/grid/'.$atts['grid_type'], $atts ),
             $is_table = true,
             array(
                 'form_name' => '_grid_options',
@@ -304,7 +304,7 @@ class mediablock_load_post_page
 
             // exclude defaults
             $defaults = WP_Admin_Forms::defaults(
-                Utils::get_settings( 'lib/' . $_POST['mtypes']['lib_type'], $_POST['mtypes'] ) );
+                Utils::get_settings( '/lib/' . $_POST['mtypes']['lib_type'], $_POST['mtypes'] ) );
             foreach ($defaults as $field_id => $default) {
                 if( isset($_POST['_json_options'][ $field_id ]) && $_POST['_json_options'][ $field_id ] != $default )
                     $result[ $field_id ] = $_POST['_json_options'][ $field_id ];

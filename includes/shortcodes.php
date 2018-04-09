@@ -1,6 +1,6 @@
 <?php
 
-namespace CDevelopers\media;
+namespace NikolayS93\MediaBlocks;
 
 if ( ! defined( 'ABSPATH' ) )
     exit; // Exit if accessed directly

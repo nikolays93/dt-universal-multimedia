@@ -1,0 +1,56 @@
+body {
+	position: relative;
+}
+div, p {
+	display: inline-block;
+	box-sizing: border-box;
+}
+label {
+	cursor: pointer;
+}
+hr {
+	clear: both;
+}
+#wrap {
+	float: left;
+	display: block;
+	text-align: center;
+	width:200px;
+	height:200px;
+	background: #ccc;
+	border: 1px solid;
+	line-height: 20px;
+}
+#wrap + #wrap {
+	margin-left: 15px;
+}
+#inside {
+	background: red;
+	width: 100px;
+	height: 100px;
+	margin: 15px 50px 15px;
+	padding-top: 30px;
+}
+#inside2 {
+	width: 150px;
+	margin: 0px auto;
+	background: blue;
+	padding: 4px;
+	color: #fff;
+}
+#stuntman {
+	display: block;
+	position: absolute;
+	left: 50%;
+	top: 20px;
+	width: 100px;
+	margin-left: -50px;
+	height: 100px;
+	background: cornsilk;
+	border: 1px solid lightblue;
+	text-align: center;
+	padding: 40px 0;
+}
+#stuntman.away {
+	opacity: 0.6;
+}
