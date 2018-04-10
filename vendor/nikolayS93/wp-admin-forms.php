@@ -8,13 +8,11 @@ if ( ! defined( 'ABSPATH' ) )
 /**
  * Class Name: WP_Admin_Forms
  * Description: Render a custom admin forms.
- * Version: 1.1.0
+ * Version: 1.0.0
  * Author: NikolayS93
  * Author URI: https://vk.com/nikolays_93
  * License: GNU General Public License v2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
- *
- * 1.1.0 fix active values (instanceof to is_a)
  */
 
 class WP_Admin_Forms {
@@ -151,8 +149,7 @@ class WP_Admin_Forms {
         if( $this->args['postmeta'] ){
             global $post;
 
-            // do not use instanceof
-            if( ! is_a($post, 'WP_Post') ) {
+            if( ! $post instanceof WP_Post ) {
                 return false;
             }
 
@@ -357,7 +354,7 @@ class WP_Admin_Forms {
 
                 // if $clear_value === false dont use defaults (couse default + empty value = true)
                 if( isset($clear_value) || false !== ($clear_value = self::$clear_value) ) {
-                    $input .= sprintf('<input type="hidden" name="%s" value="%s">',
+                    $input .= sprinft('<input type="hidden" name="%s" value="%s">',
                         $attributes['name'], $clear_value) . "\n";
                 }
 
@@ -413,9 +410,12 @@ class WP_Admin_Forms {
         if( $is_table )
             $defaults['form_wrap'] = array('<table class="table form-table"><tbody>', '</tbody></table>');
 
-        if( ( isset($args['admin_page']) && $args['admin_page'] !== false ) ||
-            !isset($args['admin_page']) && is_admin() && !empty($_GET['page']) )
+        if( !isset( $args['admin_page'] ) && !empty($_GET['page']) ) {
             $defaults['admin_page'] = $_GET['page'];
+        }
+        elseif( !empty( $args['admin_page'] ) && is_string( $args['admin_page'] ) ) {
+            $defaults['admin_page'] = $args['admin_page'];
+        }
 
         $args = wp_parse_args( $args, $defaults );
 

@@ -2,6 +2,9 @@
 
 namespace NikolayS93\MediaBlocks;
 
+if ( ! defined( 'ABSPATH' ) )
+  exit; // disable direct access
+
 /**
  * На странице создания и редактирования типа записи
  */
@@ -102,8 +105,10 @@ class mediablock_load_post_page
             Utils::get_settings( '/general.php' ),
             $table = false,
             array(
-                'form_name'  => 'mtypes',
-                'mode'       => 'post',
+                'postmeta' => true,
+                'admin_page' => 'settings',
+                // 'form_name'  => 'mtypes',
+                // 'mode'       => 'post',
                 'item_wrap'   => array('<span>', '</span>'),
             ) );
 
@@ -231,8 +236,9 @@ class mediablock_load_post_page
             'lib_type'  => isset($_POST['lib_type'])  ? $_POST['lib_type']  : 'slick',
         ) );
 
+        $list = Utils::get_library_list();
         $form = new WP_Admin_Forms(
-            Utils::get_settings( '/grid/'.$atts['grid_type'], $atts ),
+            $list['carousel']->options,
             $is_table = true,
             array(
                 'form_name' => '_grid_options',
@@ -304,7 +310,7 @@ class mediablock_load_post_page
 
             // exclude defaults
             $defaults = WP_Admin_Forms::defaults(
-                Utils::get_settings( '/lib/' . $_POST['mtypes']['lib_type'], $_POST['mtypes'] ) );
+                Utils::get_settings( 'lib/' . $_POST['mtypes']['lib_type'] . '.php', $_POST['mtypes'] ) );
             foreach ($defaults as $field_id => $default) {
                 if( isset($_POST['_json_options'][ $field_id ]) && $_POST['_json_options'][ $field_id ] != $default )
                     $result[ $field_id ] = $_POST['_json_options'][ $field_id ];

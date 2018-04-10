@@ -47,6 +47,8 @@ require __DIR__ . '/utils.php';
 
 class Plugin
 {
+    const DEFAULT_TYPE = 'slider';
+
     private static $initialized;
     private function __construct() {}
 
@@ -61,7 +63,6 @@ class Plugin
         load_plugin_textdomain( DOMAIN, false, basename(PLUGIN_DIR) . '/languages/' );
         self::include_required_files();
         self::_actions();
-        self::_filters();
 
         self::$initialized = true;
     }
@@ -72,34 +73,34 @@ class Plugin
     private static function include_required_files()
     {
         $include = Utils::get_plugin_dir('includes');
+        $vendor = Utils::get_plugin_dir('/vendor');
         $classes = array(
-            'scssc' => 'scss.inc.php',
-            __NAMESPACE__ . '\WP_Admin_Forms' => Utils::get_plugin_dir('/vendor/nikolayS93/wp-admin-forms.php'),
-            '\Mustache_Engine' => Utils::get_plugin_dir('/vendor/mustache/mustache/src/Mustache/Autoloader.php'),
-            );
-
-        
+            'Leafo\ScssPhp\Version'           => '/leafo/scssphp/scss.inc.php',
+            __NAMESPACE__ . '\WP_Admin_Forms' => '/nikolays93/wp-admin-forms.php',
+            '\Mustache_Engine'                => '/mustache/mustache/src/Mustache/Autoloader.php',
+        );
 
         foreach ($classes as $classname => $path) {
             if( ! class_exists($classname) ) {
-                Utils::load_file_if_exists( $path );
+                Utils::load_file_if_exists( $vendor . $path );
             }
             else {
                 Utils::write_debug(sprintf( __('Duplicate class %s', DOMAIN), $classname ), __FILE__);
             }
         }
 
+        if( class_exists('Mustache_Autoloader') )
+            \Mustache_Autoloader::register();
+
         // includes
         Utils::load_file_if_exists( $include . '/register-assets.php' );
         Utils::load_file_if_exists( $include . '/register-post-type.php' );
         Utils::load_file_if_exists( $include . '/post-edit-page.php' );
         Utils::load_file_if_exists( $include . '/shortcodes.php' );
-
-        \Mustache_Autoloader::register();
+        Utils::load_file_if_exists( $include . '/filters.php' );
     }
 
     private static function _actions(){}
-    private static function _filters(){}
 }
 
 

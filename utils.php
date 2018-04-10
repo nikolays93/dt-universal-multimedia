@@ -222,4 +222,9 @@ class Utils
         }
         return $col;
     }
+
+    public static function get_library_list() {
+
+        return apply_filters( UTILS::PREF .'library_list', array() );
+    }
 }

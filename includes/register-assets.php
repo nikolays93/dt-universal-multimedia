@@ -8,26 +8,6 @@ function register_assets() {
     $url = Utils::get_plugin_url('assets');
 
     $assets = array(
-        'owl-carousel' => array(
-            'js' => 'owl.carousel'.$affix.'.js',
-            'style' => 'owl.carousel'.$affix.'.css',
-            'theme' => 'owl.theme.css',
-            'ver' => '1.3.3',
-        ),
-        'slick' => array(
-            'js' => 'slick.js',
-            'style' => 'slick.css',
-            'theme' => 'slick-theme.css',
-            'ver' => '1.6.0',
-        ),
-        'cloud9carousel' => array(
-            'js' => 'jquery.cloud9carousel'.$affix.'.js',
-            'ver' => '2.1.0',
-        ),
-        'waterwheelCarousel' => array(
-            'js' => 'jquery.waterwheelCarousel'.$affix.'.js',
-            'ver' => '2.3.0',
-        ),
         'lazyLoad' => array(
             'js' => 'lazyLoad'.$affix.'.js',
             'ver' => '1.9.0',

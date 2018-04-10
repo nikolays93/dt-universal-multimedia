@@ -2,6 +2,9 @@
 
 namespace NikolayS93\MediaBlocks;
 
+if ( ! defined( 'ABSPATH' ) )
+  exit; // disable direct access
+
 /**
  * Регистрация типа записей "Медиа блоки"
  */
@@ -33,7 +36,8 @@ function register_mediablocks_type() {
 
 add_action( 'add_meta_boxes', __NAMESPACE__ . '\change_excerpt_box', 10 );
 function change_excerpt_box() {
-    add_meta_box('mb_excerpt', 'Контент после заголовка', __NAMESPACE__ . '\excerpt_box', Utils::get_option_name(), 'normal');
+    add_meta_box('mb_excerpt', __('Контент после заголовка', DOMAIN),
+        __NAMESPACE__ . '\excerpt_box', Utils::get_option_name(), 'normal');
 }
 
 /**
