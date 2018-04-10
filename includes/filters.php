@@ -11,7 +11,7 @@ add_filter( UTILS::PREF .'double__child-list', __NAMESPACE__ . '\add_slick_slide
 function add_slick_slider( $list ) {
     $list[ 'slick' ] = (object) array(
         'label'   => __('Slick Slider', DOMAIN),
-        'settings' => Utils::get_settings( '/lib/slick.php' ),
+        'settings' => Utils::get_settings( 'lib/slick.php' ),
         'library' => (object) array(
             'js' => 'slick.js',
             'style' => 'slick.css',
@@ -31,7 +31,7 @@ function add_owl_carousel( $list ) {
 
     $list[ 'owl-carousel' ] = (object) array(
         'label'   => __('Owl Carousel', DOMAIN),
-        'settings' => Utils::get_settings( '/lib/owl-carousel.php' ),
+        'settings' => Utils::get_settings( 'lib/owlCarousel.php' ),
         'library' => (object) array(
             'js' => 'owl.carousel'.$affix.'.js',
             'style' => 'owl.carousel'.$affix.'.css',
@@ -49,7 +49,7 @@ function add_cloud9carousel( $list ) {
 
     $list[ 'cloud9carousel' ] = (object) array(
         'label' => __('Cloud 9 Carousel', DOMAIN),
-        'settings' => Utils::get_settings( '/lib/cloud9carousel.php' ),
+        'settings' => Utils::get_settings( 'lib/Cloud9carousel.php' ),
         'library' => (object) array(
             'js' => 'jquery.cloud9carousel'.$affix.'.js',
             'ver' => '2.1.0',
@@ -65,7 +65,7 @@ function add_waterwheelCarousel( $list ) {
 
     $list[ 'waterwheelCarousel' ] = (object) array(
         'label' => __('Waterwheel Carousel', DOMAIN),
-        'settings' => Utils::get_settings( '/lib/waterwheelCarousel.php' ),
+        'settings' => Utils::get_settings( 'lib/waterwheelCarousel.php' ),
         'library' => (object) array(
             'js' => 'jquery.waterwheelCarousel'.$affix.'.js',
             'ver' => '2.3.0',
@@ -79,7 +79,7 @@ add_filter( UTILS::PREF .'gallery__child-list', __NAMESPACE__ . '\add_masonry_ga
 function add_masonry_gallery( $list ) {
     $list[ 'masonry' ] = (object) array(
         'label' => __('Masonry Gallery', DOMAIN),
-        'settings' => Utils::get_settings( '/lib/masonry.php' ),
+        'settings' => Utils::get_settings( 'lib/masonry.php' ),
         'library' => (object) array(
             // 'js' => 'jquery.waterwheelCarousel'.$affix.'.js',
             // 'ver' => '2.3.0',

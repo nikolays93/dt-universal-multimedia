@@ -2,6 +2,8 @@
 
 namespace NikolayS93\MediaBlocks;
 
+use NikolayS93\WPAdminForm\Form;
+
 if ( ! defined( 'ABSPATH' ) )
   exit; // disable direct access
 
@@ -101,7 +103,7 @@ class mediablock_load_post_page
 
     static function determine_type()
     {
-        $form = new WP_Admin_Forms(
+        $form = new Form(
             Utils::get_settings( '/general.php' ),
             $table = false,
             array(
@@ -110,9 +112,10 @@ class mediablock_load_post_page
                 // 'form_name'  => 'mtypes',
                 // 'mode'       => 'post',
                 'item_wrap'   => array('<span>', '</span>'),
-            ) );
+            )
+        );
+        $form->display();
 
-        echo $form->render();
         echo '<div class="clear"></div>';
     }
 
@@ -213,16 +216,16 @@ class mediablock_load_post_page
             'lib_type'  => isset($_POST['lib_type'])  ? $_POST['lib_type']  : 'slick',
         ) );
 
-        $form = new WP_Admin_Forms(
-            Utils::get_settings( '/lib/'.$atts['lib_type'], $atts ),
-            $is_table = true, array(
-                'form_name'  => '_json_options',
-                'mode'       => 'post',
-            ) );
+        // $form = new WP_Admin_Forms(
+        //     Utils::get_settings( '/lib/'.$atts['lib_type'], $atts ),
+        //     $is_table = true, array(
+        //         'form_name'  => '_json_options',
+        //         'mode'       => 'post',
+        //     ) );
 
-        echo '<div class="inner">';
-        echo $form->render();
-        echo '</div>';
+        // echo '<div class="inner">';
+        // echo $form->render();
+        // echo '</div>';
     }
 
     /**
@@ -236,18 +239,18 @@ class mediablock_load_post_page
             'lib_type'  => isset($_POST['lib_type'])  ? $_POST['lib_type']  : 'slick',
         ) );
 
-        $list = Utils::get_library_list();
-        $form = new WP_Admin_Forms(
-            $list['carousel']->options,
-            $is_table = true,
-            array(
-                'form_name' => '_grid_options',
-                'mode'      => 'post',
-            ) );
+        // $list = Utils::get_library_list();
+        // $form = new WP_Admin_Forms(
+        //     $list['carousel']->options,
+        //     $is_table = true,
+        //     array(
+        //         'form_name' => '_grid_options',
+        //         'mode'      => 'post',
+        //     ) );
 
-        echo "<div class='inner'>";
-        echo $form->render();
-        echo '</div>';
+        // echo "<div class='inner'>";
+        // echo $form->render();
+        // echo '</div>';
     }
 
     /**

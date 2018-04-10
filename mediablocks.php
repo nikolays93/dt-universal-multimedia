@@ -76,7 +76,7 @@ class Plugin
         $vendor = Utils::get_plugin_dir('/vendor');
         $classes = array(
             'Leafo\ScssPhp\Version'           => '/leafo/scssphp/scss.inc.php',
-            __NAMESPACE__ . '\WP_Admin_Forms' => '/nikolays93/wp-admin-forms.php',
+            __NAMESPACE__ . '\WP_Admin_Forms' => '/nikolays93/WPAdminForm/init.php',
             '\Mustache_Engine'                => '/mustache/mustache/src/Mustache/Autoloader.php',
         );
 
