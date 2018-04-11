@@ -2,7 +2,7 @@
 
 namespace NikolayS93\WPAdminForm;
 
-class Utils
+class Util
 {
     public static function get_attributes_text( $attributes )
     {

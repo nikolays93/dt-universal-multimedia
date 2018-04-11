@@ -2,7 +2,7 @@
 
 namespace NikolayS93\WPAdminForm;
 
-class Defaults
+class Preset
 {
     // field
     public static function get( $render_data )
@@ -27,9 +27,10 @@ class Defaults
     }
 
     // form
-    public static function parse_args($args, $is_table)
+    public static function parse_args($args)
     {
         $defaults = array(
+            'is_table'    => true,
             'admin_page'  => true, // set true for auto detect
             'item_wrap'   => array('<p>', '</p>'),
             'form_wrap'   => array('', ''),
@@ -39,7 +40,8 @@ class Defaults
             'sub_name'    => '',
         );
 
-        if( $is_table )
+
+        if( $defaults['is_table'] )
             $defaults['form_wrap'] = array('<table class="table form-table"><tbody>', '</tbody></table>');
 
         if( !isset( $args['admin_page'] ) && !empty($_GET['page']) ) {
@@ -57,7 +59,7 @@ class Defaults
         if( ! is_array($args['form_wrap']) )
             $args['form_wrap'] = array('', '');
 
-        if( false === $is_table )
+        if( false === $defaults['is_table'] )
             $args['label_tag'] = 'label';
 
         return $args;

@@ -17,5 +17,5 @@ if( isset($clear_value) || false !== ($clear_value = self::$clear_value) ) {
         $attrs['name'], $clear_value) . "\n";
 }
 
-$input .= '<input ' . Utils::get_attributes_text( $attrs ) . '/>';
+$input .= '<input ' . Util::get_attributes_text( $attrs ) . '/>';
 $input .= $label[0] . $label[1];

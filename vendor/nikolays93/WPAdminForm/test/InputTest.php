@@ -2,7 +2,7 @@
 
 namespace NikolayS93\WPAdminForm;
 
-$plugin_dir = Utils::get_plugin_dir();
+$plugin_dir = Util::get_plugin_dir();
 
 require_once $plugin_dir . '/vendor/phpunit/phpunit/src/Framework/TestCase.php';
 require_once $plugin_dir . '/vendor/NikolayS93/WPAdminForm/src/Input.php';

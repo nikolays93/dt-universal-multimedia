@@ -7,5 +7,5 @@ $attrs['value'] = $field['value'] ? esc_attr( $field['value'] ) : esc_attr( $ent
 $attrs['class'] .= ' input-' . $attrs['type'];
 
 $input .= $label[0];
-$input .= '<input ' . Utils::get_attributes_text( $attrs ) . '/>';
+$input .= '<input ' . Util::get_attributes_text( $attrs ) . '/>';
 $input .= $label[1];

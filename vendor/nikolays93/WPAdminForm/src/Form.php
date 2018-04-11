@@ -11,7 +11,7 @@ class Form extends Active
               $args,
               $hiddens = array();
 
-    public function __construct($data = null, $is_table = true, $args = array())
+    public function __construct($data = null, $args = array())
     {
         if( !is_array($data) )
             $data = array();
@@ -22,7 +22,7 @@ class Form extends Active
         if( !is_array($args) )
             $args = array();
 
-        $args = Defaults::parse_args($args, $is_table);
+        $args = Preset::parse_args($args);
         if( $args['admin_page'] ) { // || $args['sub_name']
             foreach ($data as &$field) {
                 if ( ! isset($field['id']) && ! isset($field['name']) )
@@ -41,7 +41,6 @@ class Form extends Active
         }
 
         $this->fields = $data;
-        $args['is_table'] = $is_table;
         $this->args = $args;
     }
 
