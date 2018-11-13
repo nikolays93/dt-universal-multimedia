@@ -74,13 +74,13 @@ class mediablock_load_post_page
     {
         $form = new Form(
             Utils::get_settings( '/general' ),
-            $table = false,
             array(
-                'postmeta' => true,
-                'admin_page' => 'settings',
+                'is_table' => false,
+                // 'postmeta' => true,
+                // 'admin_page' => 'settings',
                 // 'form_name'  => 'mtypes',
                 // 'mode'       => 'post',
-                'item_wrap'   => array('<span>', '</span>'),
+                // 'item_wrap'   => array('<span>', '</span>'),
             )
         );
         $form->display();
@@ -227,18 +227,19 @@ class mediablock_load_post_page
             'lib_type'  => isset($_POST['lib_type'])  ? $_POST['lib_type']  : 'slick',
         ) );
 
-        // $list = Utils::get_library_list();
-        // $form = new Form(
-        //     $list['carousel']->options,
-        //     $is_table = true,
-        //     array(
-        //         'form_name' => '_grid_options',
-        //         'mode'      => 'post',
-        //     ) );
+        $list = Utils::get_library_list();
 
-        // echo "<div class='inner'>";
-        // echo $form->display();
-        // echo '</div>';
+        $form = new Form(
+            $list['carousel']->options,
+            array(
+                'is_table'  => true,
+                'form_name' => '_grid_options',
+                'mode'      => 'post',
+            ) );
+
+        echo "<div class='inner'>";
+        echo $form->display();
+        echo '</div>';
     }
 
     /**

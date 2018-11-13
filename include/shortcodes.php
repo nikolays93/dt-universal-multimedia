@@ -1,6 +1,6 @@
 <?php
 
-namespace NikolayS93\MediaBlocks;
+namespace NikolayS93\Mblocks;
 
 if ( ! defined( 'ABSPATH' ) )
     exit; // Exit if accessed directly

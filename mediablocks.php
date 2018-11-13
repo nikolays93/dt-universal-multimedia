@@ -67,11 +67,12 @@ class Plugin
         load_plugin_textdomain( DOMAIN, false, basename(PLUGIN_DIR) . '/languages/' );
 
         require PLUGIN_DIR . '/include/utils.php';
+        require PLUGIN_DIR . '/include/filters.php';
+
         require PLUGIN_DIR . '/include/register-assets.php';
         require PLUGIN_DIR . '/include/register-post-type.php';
         require PLUGIN_DIR . '/include/register-metaboxes.php';
         // $include . '/shortcodes.php'
-        // $include . '/filters.php'
 
         $autoload = PLUGIN_DIR . '/vendor/autoload.php';
         if( file_exists($autoload) ) include $autoload;

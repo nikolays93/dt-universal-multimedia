@@ -109,7 +109,14 @@ class Utils extends Plugin
      * @return mixed
      */
     public static function get_settings( $filename, $args = array() ) {
-        include PLUGIN_DIR . '/admin/settings/' . $filename . '.php';
+        $path = PLUGIN_DIR . '/admin/settings/' . $filename . '.php';
+
+        if( is_file( $path ) ) {
+            include PLUGIN_DIR . '/admin/settings/' . $filename . '.php';
+        }
+        else {
+            echo "<p>Файл <strong>$path</strong> не найден</p>";
+        }
     }
 
     public static function dash_to_underscore( $str ){
