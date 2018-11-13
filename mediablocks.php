@@ -1,112 +1,148 @@
 <?php
 
 /*
-Plugin Name: Медиаблоки
-Plugin URI: https://github.com/nikolays93/mediablocks
-Description: Добавляет возможность создавать медиа блоки (Карусел, слайдер, галарея..)
-Version: 0.0.2 alpha
-Author: NikolayS93
-Author URI: https://vk.com/nikolays_93
-Author EMAIL: nikolayS93@ya.ru
-License: GNU General Public License v2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-*/
-
-/**
- * Хуки плагина:
- * $pageslug . _after_title (default empty hook)
- * $pageslug . _before_form_inputs (default empty hook)
- * $pageslug . _inside_page_content
- * $pageslug . _inside_side_container
- * $pageslug . _inside_advanced_container
- * $pageslug . _after_form_inputs (default empty hook)
- * $pageslug . _after_page_wrap (default empty hook)
- *
- * Фильтры плагина:
- * "get_{DOMAIN}_option_name" - имя опции плагина
- * "get_{DOMAIN}_option" - значение опции плагина
- * "load_{DOMAIN}_file_if_exists" - информация полученная с файла
- * "get_{DOMAIN}_plugin_dir" - Дирректория плагина (доступ к файлам сервера)
- * "get_{DOMAIN}_plugin_url" - УРЛ плагина (доступ к внешним файлам)
- *
- * $pageslug . _form_action - Аттрибут action формы на странице настроек плагина
- * $pageslug . _form_method - Аттрибут method формы на странице настроек плагина
+ * Plugin Name: Медиаблоки
+ * Plugin URI: https://github.com/nikolays93/mediablocks
+ * Description: Добавляет возможность создавать медиа блоки (Карусель, слайдер, галарея..)
+ * Version: 0.1.2
+ * Author: NikolayS93
+ * Author URI: https://vk.com/nikolays_93
+ * Author EMAIL: nikolayS93@ya.ru
+ * License: GNU General Public License v2 or later
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: mblocks
+ * Domain Path: /languages/
  */
 
-namespace NikolayS93\MediaBlocks;
+namespace NikolayS93\Mblocks;
 
-if ( ! defined( 'ABSPATH' ) )
-    exit; // disable direct access
+use NikolayS93\WPAdminPage as Admin;
 
-const PLUGIN_DIR = __DIR__;
-const DOMAIN = '_plugin';
+if ( !defined( 'ABSPATH' ) ) exit('You shall not pass');
 
-// Нужно подключить заранее для подключения файлов @see include_required_files()
-// активации и деактивации плагина @see activate(), uninstall();
-require __DIR__ . '/utils.php';
+require_once ABSPATH . "wp-admin/includes/plugin.php";
+
+if (version_compare(PHP_VERSION, '5.3') < 0) {
+    throw new \Exception('Plugin requires PHP 5.3 or above');
+}
 
 class Plugin
 {
+    const SECURITY = 'abrakadabra';
     const DEFAULT_TYPE = 'slider';
 
-    private static $initialized;
+    protected static $data;
+    protected static $options;
+
     private function __construct() {}
+    private function __clone() {}
 
-    static function activate() { add_option( Utils::get_option_name(), array() ); }
-    static function uninstall() { delete_option( Utils::get_option_name() ); }
-
-    public static function initialize()
+    /**
+     * Get option name for a options in the Wordpress database
+     */
+    public static function get_option_name()
     {
-        if( self::$initialized )
-            return false;
-
-        load_plugin_textdomain( DOMAIN, false, basename(PLUGIN_DIR) . '/languages/' );
-        self::include_required_files();
-        self::_actions();
-
-        self::$initialized = true;
+        return apply_filters("get_{DOMAIN}_option_name", DOMAIN);
     }
 
     /**
-     * Подключение файлов нужных для работы плагина
+     * Define required plugin data
      */
-    private static function include_required_files()
+    public static function define()
     {
-        $include = Utils::get_plugin_dir('includes');
-        $vendor = Utils::get_plugin_dir('/vendor');
-        $classes = array(
-            'Leafo\ScssPhp\Version'           => '/leafo/scssphp/scss.inc.php',
-            __NAMESPACE__ . '\WP_Admin_Forms' => '/nikolays93/WPAdminForm/init.php',
-            '\Mustache_Engine'                => '/mustache/mustache/src/Mustache/Autoloader.php',
-        );
+        self::$data = get_plugin_data(__FILE__);
 
-        foreach ($classes as $classname => $path) {
-            if( ! class_exists($classname) ) {
-                Utils::load_file_if_exists( $vendor . $path );
-            }
-            else {
-                Utils::write_debug(sprintf( __('Duplicate class %s', DOMAIN), $classname ), __FILE__);
-            }
-        }
+        if( !defined(__NAMESPACE__ . '\DOMAIN') )
+            define(__NAMESPACE__ . '\DOMAIN', self::$data['TextDomain']);
 
-        if( class_exists('Mustache_Autoloader') )
-            \Mustache_Autoloader::register();
-
-        // includes
-        Utils::load_file_if_exists( $include . '/register-assets.php' );
-        Utils::load_file_if_exists( $include . '/register-post-type.php' );
-        Utils::load_file_if_exists( $include . '/post-edit-page.php' );
-        Utils::load_file_if_exists( $include . '/shortcodes.php' );
-        Utils::load_file_if_exists( $include . '/filters.php' );
+        if( !defined(__NAMESPACE__ . '\PLUGIN_DIR') )
+            define(__NAMESPACE__ . '\PLUGIN_DIR', __DIR__);
     }
 
-    private static function _actions(){}
+    /**
+     * include required files
+     */
+    public static function initialize()
+    {
+        load_plugin_textdomain( DOMAIN, false, basename(PLUGIN_DIR) . '/languages/' );
+
+        require PLUGIN_DIR . '/include/utils.php';
+        require PLUGIN_DIR . '/include/register-assets.php';
+        require PLUGIN_DIR . '/include/register-post-type.php';
+        require PLUGIN_DIR . '/include/register-metaboxes.php';
+        // $include . '/shortcodes.php'
+        // $include . '/filters.php'
+
+        $autoload = PLUGIN_DIR . '/vendor/autoload.php';
+        if( file_exists($autoload) ) include $autoload;
+
+        if( class_exists('Mustache_Autoloader') ) {
+            \Mustache_Autoloader::register();
+        }
+    }
+
+    static function activate() { add_option( self::get_option_name(), array() ); }
+    static function uninstall() { delete_option( self::get_option_name() ); }
+
+    public static function admin_menu_page()
+    {
+        $page = new Admin\Page(
+            Utils::get_option_name(),
+            __('New Plugin name Title', DOMAIN),
+            array(
+                'parent'      => false,
+                'menu'        => __('Example', DOMAIN),
+                // 'validate'    => array($this, 'validate_options'),
+                'permissions' => 'manage_options',
+                'columns'     => 2,
+            )
+        );
+
+        // $page->set_assets( array(__CLASS__, '_admin_assets') );
+
+        $page->set_content( function() {
+            Utils::get_admin_template('menu-page.php', false, $inc = true);
+        } );
+
+        $page->add_section( new Admin\Section(
+            'Section',
+            __('Section'),
+            function() {
+                Utils::get_admin_template('section.php', false, $inc = true);
+            }
+        ) );
+
+        $metabox1 = new Admin\Metabox(
+            'metabox1',
+            __('metabox1', DOMAIN),
+            function() {
+                Utils::get_admin_template('metabox1.php', false, $inc = true);
+            },
+            $position = 'side',
+            $priority = 'high'
+        );
+
+        $page->add_metabox( $metabox1 );
+
+        $metabox2 = new Admin\Metabox(
+            'metabox2',
+            __('metabox2', DOMAIN),
+            function() {
+                Utils::get_admin_template('metabox2.php', false, $inc = true);
+            },
+            $position = 'side',
+            $priority = 'high'
+        );
+
+        $page->add_metabox( $metabox2 );
+    }
 }
 
+Plugin::define();
 
-
-register_activation_hook( __FILE__, array( __NAMESPACE__ . '\Plugin', 'activate' ) );
-register_uninstall_hook( __FILE__, array( __NAMESPACE__ . '\Plugin', 'uninstall' ) );
+// register_activation_hook( __FILE__, array( __NAMESPACE__ . '\Plugin', 'activate' ) );
+// register_uninstall_hook( __FILE__, array( __NAMESPACE__ . '\Plugin', 'uninstall' ) );
 // register_deactivation_hook( __FILE__, array( __NAMESPACE__ . '\Plugin', 'deactivate' ) );
 
 add_action( 'plugins_loaded', array( __NAMESPACE__ . '\Plugin', 'initialize' ), 10 );
+// add_action( 'plugins_loaded', array( __NAMESPACE__ . '\Plugin', 'admin_menu_page' ), 10 );
