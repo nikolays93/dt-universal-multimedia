@@ -41,13 +41,13 @@ select.button {
 #attachments.postbox ul.attachments.detail li {
 	width: 100%;
 }
-#attachments.postbox ul.attachments.detail li .thumbnail-wrap {
+#attachments.postbox ul.attachments.detail li .attachment__img {
 	float: left;
-	width: 145px;
+	width: 250px;
 	max-width: 21%;
 }
 #attachments.postbox ul.attachments.detail li .attachment-preview {
-	height: 145px;
+	height: 250px;
 }
 #attachments.postbox ul.attachments li .item-excerpt {
 	width: 100%;

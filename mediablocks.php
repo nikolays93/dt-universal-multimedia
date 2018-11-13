@@ -90,11 +90,12 @@ class Plugin
             Utils::get_option_name(),
             __('New Plugin name Title', DOMAIN),
             array(
-                'parent'      => false,
+                'parent'      => 'edit.php?post_type=mblocks',
                 'menu'        => __('Example', DOMAIN),
                 // 'validate'    => array($this, 'validate_options'),
                 'permissions' => 'manage_options',
                 'columns'     => 2,
+                'menu_pos'    => 1,
             )
         );
 
@@ -145,4 +146,15 @@ Plugin::define();
 // register_deactivation_hook( __FILE__, array( __NAMESPACE__ . '\Plugin', 'deactivate' ) );
 
 add_action( 'plugins_loaded', array( __NAMESPACE__ . '\Plugin', 'initialize' ), 10 );
-// add_action( 'plugins_loaded', array( __NAMESPACE__ . '\Plugin', 'admin_menu_page' ), 10 );
+add_action( 'plugins_loaded', array( __NAMESPACE__ . '\Plugin', 'admin_menu_page' ), 10 );
+
+
+add_action( 'admin_init', function() {
+    global $submenu;
+
+    array_unshift( $submenu['edit.php?post_type=mblocks'], array_pop( $submenu['edit.php?post_type=mblocks'] ) );
+
+    // echo "<pre>";
+    // var_dump( $submenu );
+    // echo "</pre>";
+} );

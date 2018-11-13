@@ -168,25 +168,23 @@ class mediablock_load_post_page
                     'link_description' => __( 'Link' ),
                 ) );
 
-                echo '<div style="clear: both;">';
-                wp_editor( 'attachment_editor_' . $attachment_id, $attachment->post_content, array(
-                    'wpautop'             => true,
-                    'media_buttons'       => true,
-                    'default_editor'      => '',
-                    'drag_drop_upload'    => false,
-                    'textarea_name'       => 'test',
-                    'textarea_rows'       => 20,
-                    'tabindex'            => '',
-                    'tabfocus_elements'   => ':prev,:next',
-                    'editor_css'          => '',
-                    'editor_class'        => '',
-                    'teeny'               => false,
-                    'dfw'                 => false,
-                    '_content_editor_dfw' => false,
-                    'tinymce'             => true,
-                    'quicktags'           => true
-                ) );
-                echo '</div>';
+                // wp_editor( 'attachment_editor_' . $attachment_id, $attachment->post_content, array(
+                //     'wpautop'             => true,
+                //     'media_buttons'       => true,
+                //     'default_editor'      => '',
+                //     'drag_drop_upload'    => false,
+                //     'textarea_name'       => 'test',
+                //     'textarea_rows'       => 20,
+                //     'tabindex'            => '',
+                //     'tabfocus_elements'   => ':prev,:next',
+                //     'editor_css'          => '',
+                //     'editor_class'        => '',
+                //     'teeny'               => false,
+                //     'dfw'                 => false,
+                //     '_content_editor_dfw' => false,
+                //     'tinymce'             => true,
+                //     'quicktags'           => true
+                // ) );
 
             endforeach;
             ?>
